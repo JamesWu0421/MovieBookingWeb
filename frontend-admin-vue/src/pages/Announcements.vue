@@ -11,10 +11,10 @@
 
     <el-table :data="list" style="width:100%">
       <el-table-column prop="id" label="ID" width="80"/>
-      <el-table-column prop="title" label="標題"/>
-      <el-table-column prop="content" label="內容" :show-overflow-tooltip="true"/>
-      <el-table-column prop="startAt" label="開始時間" width="160"/>
-      <el-table-column prop="endAt" label="結束時間" width="160"/>
+      <el-table-column prop="name" label="標題"/>  <!-- 改這裡 -->
+      <el-table-column prop="description" label="內容" :show-overflow-tooltip="true"/>  <!-- 改這裡 -->
+      <el-table-column prop="startDate" label="開始日期" width="120"/>  <!-- 改這裡 -->
+      <el-table-column prop="endDate" label="結束日期" width="120"/>  <!-- 改這裡 -->
       <el-table-column label="狀態" width="100">
         <template #default="{ row }">
           <el-tag v-if="isActive(row)" type="success">進行中</el-tag>
@@ -36,28 +36,37 @@
     <el-dialog v-model="dialogVisible" title="公告活動" width="600px">
       <el-form :model="form" ref="formRef" label-width="100px">
         <el-form-item label="標題">
-          <el-input v-model="form.title" placeholder="請輸入公告標題"></el-input>
+          <el-input v-model="form.name" placeholder="請輸入公告標題"></el-input>  <!-- 改這裡 -->
         </el-form-item>
         <el-form-item label="內容">
-          <el-input type="textarea" v-model="form.content" :rows="6" placeholder="請輸入公告內容"></el-input>
+          <el-input type="textarea" v-model="form.description" :rows="6" placeholder="請輸入公告內容"></el-input>  <!-- 改這裡 -->
         </el-form-item>
-        <el-form-item label="開始時間">
+        <el-form-item label="備註">  <!-- 新增 -->
+          <el-input v-model="form.notes" placeholder="選填備註資訊"></el-input>
+        </el-form-item>
+        <el-form-item label="圖片網址">  <!-- 新增 -->
+          <el-input v-model="form.imageUrl" placeholder="選填圖片網址"></el-input>
+        </el-form-item>
+        <el-form-item label="開始日期">
           <el-date-picker 
-            v-model="form.startAt" 
-            type="datetime" 
-            placeholder="選擇開始時間"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            v-model="form.startDate"  
+            type="date" 
+            placeholder="選擇開始日期"
+            value-format="YYYY-MM-DD"
             style="width:100%"
           />
         </el-form-item>
-        <el-form-item label="結束時間">
+        <el-form-item label="結束日期">
           <el-date-picker 
-            v-model="form.endAt" 
-            type="datetime" 
-            placeholder="選擇結束時間"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            v-model="form.endDate"  
+            type="date" 
+            placeholder="選擇結束日期"
+            value-format="YYYY-MM-DD"
             style="width:100%"
           />
+        </el-form-item>
+        <el-form-item label="是否啟用">  <!-- 新增 -->
+          <el-switch v-model="form.isActive"></el-switch>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -78,20 +87,34 @@ const page = ref(1)
 const pageSize = ref(10)
 const query = ref('')
 const dialogVisible = ref(false)
-const form = ref({ id:null, title:'', content:'', startAt:'', endAt:'' })
+
+// 改成對應後端的欄位
+const form = ref({ 
+  id: null, 
+  name: '',           // 改這裡
+  description: '',    // 改這裡
+  notes: '',          // 新增
+  imageUrl: '',       // 新增
+  startDate: '',      // 改這裡
+  endDate: '',        // 改這裡
+  category: 'announcement',  // 新增：固定值
+  isActive: true      // 新增
+})
+
 const formRef = ref(null)
 
 // 判斷公告是否進行中
 function isActive(row) {
-  if (!row.startAt || !row.endAt) return false
+  if (!row.startDate || !row.endDate) return false  // 改這裡
   const now = new Date()
-  const start = new Date(row.startAt)
-  const end = new Date(row.endAt)
+  const start = new Date(row.startDate)  // 改這裡
+  const end = new Date(row.endDate)      // 改這裡
   return now >= start && now <= end
 }
 
 async function fetchList() {
   const params = { 
+    category: 'announcement',  // 新增：必須指定 category
     page: page.value, 
     size: pageSize.value
   }
@@ -121,7 +144,17 @@ function onPageChange(p) {
 }
 
 function openCreate() {
-  form.value = { id:null, title:'', content:'', startAt:'', endAt:'' }
+  form.value = { 
+    id: null, 
+    name: '',           // 改這裡
+    description: '',    // 改這裡
+    notes: '',
+    imageUrl: '',
+    startDate: '',      // 改這裡
+    endDate: '',        // 改這裡
+    category: 'announcement',
+    isActive: true
+  }
   dialogVisible.value = true
 }
 
@@ -131,18 +164,26 @@ function openEdit(row) {
 }
 
 async function save() {
-  if (form.value.id) {
-    await announcementService.update(form.value.id, form.value)
-  } else {
-    await announcementService.create(form.value)
+  try {
+    if (form.value.id) {
+      await announcementService.update(form.value.id, form.value)
+    } else {
+      await announcementService.create(form.value)
+    }
+    dialogVisible.value = false
+    fetchList()
+  } catch (error) {
+    console.error('Failed to save announcement:', error)
   }
-  dialogVisible.value = false
-  fetchList()
 }
 
 async function remove(row) {
-  await announcementService.delete(row.id)
-  fetchList()
+  try {
+    await announcementService.delete(row.id)
+    fetchList()
+  } catch (error) {
+    console.error('Failed to delete announcement:', error)
+  }
 }
 
 onMounted(fetchList)
