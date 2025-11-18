@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useAuthStore } from "@/store/auth"; // ✅ 您的路徑
-import router from "@/router/router"; // ✅ 您的路徑
+import { useAuthStore } from "../stores/login"; // ✅ 您的路徑
+import router from "../router/index"; // ✅ 您的路徑
 
 const request = axios.create({
   baseURL: "http://localhost:8080/api",
