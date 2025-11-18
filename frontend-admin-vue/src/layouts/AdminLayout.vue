@@ -2,8 +2,15 @@
   <el-container style="height: 100vh">
     <el-aside width="240px" class="sidebar">
       <div class="logo">🎬 電影訂票管理</div>
-      <el-menu router :default-active="$route.path" background-color="#2b3a4b" text-color="#fff" class="menu">
+      <el-menu
+        router
+        :default-active="$route.path"
+        background-color="#2b3a4b"
+        text-color="#fff"
+        class="menu"
+      >
         <el-menu-item index="/dashboard">儀表板</el-menu-item>
+        <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
         <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
         <el-menu-item index="/showtimes">場次/票價管理</el-menu-item>
@@ -26,7 +33,7 @@
           <el-button type="text" @click="logout">登出</el-button>
         </div>
       </el-header>
-      <el-main style="padding:20px;">
+      <el-main style="padding: 20px">
         <router-view />
       </el-main>
     </el-container>
@@ -34,11 +41,11 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-const router = useRouter()
+import { useRouter } from "vue-router";
+const router = useRouter();
 function logout() {
-  localStorage.removeItem('admin_token')
-  router.push('/login')
+  localStorage.removeItem("admin_token");
+  router.push("/login");
 }
 </script>
 
@@ -56,15 +63,16 @@ function logout() {
   padding: 16px 0;
 }
 .header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#f6f7fb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f6f7fb;
   font-weight: bold;
   padding: 12px 20px;
-  border-bottom:1px solid #e6e9ee;
+  border-bottom: 1px solid #e6e9ee;
 }
-.menu >>> .el-menu-item, .menu >>> .el-sub-menu__title {
+.menu >>> .el-menu-item,
+.menu >>> .el-sub-menu__title {
   color: #fff;
 }
 </style>

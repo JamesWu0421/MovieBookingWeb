@@ -11,11 +11,11 @@
 
     <el-table :data="list" style="width:100%">
       <el-table-column prop="id" label="ID" width="80"/>
-      <el-table-column prop="name" label="標題"/>  <!-- 改這裡 -->
-      <el-table-column prop="discountType" label="類型" width="120"/>  <!-- 改這裡 -->
-      <el-table-column prop="discountValue" label="折扣" width="120"/>  <!-- 改這裡 -->
-      <el-table-column prop="startDate" label="開始" width="160"/>  <!-- 改這裡 -->
-      <el-table-column prop="endDate" label="結束" width="160"/>  <!-- 改這裡 -->
+      <el-table-column prop="title" label="標題"/>
+      <el-table-column prop="type" label="類型" width="120"/>
+      <el-table-column prop="discount" label="折扣" width="120"/>
+      <el-table-column prop="startAt" label="開始" width="160"/>
+      <el-table-column prop="endAt" label="結束" width="160"/>
       <el-table-column label="操作" width="180">
         <template #default="{ row }">
           <el-button size="small" @click="openEdit(row)">編輯</el-button>
@@ -31,34 +31,16 @@
     <el-dialog :visible.sync="dialogVisible" title="優惠活動">
       <el-form :model="form" ref="formRef">
         <el-form-item label="標題">
-          <el-input v-model="form.name"></el-input>  <!-- 改這裡 -->
+          <el-input v-model="form.title"></el-input>
         </el-form-item>
-        <el-form-item label="說明">
-          <el-input v-model="form.description" type="textarea"></el-input>  <!-- 新增 -->
+        <el-form-item label="折扣">
+          <el-input v-model="form.discount"></el-input>
         </el-form-item>
-        <el-form-item label="折扣類型">  <!-- 新增 -->
-          <el-select v-model="form.discountType">
-            <el-option label="百分比" value="percentage"></el-option>
-            <el-option label="固定金額" value="fixed"></el-option>
-          </el-select>
+        <el-form-item label="開始">
+          <el-date-picker v-model="form.startAt" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"></el-date-picker>
         </el-form-item>
-        <el-form-item label="折扣值">
-          <el-input-number v-model="form.discountValue" :min="0"></el-input-number>  <!-- 改這裡 -->
-        </el-form-item>
-        <el-form-item label="開始日期">
-          <el-date-picker v-model="form.startDate" type="date" value-format="yyyy-MM-dd"></el-date-picker>  <!-- 改這裡 -->
-        </el-form-item>
-        <el-form-item label="結束日期">
-          <el-date-picker v-model="form.endDate" type="date" value-format="yyyy-MM-dd"></el-date-picker>  <!-- 改這裡 -->
-        </el-form-item>
-        <el-form-item label="最低消費">  <!-- 新增 -->
-          <el-input-number v-model="form.minAmount" :min="0"></el-input-number>
-        </el-form-item>
-        <el-form-item label="是否需要優惠碼">  <!-- 新增 -->
-          <el-switch v-model="form.requiresCoupon"></el-switch>
-        </el-form-item>
-        <el-form-item label="優惠碼" v-if="form.requiresCoupon">  <!-- 新增 -->
-          <el-input v-model="form.couponCode"></el-input>
+        <el-form-item label="結束">
+          <el-date-picker v-model="form.endAt" type="datetime" value-format="yyyy-MM-dd HH:mm:ss"></el-date-picker>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -79,23 +61,7 @@ const page = ref(1)
 const pageSize = ref(10)
 const query = ref('')
 const dialogVisible = ref(false)
-
-// 改成對應後端的欄位
-const form = ref({ 
-  id: null, 
-  name: '',  // 改這裡
-  description: '',
-  discountType: 'percentage',  // 改這裡
-  discountValue: 0,  // 改這裡
-  startDate: '',  // 改這裡
-  endDate: '',  // 改這裡
-  minAmount: null,
-  requiresCoupon: false,
-  couponCode: null,
-  category: 'promotion',  // 固定值
-  isActive: true  // 固定值
-})
-
+const form = ref({ id:null, title:'', discount:'', startAt:'', endAt:'' })
 const formRef = ref(null)
 
 async function fetchList() {
@@ -104,7 +70,7 @@ async function fetchList() {
     page: page.value, 
     size: pageSize.value
   }
-  
+  // 只有當 query 有值時才加入參數
   if (query.value && query.value.trim()) {
     params.q = query.value
   }
@@ -131,20 +97,7 @@ function onPageChange(p) {
 }
 
 function openCreate() {
-  form.value = { 
-    id: null, 
-    name: '', 
-    description: '',
-    discountType: 'percentage', 
-    discountValue: 0, 
-    startDate: '', 
-    endDate: '',
-    minAmount: null,
-    requiresCoupon: false,
-    couponCode: null,
-    category: 'promotion',
-    isActive: true
-  }
+  form.value = { id:null, title:'', discount:'', startAt:'', endAt:'' }
   dialogVisible.value = true
 }
 
