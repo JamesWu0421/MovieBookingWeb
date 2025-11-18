@@ -90,6 +90,7 @@ const routes = [
     path: "/booking/QuickBooking",
     name: "QuickBooking",
     component: QuickBookingView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/booking/TicketBooking/:id",
