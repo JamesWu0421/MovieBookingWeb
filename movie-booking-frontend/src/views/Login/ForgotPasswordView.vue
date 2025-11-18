@@ -64,7 +64,7 @@ const handleSubmit = async () => {
 
   try {
     await request({
-      url: `/api/user/forgot-password`,
+      url: `/auth/forgotpassword`,
       method: "post",
       data: { email: email.value },
     });

@@ -68,7 +68,7 @@ request.interceptors.response.use(
     }
 
     // 其他錯誤處理
-    const message = error.response?.data?.message || "請求失敗";
+    const message = error.response?.data?.message; //|| "請求失敗";
     return Promise.reject(new Error(message));
   }
 );

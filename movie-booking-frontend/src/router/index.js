@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "../stores/login";
 
 import HomeView from "../views/HomeView.vue";
 import MoviesView from "../views/MoviesView.vue";
@@ -100,11 +101,48 @@ const routes = [
     name: "TicketSelection",
     component: TicketSelectionView,
   },
+  // {
+  //   path: "/auth/verify",
+  //   name: "Verify",
+  //   beforeEnter: async (to, from, next) => {
+  //     const code = to.query.code; // 改為 code (對應後端的 @RequestParam("code"))
+  //     if (!code) {
+  //       next("/verify-failed");
+  //       return;
+  //     }
+
+  //     try {
+  //       const authApi = await import("../services/api");
+  //       await authApi.verifyEmail(code);
+  //       next("/verify-success");
+  //     } catch (error) {
+  //       next("/verify-failed");
+  //     }
+  //   },
+  // },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+//其他功能開發完後再補充
+// 路由守衛
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  const isAuthenticated = authStore.isAuthenticated;
+
+  // 需要登入的頁面
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next("/login");
+  }
+  // 已登入不能訪問的頁面(如登入、註冊)
+  else if (to.meta.requiresGuest && isAuthenticated) {
+    next("/profile");
+  } else {
+    next();
+  }
 });
 
 export default router;

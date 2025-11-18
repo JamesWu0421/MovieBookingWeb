@@ -285,9 +285,15 @@ const handleRegister = async () => {
 
   try {
     const { confirmPassword, ...registerData } = form.value;
-    if (uploadedAvatarUrl.value) {
-      registerData.avatarUrl = uploadedAvatarUrl.value;
+    registerData.avatarUrl = uploadedAvatarUrl.value || "";
+    // 確保生日不是空字串
+    if (!registerData.birthday) {
+      errorMessage.value = "請選擇生日";
+      loading.value = false;
+      return;
     }
+
+    console.log("送出資料:", registerData); // ✅ 檢查 JSON
     await register(registerData);
 
     successMessage.value = "註冊成功！請檢查您的信箱進行驗證。";
@@ -296,7 +302,11 @@ const handleRegister = async () => {
       router.push("/login");
     }, 3000);
   } catch (error) {
-    errorMessage.value = error.message || "註冊失敗，請稍後再試";
+    if (error.response && error.response.data) {
+      errorMessage.value = error.response.data;
+    } else {
+      errorMessage.value = error.message || "註冊失敗，請稍後再試";
+    }
   } finally {
     loading.value = false;
   }

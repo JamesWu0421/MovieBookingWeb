@@ -3,7 +3,7 @@ import request from "../utils/request";
 // 使用者註冊
 export const register = (data) => {
   return request({
-    url: "/api/user/register",
+    url: "/auth/register",
     method: "post",
     data,
   });
@@ -12,7 +12,7 @@ export const register = (data) => {
 // 使用者登入
 export const login = (data) => {
   return request({
-    url: "/api/user/login",
+    url: "/auth/login",
     method: "post",
     data,
   });
@@ -21,7 +21,7 @@ export const login = (data) => {
 // 變更密碼
 export const changePassword = async (oldPassword, newPassword) => {
   const response = await request({
-    url: "/api/user/change-password",
+    url: "/user/change_password",
     method: "put",
     data: {
       oldPassword,
@@ -43,24 +43,23 @@ export const changePassword = async (oldPassword, newPassword) => {
 // 登出
 export const logout = () => {
   return request({
-    url: "/api/user/logout",
+    url: "/user/logout",
     method: "post",
   });
 };
 
 // Email 驗證
-export const verifyEmail = (token) => {
+export const verifyEmail = (code) => {
   return request({
-    url: `/api/user/verify-email`,
-    method: "post",
-    data: { token },
+    url: `/auth/verify?token=${code}`,
+    method: "get",
   });
 };
 
 // 取得個人資料
 export const getProfile = () => {
   return request({
-    url: "/api/user/profile",
+    url: "/user/profile",
     method: "get",
   });
 };
@@ -71,7 +70,7 @@ export const uploadAvatar = async (file) => {
   formData.append("file", file);
 
   const response = await request({
-    url: "/api/upload/avatar",
+    url: "/upload/avatar",
     method: "post",
     data: formData,
     headers: {
@@ -84,7 +83,7 @@ export const uploadAvatar = async (file) => {
 // 重設密碼
 export const resetPassword = (token, newPassword) => {
   return request({
-    url: "/api/user/reset-password",
+    url: "/user/reset-password",
     method: "post",
     data: {
       token,
@@ -95,7 +94,7 @@ export const resetPassword = (token, newPassword) => {
 // 更新個人資料
 export const updateProfile = (data) => {
   return request({
-    url: "/api/user/profile",
+    url: "/user/profile",
     method: "put",
     data,
   });
