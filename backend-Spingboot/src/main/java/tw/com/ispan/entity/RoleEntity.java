@@ -8,15 +8,21 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ManyToMany;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.AllArgsConstructor;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
 @Table(name = "roles")
-@Data
+@Getter 
+@Setter 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleEntity {
@@ -27,7 +33,7 @@ public class RoleEntity {
 
     @Column(name = "role_name", nullable = false, length = 50)
     private String roleName;
-
+    @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private Set<EmpEntity> employees;
 

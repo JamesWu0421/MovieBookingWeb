@@ -135,7 +135,7 @@
     <el-card shadow="hover">
       <template #header>
         <div class="card-header">
-          <span class="card-title">場次票種列表</span>
+          <span class="card-title">場次票種價格列表</span>
           <div>
             <el-button type="danger" size="small" @click="clearAllShowPrices" :disabled="showPricesList.length === 0">
               🗑️ 清空全部

@@ -27,9 +27,7 @@ public class UserService {
     @Autowired
     private JavaMailSender mailSender;
 //註冊
-     public UserEntity registerUser(String username, String rawPassword, String email, 
-                                   String phoneNumber, String nickname, String gender, 
-                                   LocalDate birthday, String avatarUrl) {
+     public UserEntity registerUser(String username, String rawPassword, String email,String phoneNumber, String nickname, String gender, LocalDate birthday, String avatarUrl) {
         
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("帳號已存在");
@@ -76,7 +74,7 @@ public class UserService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("請驗證您的帳號");
-        String activateUrl = "http://localhost:5173/verify?code=" + verificationCode;
+        String activateUrl = "http://localhost:8080/api/auth/verify?code=" + verificationCode;
         message.setText("請點擊以下連結以啟用帳號:\n" + activateUrl);
         mailSender.send(message);
     }

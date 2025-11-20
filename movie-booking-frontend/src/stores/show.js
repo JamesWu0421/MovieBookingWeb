@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 export const useShowStore = defineStore('show', () => {
   // 影城列表
   const cinemas = ref([
-        { id: 2, name: '台北館' },
+        { id: 2, name: '台北欣欣秀泰' },
   ])
 
   // 場次資料
