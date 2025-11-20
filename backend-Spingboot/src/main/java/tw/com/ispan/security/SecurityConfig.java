@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,7 +22,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import jakarta.servlet.http.HttpServletResponse;
 import tw.com.ispan.jwt.JsonWebTokenInterceptor;
-
+import tw.com.ispan.jwt.JwtAuthenticationFilter;
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
 
@@ -32,11 +36,22 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Autowired
     private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+//     @Bean
+// @SuppressWarnings("deprecation")
+// public PasswordEncoder passwordEncoder() {
+//     return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
+// }
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -61,6 +76,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                     "/uploads/**",       // 靜態資源
                     "/css/**",
                     "/js/**",
+                    "/api/admin/auth/login", // 管理員
                     "/images/**",
                     "/favicon.ico",
                     "/oauth2/**",        // OAuth2 授權端點
@@ -69,6 +85,8 @@ public class SecurityConfig implements WebMvcConfigurer {
 
                 // 3) 讓 /api/user/** 由你的 Interceptor 驗證，不由 Spring Security 攔截
                 .requestMatchers("/api/user/**").permitAll()
+                .requestMatchers("/api/admin/**").authenticated()
+
 
                 // 4) 其他才需要 Spring Security 認證
                 .anyRequest().authenticated()
@@ -101,7 +119,8 @@ public class SecurityConfig implements WebMvcConfigurer {
             )
 
             .logout(logout -> logout.permitAll());
-
+             http.addFilterBefore(jwtAuthenticationFilter,
+            org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -117,7 +136,7 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+            .allowedOrigins("http://localhost:5173", "http://localhost:5174")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
             .allowedHeaders("*")
             .exposedHeaders("Authorization")

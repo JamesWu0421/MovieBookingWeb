@@ -1,5 +1,6 @@
 package tw.com.ispan.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import tw.com.ispan.dto.request.UserChangePwdRequest;
 import tw.com.ispan.dto.request.UserLoginRequest;
@@ -104,20 +106,20 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody UserLoginRequest r
 
 
 
-
-    @GetMapping("/auth/verify")
-    public ResponseEntity<String> verify(@RequestParam("code") String code) {
-        Optional<UserEntity> optUser = userService.findByVerificationCode(code);
-        if (optUser.isEmpty()) {
-            return ResponseEntity.badRequest().body("驗證碼無效");
-        }
-        UserEntity user = optUser.get();
-        user.setStatus((byte)1); // 啟用帳號
-        user.setVerificationCode(null);
-        userService.save(user);
-        System.out.println("Updated user status: " + user.getStatus());
-        return ResponseEntity.ok("帳號已啟用，請重新登入");
+@GetMapping("/auth/verify")
+public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
+    Optional<UserEntity> optUser = userService.findByVerificationCode(code);
+    if(optUser.isEmpty()) {
+        response.sendRedirect("http://localhost:5173/verify-failed");
+        return ResponseEntity.badRequest().build();
     }
+    UserEntity user = optUser.get();
+    user.setStatus((byte)1);
+    user.setVerificationCode(null);
+    userService.save(user);
+    response.sendRedirect("http://localhost:5173/verify-success");
+    return ResponseEntity.ok().build();
+}
 
 
 
