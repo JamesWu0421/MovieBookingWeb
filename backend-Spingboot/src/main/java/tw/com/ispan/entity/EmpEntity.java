@@ -5,6 +5,7 @@ import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,7 +46,7 @@ public class EmpEntity {
     @Column(nullable = false)
     private Byte status;
     // 0: 帳號停用, 1: 帳號啟用 , 2: 鎖住
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "employee_roles",
         joinColumns = @JoinColumn(name = "employee_id"),

@@ -33,7 +33,7 @@
           <el-button type="text" @click="logout">登出</el-button>
         </div>
       </el-header>
-      <el-main style="padding: 20px">
+      <el-main class="main-content">
         <router-view />
       </el-main>
     </el-container>
@@ -55,6 +55,7 @@ function logout() {
   color: white;
   padding-top: 12px;
 }
+
 .logo {
   text-align: center;
   color: #fff;
@@ -62,6 +63,7 @@ function logout() {
   font-weight: bold;
   padding: 16px 0;
 }
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -71,8 +73,18 @@ function logout() {
   padding: 12px 20px;
   border-bottom: 1px solid #e6e9ee;
 }
-.menu >>> .el-menu-item,
-.menu >>> .el-sub-menu__title {
+
+/* 右側主內容區撐滿剩餘空間 */
+.main-content {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f6f7fb;
+}
+
+/* Element Plus 深度選擇器寫法（若用的是新版） */
+.menu :deep(.el-menu-item),
+.menu :deep(.el-sub-menu__title) {
   color: #fff;
 }
 </style>
