@@ -1,6 +1,7 @@
 package tw.com.ispan.service.empandroll;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -68,8 +69,9 @@ public class EmpService {
 
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
-        emp.setRoles(Set.of(role));
-
+        Set<RoleEntity> roles = new HashSet<>();
+        roles.add(role);
+        emp.setRoles(roles);
         return empRepository.save(emp);
     }
 
