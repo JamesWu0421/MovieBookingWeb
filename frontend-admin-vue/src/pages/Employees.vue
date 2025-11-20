@@ -222,7 +222,18 @@ async function remove(row) {
     fetchList();
   } catch (error) {
     console.error("Failed to delete employee:", error);
-    ElMessage.error("刪除失敗");
+
+    // 從後端回傳取狀態碼 & 訊息
+    const status = error.response?.status;
+    const backendMsg = error.response?.data?.message || "";
+
+    if (status === 403 && backendMsg.includes("Cannot delete ADMIN")) {
+      ElMessage.error("不可以刪除擁有 ADMIN 權限的員工");
+    } else if (status === 404 || backendMsg.includes("Employee not found")) {
+      ElMessage.error("員工不存在，可能已被刪除");
+    } else {
+      ElMessage.error("刪除失敗，請稍後再試");
+    }
   }
 }
 

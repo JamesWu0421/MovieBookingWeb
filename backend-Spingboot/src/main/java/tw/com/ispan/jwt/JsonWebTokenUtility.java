@@ -47,7 +47,7 @@ public class JsonWebTokenUtility {
 
 	public String createToken(String data) {
 		Instant now = Instant.now();
-		Instant expire = now.plusSeconds(this.expire * 60);
+		Instant expire = now.plusSeconds(this.expire * 600);
 		try {
 			// 建立JWT主體
 			JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()

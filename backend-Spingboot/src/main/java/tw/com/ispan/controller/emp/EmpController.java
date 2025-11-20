@@ -74,7 +74,7 @@ public class EmpController {
 
     // 刪除員工：只有 ADMIN（如果你真要支援刪除）
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     public void delete(@PathVariable Integer id) {
         empService.delete(id);
     }

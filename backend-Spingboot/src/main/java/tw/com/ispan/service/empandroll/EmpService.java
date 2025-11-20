@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,7 @@ public class EmpService {
         emp.setId(null);
         emp.setCreatedAt(LocalDateTime.now());
         emp.setStatus((byte) 1); // 預設啟用
-
+        
         // 🔹 這裡把原始密碼做 BCrypt
         String encoded = passwordEncoder.encode(plainPassword);
         emp.setEmpPasswordHash(encoded);
@@ -86,6 +87,17 @@ public class EmpService {
     }
 
     public void delete(Integer id) {
-        empRepository.deleteById(id);
+    EmpEntity target = empRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+    boolean targetIsAdmin = target.getRoles().stream()
+            .anyMatch(r -> "ADMIN".equals(r.getRoleName()));
+
+    if (targetIsAdmin) {
+        throw new AccessDeniedException("Cannot delete ADMIN employee");
     }
+
+    empRepository.delete(target);
+}
+
 }
