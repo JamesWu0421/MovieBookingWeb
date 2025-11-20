@@ -14,9 +14,9 @@
         <el-menu-item index="/members">會員管理</el-menu-item>
         <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
          <el-sub-menu index="/activities">
-        <template #title>場次/票價管理</template>
-        <el-menu-item index="/ticket-package">票價管理</el-menu-item>
-        <el-menu-item index="/showtimes-price">場次管理</el-menu-item>
+        <template #title>票價管理</template>
+        <el-menu-item index="/ticket-package">新增票種</el-menu-item>
+        <el-menu-item index="/showtimes-price">新增場次票種</el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/orders">訂單管理</el-menu-item>
         <el-sub-menu index="/activities">

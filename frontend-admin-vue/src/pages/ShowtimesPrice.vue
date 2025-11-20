@@ -2,14 +2,14 @@
   <div class="showtimes-price-system">
     <!-- 頁面標題 -->
     <div class="page-header">
-      <h1>場次價格設定系統</h1>
+      <h1>場次票種設定系統</h1>
     </div>
 
     <!-- 場次價格設定區塊 -->
     <el-card shadow="hover" style="margin-bottom: 20px;">
       <template #header>
         <div class="card-header">
-          <span class="card-title">新增場次價格</span>
+          <span class="card-title">新增場次票種</span>
         </div>
       </template>
       
@@ -122,7 +122,7 @@
 
         <el-form-item>
           <el-button type="primary" size="large" @click="handleAddShowPrice">
-            新增場次價格
+            新增場次票種
           </el-button>
           <el-button size="large" @click="resetShowPriceForm">
             重置
@@ -135,11 +135,8 @@
     <el-card shadow="hover">
       <template #header>
         <div class="card-header">
-          <span class="card-title">場次價格列表</span>
+          <span class="card-title">場次票種列表</span>
           <div>
-            <el-button type="success" size="small" @click="exportShowPrices" :disabled="showPricesList.length === 0">
-              📥 匯出資料
-            </el-button>
             <el-button type="danger" size="small" @click="clearAllShowPrices" :disabled="showPricesList.length === 0">
               🗑️ 清空全部
             </el-button>
@@ -525,19 +522,7 @@ async function clearAllShowPrices() {
   }
 }
 
-// 匯出資料
-function exportShowPrices() {
-  const data = JSON.stringify(showPricesList.value, null, 2)
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `場次價格_${new Date().toISOString().split('T')[0]}.json`
-  link.click()
-  URL.revokeObjectURL(url)
-  ElMessage.success('資料已匯出')
-}
-
+// 格式化時間
 function formatTime(time) {
   if (!time) return ''
   if (typeof time === 'string') {
