@@ -1,5 +1,6 @@
 package tw.com.ispan.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +29,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     // // 依第三方 providerName 和 providerId 查找用戶
     // UserEntity findByProviderNameAndProviderId(String providerName, String providerId);
+
+    List<UserEntity> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(
+            String username, String email , String phoneNumber
+    );
 }

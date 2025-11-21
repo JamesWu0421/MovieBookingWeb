@@ -3,6 +3,7 @@ package tw.com.ispan.service;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import tw.com.ispan.dto.request.UserUpdateRequest;
+import tw.com.ispan.dto.request.admin.AdminUserUpdateRequest;
 import tw.com.ispan.entity.UserEntity;
 import tw.com.ispan.repository.UserRepository;
 @Service
@@ -223,5 +225,67 @@ public void changePassword(String username, String oldPassword, String newPasswo
 //         // 3. 驗證通過回傳用戶資料
 //         return user;
 //     }
+
+//==============================================================
+//後台會員管理
+// 1. 查全部會員（後台列表用）
+    public List<UserEntity> adminFindAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // 2. 關鍵字搜尋（username / email / phoneNumber 不分大小寫、包含）
+    public List<UserEntity> adminSearchUsers(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return userRepository.findAll();
+        }
+        return userRepository
+                .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(
+                        keyword, keyword, keyword
+                );
+    }
+
+    // 3. 查單筆會員（詳細資料 / 編輯用）
+    public UserEntity adminFindById(Integer id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("會員不存在"));
+    }
+
+    // 4. 更新會員狀態（啟用 / 停權 / 黑名單）
+    @Transactional
+    public UserEntity adminUpdateUserStatus(Integer id, Byte status) {
+        UserEntity user = adminFindById(id);
+        user.setStatus(status);
+        return userRepository.save(user);
+    }
+
+    // 5. 更新會員基本資料（後台改資料用，不含密碼）
+    @Transactional
+    public UserEntity adminUpdateUserBasicInfo(Integer id, AdminUserUpdateRequest req) {
+        UserEntity user = adminFindById(id);
+
+        if (req.getEmail() != null) {
+            user.setEmail(req.getEmail());
+        }
+        if (req.getPhoneNumber() != null) {
+            user.setPhoneNumber(req.getPhoneNumber());
+        }
+        if (req.getNickname() != null) {
+            user.setNickname(req.getNickname());
+        }
+        if (req.getGender() != null) {
+            user.setGender(req.getGender());
+        }
+        if (req.getBirthday() != null) {
+            user.setBirthday(req.getBirthday());
+        }
+        if (req.getAvatarUrl() != null) {
+            user.setAvatarUrl(req.getAvatarUrl());
+        }
+        if (req.getStatus() != null) {
+            user.setStatus(req.getStatus());
+        }
+
+        return userRepository.save(user);
+    }
 
 }
