@@ -1,7 +1,8 @@
 package tw.com.ispan.controller.emp;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,17 +27,21 @@ public class AdminUserController {
         this.userService = userService;
     }
 
-    // 列表
-    @GetMapping
-    public List<UserEntity> listAll() {
-        return userService.adminFindAllUsers();
-    }
+  //分頁 
+@GetMapping
+public Page<UserEntity> listAll(@PageableDefault Pageable pageable) {
+    return userService.adminFindAllUsers(pageable);
+
+}
 
     // 搜尋
     @GetMapping("/search")
-    public List<UserEntity> search(@RequestParam String keyword) {
-        return userService.adminSearchUsers(keyword);
-    }
+    public Page<Employee> searchEmployees(
+    @RequestParam String keyword,
+    Pageable pageable
+) {
+    return EmpService.searchEmployees(keyword, pageable);
+}
 
     // 單筆詳情
     @GetMapping("/{id}")
@@ -57,4 +62,9 @@ public class AdminUserController {
                                       @RequestBody AdminUserUpdateRequest req) {
         return userService.adminUpdateUserBasicInfo(id, req);
     }
+    @GetMapping("path")
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+
 }

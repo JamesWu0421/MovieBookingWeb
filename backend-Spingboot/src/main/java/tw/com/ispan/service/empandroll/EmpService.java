@@ -2,9 +2,10 @@ package tw.com.ispan.service.empandroll;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,9 @@ public class EmpService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<EmpEntity> findAll() {
-        return empRepository.findAll();
-    }
+    public Page<EmpEntity> findAllEmployees(Pageable pageable) {
+    return empRepository.findAll(pageable);
+}
 
     public EmpEntity findById(Integer id) {
         return empRepository.findById(id)
@@ -76,15 +77,11 @@ public class EmpService {
         return empRepository.save(emp);
     }
 
-    public List<EmpEntity> searchByNameOrEmail(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return empRepository.findAll();
-        }
-        return empRepository
-                .findByEmpNameContainingIgnoreCaseOrEmpEmailContainingIgnoreCase(
-                        keyword, keyword
-                );
-    }
+    public Page<EmpEntity> searchEmployees(String keyword, Pageable pageable) {
+    return empRepository.findByEmpNameContainingOrEmpEmailContaining(
+        keyword, keyword, pageable
+    );
+}
 
     public void delete(Integer id) {
     EmpEntity target = empRepository.findById(id)

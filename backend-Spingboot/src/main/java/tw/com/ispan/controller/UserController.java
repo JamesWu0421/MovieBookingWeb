@@ -209,19 +209,4 @@ public ResponseEntity<String> changePassword(@RequestBody UserChangePwdRequest r
 }
 
 
-
-//      @PostMapping("/oauth2/login")
-// public ResponseEntity<?> oauth2Login(@RequestBody OAuth2LoginRequest req) {
-//     UserEntity user = userService.loginOrCreateThirdPartyUser(
-//             req.getProviderId(),   // 例如 Google 回傳的用戶ID 
-//             req.getProviderName() // 例如 "google"
-//     );
-
-//     String token = jwtUtility.createToken(user.getUsername());
-//     Map<String, Object> resp = new HashMap<>();
-//     resp.put("token", token);
-//     resp.put("user", user);
-//     return ResponseEntity.ok(resp);
-// }
-
 }

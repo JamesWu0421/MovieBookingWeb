@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -229,9 +231,11 @@ public void changePassword(String username, String oldPassword, String newPasswo
 //==============================================================
 //後台會員管理
 // 1. 查全部會員（後台列表用）
-    public List<UserEntity> adminFindAllUsers() {
-        return userRepository.findAll();
-    }
+public Page<UserEntity> adminFindAllUsers(Pageable pageable) {
+    System.out.println("Page number: " + pageable.getPageNumber());
+    System.out.println("Page size: " + pageable.getPageSize());
+    return userRepository.findAll(pageable);
+}
 
     // 2. 關鍵字搜尋（username / email / phoneNumber 不分大小寫、包含）
     public List<UserEntity> adminSearchUsers(String keyword) {

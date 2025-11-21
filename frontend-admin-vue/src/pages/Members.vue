@@ -159,14 +159,14 @@ async function loadData() {
       // 搜尋 + 分頁
       const resp = await searchUsers({
         keyword: query.value.trim(),
-        page: page.value,
+        page: page.value - 1,
         size: pageSize.value,
       });
       list.value = resp.content || resp.list || resp; // 看你後端回什麼
       total.value = resp.totalElements ?? resp.total ?? list.value.length;
     } else {
       const resp = await fetchUsers({
-        page: page.value,
+        page: page.value - 1,
         size: pageSize.value,
       });
       list.value = resp.content || resp.list || resp;

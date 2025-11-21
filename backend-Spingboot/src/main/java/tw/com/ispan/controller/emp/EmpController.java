@@ -1,7 +1,8 @@
 package tw.com.ispan.controller.emp;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,18 +29,20 @@ public class EmpController {
     }
 
     // 列表 + 搜尋：ADMIN、MANAGER 可以看
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public List<EmpEntity> list() {
-        return empService.findAll();
-    }
+ @GetMapping
+public Page<EmpEntity> listEmployees(@PageableDefault Pageable pageable) {
+    return empService.findAllEmployees(pageable);
+}
 
     // 搜尋：ADMIN、MANAGER 可以看
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    public List<EmpEntity> search(@RequestParam String keyword) {
-        return empService.searchByNameOrEmail(keyword);
-    }
+    public Page<EmpEntity> searchEmployees(
+        @RequestParam String keyword,
+        Pageable pageable
+) {
+    return empService.searchEmployees(keyword, pageable);
+}
 
     // 單筆詳情：ADMIN、MANAGER 可以看
     @GetMapping("/{id}")
