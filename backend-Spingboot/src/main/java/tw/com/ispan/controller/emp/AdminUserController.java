@@ -1,5 +1,7 @@
 package tw.com.ispan.controller.emp;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -36,12 +38,9 @@ public Page<UserEntity> listAll(@PageableDefault Pageable pageable) {
 
     // 搜尋
     @GetMapping("/search")
-    public Page<Employee> searchEmployees(
-    @RequestParam String keyword,
-    Pageable pageable
-) {
-    return EmpService.searchEmployees(keyword, pageable);
-}
+    public List<UserEntity> search(@RequestParam String keyword) {
+        return userService.adminSearchUsers(keyword);
+    }
 
     // 單筆詳情
     @GetMapping("/{id}")

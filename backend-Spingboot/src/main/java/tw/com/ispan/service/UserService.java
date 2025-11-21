@@ -153,38 +153,36 @@ public void sendResetPasswordEmail(String email) {
 
 
 
- public UserEntity updateUserProfile(String email, UserUpdateRequest req) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("用戶不存在"));
+ // ✅ 修改參數名稱和查詢方法
+public UserEntity updateUserProfile(String username, UserUpdateRequest req) {
+    // 改用 findByUsername 查詢
+    UserEntity user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("用戶不存在"));
 
-        // 根據傳入的資料更新欄位
-        // if (req.getEmail() != null) {
-        //     user.setEmail(req.getEmail());
-        // }
-        if (req.getNickname() != null) {
-            user.setNickname(req.getNickname());
-        }
-        if (req.getGender() != null) {
-            user.setGender(req.getGender());
-        }
-        if (req.getBirthday() != null) {
-            user.setBirthday(req.getBirthday());
-        }
-        if (req.getPhoneNumber() != null) {
-            user.setPhoneNumber(req.getPhoneNumber());
-        }
-        if (req.getPassword() != null) {
-            user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-        }
-        if (req.getAvatarUrl() != null) {
-            user.setAvatarUrl(req.getAvatarUrl());
-            
-        }
-        // 可根據需求繼續設定其他欄位
-
-        userRepository.save(user);
-        return user;
+    // 更新欄位
+    if (req.getNickname() != null) {
+        user.setNickname(req.getNickname());
     }
+    if (req.getGender() != null) {
+        user.setGender(req.getGender());
+    }
+    if (req.getBirthday() != null) {
+        user.setBirthday(req.getBirthday());
+    }
+    if (req.getPhoneNumber() != null) {
+        user.setPhoneNumber(req.getPhoneNumber());
+    }
+    if (req.getPassword() != null) {
+        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+    }
+    if (req.getAvatarUrl() != null) {
+        user.setAvatarUrl(req.getAvatarUrl());
+    }
+
+    userRepository.save(user);
+    return user;
+}
+
 
 public void changePassword(String username, String oldPassword, String newPassword) {
     // 取得用戶資料
