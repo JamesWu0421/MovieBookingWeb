@@ -39,8 +39,6 @@ public class JsonWebTokenUtility {
 	public void generateSigningKey() {
 		// 需要長度是512-bit的金鑰以便使用HS512演算法製作簽章
 		signingKey = new byte[64];
-
-		// TODO：可以使用其他方式產生金鑰內容
 		SecureRandom secureRandom = new SecureRandom();
 		secureRandom.nextBytes(signingKey);
 	}

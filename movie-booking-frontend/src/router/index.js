@@ -18,6 +18,9 @@ import ChangePassword from "../views/Profile/ChangePassword.vue";
 import VerifySuccess from "../views/Login/VerifySuccess.vue";
 import VerifyFailed from "../views/Login/VerifyFailed.vue";
 
+import TicketView from "../components/qrcode/TicketView.vue";
+import VerifyView from "../components/qrcode/VerifyView.vue";
+
 const routes = [
   {
     path: "/",
@@ -101,7 +104,16 @@ const routes = [
     path: "/booking/ticket-selection",
     name: "TicketSelection",
     component: TicketSelectionView,
-  },
+  }, { path: "/", redirect: "/ticket" },
+
+  // ⭐ 前台建立 + 查看票券（直接在 TicketView.vue 建立）
+  { path: "/ticket", name: "Ticket", component: TicketView },
+
+  // ⭐ 驗票端（需登入）
+  { path: "/verify", name: "Verify", component: VerifyView, meta: { requiresAuth: true } },
+
+  // ⭐ 掃 QR 後（帶 code）→ 驗票頁
+  { path: "/verify/:code", name: "VerifyCode", component: VerifyView, meta: { requiresAuth: true } },
   // {
   //   path: "/auth/verify",
   //   name: "Verify",
