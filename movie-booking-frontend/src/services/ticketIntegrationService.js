@@ -1,5 +1,5 @@
 // src/services/ticketIntegrationService.js
-// ✅ 完全自動版本 - 等後端加上 getPackageId() 後使用
+// ✅ 修正版：支援後端的 imageUrl 欄位
 import showTicketPricesService from './showTicketPriceService'
 import ticketPackageService from './ticketPackageService'
 import packageItemsService from './packageItemsService'
@@ -7,8 +7,6 @@ import packageItemsService from './packageItemsService'
 export default {
   /**
    * 根據場次 ID 取得所有可用的票種資訊
-   * @param {number} showId - 場次 ID
-   * @returns {Promise<Array>} 整合後的票種資料
    */
   async getTicketsByShowId(showId) {
     try {
@@ -37,7 +35,7 @@ export default {
         packageMap[pkg.id] = pkg
       })
 
-      // 3. 建立 items 映射表（自動從 API 建立）
+      // 3. 建立 items 映射表
       const itemsMap = this._buildItemsMap(allItems)
       
       console.log('🗺️ items 映射表:', itemsMap)
@@ -52,19 +50,22 @@ export default {
           return null
         }
 
-        // 從映射表取得 items
         const items = itemsMap[packageId] || []
+        const packageCode = pkg.packageCode || pkg.package_code
         
-        if (items.length === 0) {
-          console.warn(`package ${packageId} (${pkg.packageName || pkg.package_name}) 沒有內容物`)
-        }
+        // ✅ 關鍵修正：支援多種可能的欄位名稱
+        // 後端如果是 getImageUrl()，JSON 會是 imageUrl
+        // 後端如果是 getPackageImage()，JSON 會是 packageImage
+        const packageImage = pkg.imageUrl || pkg.image_url || pkg.packageImage || pkg.package_image
+        
+        console.log(`票種 ${packageId}: code="${packageCode}", image="${packageImage}"`)
 
         // 組合完整的票種資料
         return {
           id: priceData.id,
           packageId: pkg.id,
           name: pkg.packageName || pkg.package_name,
-          code: pkg.packageCode || pkg.package_code,
+          code: packageCode,
           type: (pkg.packageType || pkg.package_type || '').replace(/ /g, '_'),
           
           price: priceData.finalPrice || priceData.final_price,
@@ -76,7 +77,10 @@ export default {
           
           items: items,
           description: this.generateDescription(pkg, items),
-          image: this.getPackageImage(pkg.packageCode || pkg.package_code),
+          
+          // ✅ 關鍵修復：取得圖片 URL
+          image: this.getPackageImage(packageImage),
+          
           isAvailable: true,
           category: this.determineCategory(pkg.packageType || pkg.package_type, (priceData.isEarlyBird || priceData.is_early_bird) === 1, items)
         }
@@ -92,28 +96,55 @@ export default {
   },
 
   /**
+   * ✅ 簡化的圖片處理 - 支援完整 URL 和相對路徑
+   */
+  getPackageImage(imageUrl) {
+    // 安全檢查
+    if (!imageUrl || 
+        imageUrl === 'null' || 
+        imageUrl === 'undefined' ||
+        typeof imageUrl !== 'string' ||
+        imageUrl.trim() === '' ||
+        imageUrl === 'http://') {
+      console.log('⚠️ 無效的圖片 URL:', imageUrl)
+      return null
+    }
+
+    console.log('📷 處理圖片:', imageUrl)
+
+    // 如果已經是完整 URL（http:// 或 https://），直接返回
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      console.log('✅ 使用完整 URL:', imageUrl)
+      return imageUrl
+    }
+
+    // 如果是相對路徑，組合完整 URL
+    const API_BASE_URL = 'http://localhost:8080'
+    const imagePath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
+    const fullUrl = `${API_BASE_URL}${imagePath}`
+    
+    console.log('✅ 組合完整 URL:', fullUrl)
+    return fullUrl
+  },
+
+  /**
    * 建立 items 映射表
-   * ✅ 自動從 API 資料建立（前提：API 要包含 packageId）
    */
   _buildItemsMap(allItems) {
     const itemsMap = {}
     
     allItems.forEach(item => {
-      // 支援 camelCase 和 snake_case
       const packageId = item.packageId || item.package_id
       
-      // 如果沒有 packageId，跳過這個 item
       if (!packageId) {
         console.warn('⚠️ item 缺少 packageId:', item)
         return
       }
       
-      // 初始化陣列
       if (!itemsMap[packageId]) {
         itemsMap[packageId] = []
       }
       
-      // 加入 item
       itemsMap[packageId].push({
         id: item.id,
         type: item.itemType || item.item_type,
@@ -124,7 +155,6 @@ export default {
       })
     })
     
-    // 排序每個 package 的 items
     Object.keys(itemsMap).forEach(packageId => {
       itemsMap[packageId].sort((a, b) => a.displayOrder - b.displayOrder)
     })
@@ -167,35 +197,13 @@ export default {
   },
 
   /**
-   * 根據套票代碼取得圖片
-   */
-  getPackageImage(packageCode) {
-    const imageMap = {
-      'Discount': '/images/tickets/discount.png',
-      'fullprice': '/images/tickets/regular.png',
-      'coffee': '/images/tickets/coffee.png',
-      'early': '/images/tickets/early-bird.png'
-    }
-    return imageMap[packageCode] || null
-  },
-
-  /**
    * 判斷票種類別
-   * 新邏輯：只區分「單一票種」和「套票方案」
-   * - 只有一張電影票 → single (單一票種)
-   * - 其他情況（多張票或包含其他商品） → combo (套票方案)
    */
   determineCategory(packageType, isEarlyBird, items = []) {
-    // 計算電影票數量
     const movieTickets = items.filter(item => item.type === 'ticket')
     const totalTicketCount = movieTickets.reduce((sum, item) => sum + item.quantity, 0)
-    
-    // 檢查是否有非票類商品
     const hasNonTicketItems = items.some(item => item.type !== 'ticket')
     
-    // 判斷邏輯：
-    // 1. 只有一張電影票且沒有其他商品 → 單一票種
-    // 2. 其他情況（多張票或有其他商品） → 套票方案
     if (totalTicketCount === 1 && !hasNonTicketItems) {
       return 'single'
     } else {
@@ -228,8 +236,6 @@ export default {
       .join('、')
   }
 }
-
-
 
 
 
