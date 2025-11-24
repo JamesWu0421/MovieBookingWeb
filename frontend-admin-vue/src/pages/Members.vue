@@ -88,9 +88,6 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="頭像網址" prop="avatarUrl">
-          <el-input v-model="form.avatarUrl" placeholder="https://..." />
-        </el-form-item>
         <el-form-item label="狀態" prop="status">
           <el-select v-model="form.status" placeholder="請選擇狀態">
             <el-option label="未驗證" :value="0" />

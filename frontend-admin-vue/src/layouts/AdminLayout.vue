@@ -42,10 +42,24 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { ElMessageBox, ElMessage } from "element-plus";
+
 const router = useRouter();
-function logout() {
-  localStorage.removeItem("admin_token");
-  router.push("/login");
+
+async function logout() {
+  try {
+    await ElMessageBox.confirm("確認要登出嗎？", "提示", {
+      type: "warning",
+    });
+
+    // 清除 token (改成 adminToken)
+    localStorage.removeItem("adminToken");
+
+    ElMessage.success("已登出");
+    router.push("/login");
+  } catch {
+    // 取消登出
+  }
 }
 </script>
 
@@ -74,7 +88,6 @@ function logout() {
   border-bottom: 1px solid #e6e9ee;
 }
 
-/* 右側主內容區撐滿剩餘空間 */
 .main-content {
   padding: 20px;
   width: 100%;
@@ -82,7 +95,6 @@ function logout() {
   background: #f6f7fb;
 }
 
-/* Element Plus 深度選擇器寫法（若用的是新版） */
 .menu :deep(.el-menu-item),
 .menu :deep(.el-sub-menu__title) {
   color: #fff;

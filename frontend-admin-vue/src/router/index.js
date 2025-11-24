@@ -14,7 +14,6 @@ const routes = [
       { path: "/movies", component: () => import("../pages/Movies.vue") },
       { path: "/showtimes", component: () => import("../pages/Showtimes.vue") },
       { path: "/orders", component: () => import("../pages/Orders.vue") },
-      // 活動管理
       {
         path: "/promotions",
         component: () => import("../pages/Promotions.vue"),
@@ -23,12 +22,10 @@ const routes = [
         path: "/announcements",
         component: () => import("../pages/Announcements.vue"),
       },
-      // 通知管理
       {
         path: "/notifications",
         component: () => import("../pages/Notifications.vue"),
       },
-      // 報表和安全
       { path: "/reports", component: () => import("../pages/Reports.vue") },
       {
         path: "/security",
@@ -42,7 +39,28 @@ const routes = [
   },
 ];
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
 });
+
+// 全域前置守衛 - 所有路由都檢查 token
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("adminToken");
+
+  // 如果沒有 token 且不是要去登入頁
+  if (!token && to.path !== "/login") {
+    // 導向登入頁
+    next("/login");
+  }
+  // 如果已有 token 且要去登入頁,導向首頁
+  else if (token && to.path === "/login") {
+    next("/dashboard");
+  }
+  // 其他情況正常放行
+  else {
+    next();
+  }
+});
+
+export default router;
