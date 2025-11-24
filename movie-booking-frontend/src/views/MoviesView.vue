@@ -16,28 +16,23 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useMoviesStore } from '../stores/movies';
-import MovieList from '../components/movies/MovieList.vue';
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+import { useMoviesStore } from '../stores/movies'
+import MovieList from '../components/movies/MovieList.vue'
 
-const moviesStore = useMoviesStore();
-const { movies, loading, error } = storeToRefs(moviesStore);
+const router = useRouter()
+const moviesStore = useMoviesStore()
+const { movies, loading, error } = storeToRefs(moviesStore)
 
-onMounted(() => {
-  if (!movies.value.length) {
-    moviesStore.fetchMovies();
-  }
-});
+onMounted(async () => {
+  await moviesStore.fetchMovies()
+})
 
 const goToMovieDetail = (movieId) => {
-  // 可以先在這邊把 selectedMovie 存進 booking store（可選）
-  // const bookingStore = useBookingStore();
-  // bookingStore.setMovie(moviesStore.getMovieById(movieId));
-
-  // 先送去詳細頁
-  window.location.href = `/movies/${movieId}`;
-};
+  router.push(`/movies/${movieId}`)
+}
 </script>
 
 <style scoped>
@@ -68,5 +63,4 @@ const goToMovieDetail = (movieId) => {
   border-right: 1px solid rgb(230, 230, 230);
   background: repeating-linear-gradient(-45deg, rgba(99, 99, 99, 0.067), rgba(103, 103, 103, 0.067) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 4px);
 }
-
 </style>

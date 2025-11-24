@@ -12,8 +12,16 @@ const routes = [
       { path: "/members", component: () => import("../pages/Members.vue") },
       { path: "/employees", component: () => import("../pages/Employees.vue") },
       { path: "/movies", component: () => import("../pages/Movies.vue") },
-      { path: "/showtimes", component: () => import("../pages/Showtimes.vue") },
       { path: "/orders", component: () => import("../pages/Orders.vue") },
+      // 票種與場次管理
+      {
+        path: "/ticket-package",
+        component: () => import("../pages/TicketPackage.vue"),
+      },
+      {
+        path: "/showtimes-price",
+        component: () => import("../pages/ShowtimesPrice.vue"),
+      },
       // 活動管理
       {
         path: "/promotions",
@@ -35,10 +43,6 @@ const routes = [
         component: () => import("../pages/SecurityLogs.vue"),
       },
     ],
-  },
-  {
-    path: "/login",
-    component: () => import("../pages/Login.vue"),
   },
 ];
 

@@ -1,134 +1,149 @@
 <template>
   <div class="ticket-selection-page">
-    <!-- 電影資訊區塊 -->
-    <div class="movie-info-section">
-      <div class="movie-poster">
-        <img :src="movieInfo.posterUrl" :alt="movieInfo.title" />
-      </div>
-      
-      <div class="movie-details">
-        <h1 class="movie-title">{{ movieInfo.title }}</h1>
-        <p class="movie-subtitle">{{ movieInfo.engTitle }}</p>
-        
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">級別</span>
-            <span class="info-value">
-              <img v-if="movieInfo.ratingLevel" :src="movieInfo.ratingLevel" alt="分級" class="rating-icon" />
-            </span>
-          </div>
-          
-          <div class="info-item">
-            <span class="info-label">地點</span>
-            <span class="info-value">{{ showtimeInfo.cinemaName }}{{ showtimeInfo.hall }}</span>
-          </div>
-          
-          <div class="info-item">
-            <span class="info-label">開演時間</span>
-            <span class="info-value">
-              {{ formatDate(showtimeInfo.date) }} {{ showtimeInfo.startTime }} 
-              <span class="time-remaining">({{ timeRemaining }})</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- 票種明細 (只在有選票時顯示) -->
-        <div v-if="cart.length > 0" class="ticket-summary">
-          <div class="summary-row">
-            <span class="summary-label">票種</span>
-            <span class="summary-content">{{ ticketSummaryText }}</span>
-          </div>
-
-          <div class="summary-row">
-            <span class="summary-label">明細</span>
-            <span class="summary-content">{{ detailSummaryText }}</span>
-          </div>
-
-          <div class="summary-row total-row">
-            <span class="summary-label">總計</span>
-            <span class="summary-total">${{ totalAmount }}</span>
-          </div>
-        </div>
-      </div>
+    <!-- Loading 狀態 -->
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>載入中…</p>
     </div>
 
-    <!-- 票種選擇區塊 -->
-    <div class="ticket-selection-section">
-      <div class="section-header">
-        <h2 class="section-title">選取票種</h2>
-        <button 
-          class="btn-select-seats" 
-          @click="goToSeatSelection"
-          :disabled="totalAmount === 0"
-        >
-          已選取 {{ totalTickets }} 張票；開始選取座位
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
-      </div>
-      
-      <!-- 票種類別 Tab -->
-      <div class="ticket-tabs">
-        <button
-          v-for="category in ticketCategories"
-          :key="category.id"
-          :class="['tab-btn', { 'active': selectedCategory === category.id }]"
-          @click="selectCategory(category.id)"
-        >
-          {{ category.name }}
-        </button>
+    <!-- Error 狀態 -->
+    <div v-else-if="error" class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button @click="retryFetch" class="retry-btn">重新載入</button>
+    </div>
+
+    <!-- 正常內容 -->
+    <div v-else>
+      <!-- 電影資訊區塊 -->
+      <div class="movie-info-section">
+        <div class="movie-poster">
+          <img :src="movieInfo.posterUrl" :alt="movieInfo.title" />
+        </div>
+        
+        <div class="movie-details">
+          <h1 class="movie-title">{{ movieInfo.title }}</h1>
+          <p class="movie-subtitle">{{ movieInfo.engTitle }}</p>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">級別</span>
+              <span class="info-value">
+                <img v-if="movieInfo.ratingLevel" :src="movieInfo.ratingLevel" alt="分級" class="rating-icon" />
+              </span>
+            </div>
+            
+            <div class="info-item">
+              <span class="info-label">地點</span>
+              <span class="info-value">{{ locationText }}</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="info-label">開演時間</span>
+              <span class="info-value">
+                {{ formatDateTime(showtimeInfo.date, showtimeInfo.startTime) }}
+                <span class="time-remaining">({{ timeRemaining }})</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- 票種明細 (只在有選票時顯示) -->
+          <div v-if="cart.length > 0" class="ticket-summary">
+            <div class="summary-row">
+              <span class="summary-label">票種</span>
+              <span class="summary-content">{{ ticketSummaryText }}</span>
+            </div>
+
+            <div class="summary-row">
+              <span class="summary-label">明細</span>
+              <span class="summary-content">{{ detailSummaryText }}</span>
+            </div>
+
+            <div class="summary-row total-row">
+              <span class="summary-label">總計</span>
+              <span class="summary-total">${{ totalAmount }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 票種列表 -->
-      <div class="tickets-list">
-        <div class="tickets-header">
-          <div class="header-col">票種</div>
-          <div class="header-col">單價</div>
-          <div class="header-col">數量</div>
-          <div class="header-col">小計</div>
+      <!-- 票種選擇區塊 -->
+      <div class="ticket-selection-section">
+        <div class="section-header">
+          <h2 class="section-title">選取票種</h2>
+          <button 
+            class="btn-select-seats" 
+            @click="goToSeatSelection"
+            :disabled="totalAmount === 0"
+          >
+            已選取 {{ totalTickets }} 張票；開始選取座位
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- 票種類別 Tab -->
+        <div class="ticket-tabs">
+          <button
+            v-for="category in ticketCategories"
+            :key="category.id"
+            :class="['tab-btn', { 'active': selectedCategory === category.id }]"
+            @click="selectCategory(category.id)"
+          >
+            {{ category.name }}
+          </button>
         </div>
 
-        <div
-          v-for="ticket in currentTickets"
-          :key="ticket.id"
-          class="ticket-item"
-        >
-          <div class="ticket-info">
-            <div v-if="ticket.image" class="ticket-image">
-              <img :src="ticket.image" :alt="ticket.name" />
-            </div>
-            <div class="ticket-text">
-              <h3 class="ticket-name">
-                {{ ticket.name }}
-                <button class="info-btn" @click="showTicketInfo(ticket)">ⓘ</button>
-              </h3>
-              <p class="ticket-description">{{ ticket.description }}</p>
-            </div>
+        <!-- 票種列表 -->
+        <div class="tickets-list">
+          <div class="tickets-header">
+            <div class="header-col">票種</div>
+            <div class="header-col">單價</div>
+            <div class="header-col">數量</div>
+            <div class="header-col">小計</div>
           </div>
 
-          <div class="ticket-price">
-            ${{ ticket.price }}
-          </div>
+          <div
+            v-for="ticket in currentTickets"
+            :key="ticket.id"
+            class="ticket-item"
+          >
+            <div class="ticket-info">
+              <div v-if="ticket.image" class="ticket-image">
+                <img :src="ticket.image" :alt="ticket.name" />
+              </div>
+              <div class="ticket-text">
+                <h3 class="ticket-name">
+                  {{ ticket.name }}
+                  <button class="info-btn" @click="showTicketInfo(ticket)">ⓘ</button>
+                </h3>
+                <p class="ticket-description">{{ ticket.description }}</p>
+              </div>
+            </div>
 
-          <div class="ticket-quantity">
-            <select
-              :value="getTicketQuantity(ticket.id)"
-              @change="updateQuantity(ticket, $event.target.value)"
-              class="quantity-select"
-            >
-              <option 
-                v-for="n in (getMaxQuantity(ticket) + 1)" 
-                :key="n - 1" 
-                :value="n - 1"
+            <div class="ticket-price">
+              ${{ ticket.price }}
+            </div>
+
+            <div class="ticket-quantity">
+              <select
+                :value="getTicketQuantity(ticket.id)"
+                @change="updateQuantity(ticket, $event.target.value)"
+                class="quantity-select"
               >
-                {{ n - 1 }}
-              </option>
-            </select>
-          </div>
+                <option 
+                  v-for="n in (getMaxQuantity(ticket) + 1)" 
+                  :key="n - 1" 
+                  :value="n - 1"
+                >
+                  {{ n - 1 }}
+                </option>
+              </select>
+            </div>
 
-          <div class="ticket-subtotal">
-            ${{ getTicketQuantity(ticket.id) * ticket.price }}
+            <div class="ticket-subtotal">
+              ${{ getTicketQuantity(ticket.id) * ticket.price }}
+            </div>
           </div>
         </div>
       </div>
@@ -149,13 +164,23 @@ const moviesStore = useMoviesStore()
 const showStore = useShowStore()
 const ticketsPackagesStore = useTicketsPackagesStore()
 
+// 狀態
+const loading = ref(true)
+const error = ref(null)
+
 // 從路由參數取得資料
-const movieId = route.params.movieId || route.query.movieId
-const cinemaId = parseInt(route.params.cinemaId || route.query.cinemaId)
-const showtimeDate = route.params.date || route.query.date
-const showtimeStart = route.params.startTime || route.query.startTime
-const showtimeEnd = route.params.endTime || route.query.endTime
-const hall = route.params.hall || route.query.hall
+const showId = route.query.showId
+const movieId = route.query.movieId
+
+// 場次資料
+const showtimeInfo = ref({
+  date: '',
+  startTime: '',
+  endTime: '',
+  hall: '',
+  hallType: '',
+  cinemaName: '台北館'
+})
 
 // 電影資訊
 const movieInfo = computed(() => {
@@ -168,26 +193,19 @@ const movieInfo = computed(() => {
   }
 })
 
-// 影城資訊
-const cinemaInfo = computed(() => {
-  return showStore.getCinemaById(cinemaId) || { name: '' }
-})
-
-// 場次資訊
-const showtimeInfo = computed(() => {
-  return {
-    cinemaName: cinemaInfo.value.name,
-    hall: hall,
-    date: showtimeDate,
-    startTime: showtimeStart,
-    endTime: showtimeEnd
-  }
+// 地點文字（影城 + 影廳）
+const locationText = computed(() => {
+  return `${showtimeInfo.value.cinemaName}${showtimeInfo.value.hall}`
 })
 
 // 計算剩餘時間
 const timeRemaining = computed(() => {
+  if (!showtimeInfo.value.date || !showtimeInfo.value.startTime) {
+    return ''
+  }
+  
   const now = new Date()
-  const showtimeDateTime = new Date(`${showtimeDate} ${showtimeStart}`)
+  const showtimeDateTime = new Date(`${showtimeInfo.value.date} ${showtimeInfo.value.startTime}`)
   const diff = showtimeDateTime - now
   
   if (diff < 0) return '已開演'
@@ -200,6 +218,18 @@ const timeRemaining = computed(() => {
   if (hours > 0) return `${hours} 小時後`
   return `${minutes} 分後`
 })
+
+// 格式化日期時間
+const formatDateTime = (dateStr, timeStr) => {
+  if (!dateStr || !timeStr) return ''
+  
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  
+  return `${year}/${month}/${day} ${timeStr}`
+}
 
 // 票種類別
 const ticketCategories = computed(() => ticketsPackagesStore.ticketCategories)
@@ -319,16 +349,7 @@ const selectCategory = (categoryId) => {
   ticketsPackagesStore.setCategory(categoryId)
 }
 
-// 格式化日期
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr)
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${year}/${month}/${day}`
-}
-
-// 計算票種顯示文字（和明細一樣的格式）
+// 計算票種顯示文字
 const ticketSummaryText = computed(() => {
   return cart.value.map(item => {
     const count = getItemTicketCount(item)
@@ -336,7 +357,7 @@ const ticketSummaryText = computed(() => {
   }).join(', ')
 })
 
-// 計算明細顯示文字（和明細一樣的格式）
+// 計算明細顯示文字
 const detailSummaryText = computed(() => {
   const details = []
   cart.value.forEach(item => {
@@ -374,28 +395,101 @@ const goToSeatSelection = () => {
     return
   }
   
-  // 導航到座位選擇頁面 (之後實作)
+  // 導航到座位選擇頁面
   router.push({
     name: 'SeatSelection',
-    params: {
-      movieId,
-      cinemaId,
-      date: showtimeDate,
-      startTime: showtimeStart,
-      endTime: showtimeEnd,
-      hall
+    query: {
+      movieId: movieId,
+      showId: showId,
+      date: showtimeInfo.value.date,
+      startTime: showtimeInfo.value.startTime,
+      endTime: showtimeInfo.value.endTime,
+      hall: showtimeInfo.value.hall
     }
   })
 }
 
+// 載入資料
+const loadData = async () => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    // 1. 載入電影資料（如果還沒載入）
+    if (!moviesStore.movies.length) {
+      await moviesStore.fetchMovies()
+    }
+    
+    // 2. 如果有 showId，從 store 取得場次詳細資料
+    if (showId) {
+      // 先確保場次資料已載入
+      if (!showStore.shows.length) {
+        await showStore.fetchShowtimes({
+          movieId: movieId,
+          date: route.query.date
+        })
+      }
+      
+      // 從 store 取得場次資訊
+      const show = showStore.getShowById(showId)
+      
+      if (show) {
+        const screenId = show.screenId || show.screen_id
+        const screen = showStore.screens[screenId]
+        
+        showtimeInfo.value = {
+          date: show.showDate || show.show_date || route.query.date,
+          startTime: show.showTime || show.show_time || route.query.startTime,
+          endTime: show.endTime || show.end_time || route.query.endTime,
+          hall: screen?.name || route.query.hall || `${screenId}廳`,
+          hallType: screen?.screenType || screen?.screen_type || 'NORMAL_2D',
+          cinemaName: '台北館'
+        }
+      } else {
+        // 如果找不到場次，使用 query 參數作為備用
+        showtimeInfo.value = {
+          date: route.query.date,
+          startTime: route.query.startTime,
+          endTime: route.query.endTime,
+          hall: route.query.hall,
+          hallType: 'NORMAL_2D',
+          cinemaName: '台北館'
+        }
+      }
+    } else {
+      // 沒有 showId，使用 query 參數
+      showtimeInfo.value = {
+        date: route.query.date,
+        startTime: route.query.startTime,
+        endTime: route.query.endTime,
+        hall: route.query.hall,
+        hallType: 'NORMAL_2D',
+        cinemaName: '台北館'
+      }
+    }
+    
+    console.log('場次資訊已載入:', showtimeInfo.value)
+    
+  } catch (err) {
+    console.error('Failed to load data:', err)
+    error.value = '載入資料失敗，請稍後再試'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 重新載入
+const retryFetch = async () => {
+  await loadData()
+}
+
 // 初始化
 onMounted(async () => {
-  if (!moviesStore.movies.length) {
-    await moviesStore.fetchMovies()
-  }
-  
   // 清空購物車
   ticketsPackagesStore.clearCart()
+  
+  // 載入資料
+  await loadData()
 })
 </script>
 
@@ -404,6 +498,59 @@ onMounted(async () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 64px 48px;
+}
+
+/* Loading 樣式 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3d5266;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error 樣式 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 16px;
+}
+
+.retry-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  background: #3d5266;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #2c3e50;
 }
 
 /* 電影資訊區塊 */
@@ -477,11 +624,7 @@ onMounted(async () => {
   font-weight: 400;
 }
 
-.value img {
-  height: 20px;
-}
-
-/* 票種明細 (在電影資訊區塊中) */
+/* 票種明細 */
 .ticket-summary {
   margin-top: 24px;
   padding-top: 20px;
@@ -495,7 +638,7 @@ onMounted(async () => {
   align-items: flex-start;
 }
 
-.summary-row .summary-label {
+.summary-label {
   font-weight: 400;
   color: #333;
   font-size: 14px;
@@ -505,36 +648,6 @@ onMounted(async () => {
   color: #666;
   font-size: 14px;
   line-height: 1.8;
-  display: block;
-  white-space: normal;
-}
-
-.ticket-item {
-  display: inline;
-  white-space: nowrap;
-}
-
-.ticket-item:not(:last-child)::after {
-  content: ', ';
-  white-space: pre;
-}
-
-.detail-item {
-  display: inline;
-  white-space: nowrap;
-}
-
-.detail-item:not(:last-child)::after {
-  content: ', ';
-  white-space: pre;
-}
-
-.ticket-summary .close-icon {
-  color: #9b59b6;
-  stroke: #9b59b6;
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
 }
 
 .total-row {

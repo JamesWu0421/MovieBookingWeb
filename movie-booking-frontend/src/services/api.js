@@ -1,113 +1,80 @@
-import request from "../utils/request";
+import axios from 'axios'
 
-// 使用者註冊
-export const register = (data) => {
-  return request({
-    url: "/auth/register",
-    method: "post",
-    data,
-  });
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  timeout: 5000
+})
+
+export const movieApi = {
+  getAll() {
+    return api.get('/movies');
+  },
+  getById(id) {
+    return api.get(`/movies/${id}`);
+  },
+  create(data) {
+    return api.post('/movies', data);
+  },
+  update(id, data) {
+    return api.put(`/movies/${id}`, data);
+  },
+  remove(id) {
+    return api.delete(`/movies/${id}`);
+  },
 };
 
-// 使用者登入
-export const login = (data) => {
-  return request({
-    url: "/auth/login",
-    method: "post",
-    data,
-  });
+export const screenApi = {
+  getAll() {
+    return api.get('/screens');
+  },
+  getById(id) {
+    return api.get(`/screens/${id}`);
+  },
+  create(data) {
+    return api.post('/screens', data);
+  },
+  update(id, data) {
+    return api.put(`/screens/${id}`, data);
+  },
+  remove(id) {
+    return api.delete(`/screens/${id}`);
+  },
 };
 
-// 變更密碼
-export const changePassword = async (oldPassword, newPassword) => {
-  const response = await request({
-    url: "/user/change_password",
-    method: "put",
-    data: {
-      oldPassword,
-      newPassword,
-    },
-  });
-  return response.data;
+export const showApi = {
+  getAll() {
+    return api.get('/shows');
+  },
+  getById(id) {
+    return api.get(`/shows/${id}`);
+  },
+  create(data) {
+    return api.post('/shows', data);
+  },
+  update(id, data) {
+    return api.put(`/shows/${id}`, data);
+  },
+  remove(id) {
+    return api.delete(`/shows/${id}`);
+  },
 };
 
-// Google OAuth 登入（備用）
-// export const oauth2Login = (token) => {
-//   return request({
-//     url: "/api/oauth2/login",
-//     method: "post",
-//     data: { token },
-//   });
-// };
-
-// 登出
-export const logout = () => {
-  return request({
-    url: "/user/logout",
-    method: "post",
-  });
+export const seatApi = {
+  getByScreen(screenId) {
+    return api.get('/seats', { params: { screenId } });
+  },
+  updateBlocked(id, blocked) {
+    return api.patch(`/seats/${id}/block`, { blocked });
+  },
+  batchCreate(payload) {
+    return api.post('/seats/batch', payload);
+  },
 };
 
-// Email 驗證
-export const verifyEmail = (code) => {
-  return request({
-    url: `/auth/verify?token=${code}`,
-    method: "get",
-  });
+export const ticketApi = {
+  getSold(showId) {
+    return api.get('/tickets/sold', { params: { showId } });
+  },
 };
 
-// 取得個人資料
-export const getProfile = () => {
-  return request({
-    url: "/user/profile",
-    method: "get",
-  });
-};
-
-// 上傳頭像
-export const uploadAvatar = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await request({
-    url: "/upload/avatar",
-    method: "post",
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return response.data;
-};
-// 重設密碼
-export const resetPassword = (token, newPassword) => {
-  return request({
-    url: "/user/reset-password",
-    method: "post",
-    data: {
-      token,
-      newPassword,
-    },
-  });
-};
-// 更新個人資料
-export const updateProfile = (data) => {
-  return request({
-    url: "/user/profile",
-    method: "put",
-    data,
-  });
-};
-
-export default {
-  register,
-  login,
-  changePassword,
-  logout,
-  resetPassword,
-  verifyEmail,
-  getProfile,
-  uploadAvatar,
-  updateProfile,
-};
+export default api

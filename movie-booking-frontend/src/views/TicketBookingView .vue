@@ -1,15 +1,24 @@
 <template>
   <!-- loading / error / 找不到 -->
   <div v-if="loading" class="movie-detail-page">
-    載入中…
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>載入中…</p>
+    </div>
   </div>
 
   <div v-else-if="error" class="movie-detail-page">
-    {{ error }}
+    <div class="error-container">
+      <p class="error-message">{{ error }}</p>
+      <button @click="retryFetch" class="retry-btn">重新載入</button>
+    </div>
   </div>
 
   <div v-else-if="!movie" class="movie-detail-page">
-    找不到這部電影
+    <div class="not-found-container">
+      <p>找不到這部電影</p>
+      <button @click="goBack" class="back-btn">返回首頁</button>
+    </div>
   </div>
 
   <!-- 正常內容 -->
@@ -20,18 +29,19 @@
         <div class="div2">線上訂票</div>
       </div>
 
-      <!-- 選取影城標題（移到這裡，在按鈕上方） -->
+      <!-- 選取影城標題 -->
       <h3 class="selection-title">選取影城</h3>
       
       <div class="cinema-selection">
-        <div class="cinema-grid">
-          <button 
-            v-for="cinema in cinemas" 
-            :key="cinema.id"
-            :class="['cinema-btn', { 'active': selectedCinema === cinema.id }]"
-            @click="selectCinema(cinema.id)"
+        <div v-if="cinemasLoading" class="loading-text">載入影城中...</div>
+
+        <!-- ✅ 只顯示一個固定的「台北館」按鈕 -->
+        <div v-else class="cinema-grid">
+          <button
+            :class="['cinema-btn', { active: selectedCinema === TAIPEI_CINEMA_ID }]"
+            @click="selectCinema(TAIPEI_CINEMA_ID)"
           >
-            {{ cinema.name }}
+            {{ TAIPEI_CINEMA_NAME }}
           </button>
         </div>
       </div>
@@ -53,7 +63,7 @@
 
       <!-- 廳種篩選 -->
       <div v-if="selectedCinema && selectedDate" class="hall-type-filter">
-        <div class="filter-label">選取格式</div>
+        <div class="filter-label">選取影廳版本</div>
         <div class="filter-buttons">
           <button 
             v-for="hallType in hallTypeOptions" 
@@ -68,7 +78,8 @@
 
       <!-- 場次列表 -->
       <div v-if="selectedCinema && selectedDate" class="showtimes-section">
-        <div v-if="filteredShowtimes.length === 0" class="no-showtimes">
+        <div v-if="showtimesLoading" class="loading-text">載入場次中...</div>
+        <div v-else-if="filteredShowtimes.length === 0" class="no-showtimes">
           此日期暫無場次
         </div>
         <div v-else class="showtimes-grid">
@@ -98,7 +109,7 @@
       </div>
     </div>
 
-    <!-- 電影簡介標題區塊（移到海報上方） -->
+    <!-- 電影簡介標題區塊 -->
     <div class="intro-section">
       <div class="div1">
         <div class="div2">電影簡介</div>
@@ -116,7 +127,6 @@
       </div>
 
       <div class="meta-wrap">
-        <!-- 標題改為可點擊的超連結 -->
         <h1 class="title">
           <a :href="`/movies/${movie.id}`" class="title-link">
             {{ movie.title }}
@@ -137,7 +147,7 @@
           </li>
           <li>
             <span class="label">片長</span>
-            <span class="value">{{ movie.runtimeMinutes }} 分</span>
+            <span class="value">{{ movie.runtimeMinutes || movie.runtime }} 分</span>
           </li>
           <li>
             <span class="label">上映日</span>
@@ -145,7 +155,7 @@
           </li>
           <li>
             <span class="label">類型</span>
-            <span class="value">{{ movie.genres }}</span>
+            <span class="value">{{ movie.genres || movie.genre }}</span>
           </li>
           <li>
             <span class="label">演員</span>
@@ -173,14 +183,29 @@ const router = useRouter()
 const moviesStore = useMoviesStore()
 const showStore = useShowStore()
 
-// 先從 store 拿 loading / error
+// ✅ 固定一個台北館的設定（cinemaId 請改成你後端實際的 id）
+const TAIPEI_CINEMA_ID = 1
+const TAIPEI_CINEMA_NAME = '台北館'
+
+// 載入狀態
 const loading = computed(() => moviesStore.loading)
 const error = computed(() => moviesStore.error)
+const cinemasLoading = ref(false)   // 現在只是讓 v-if 不報錯，用不到可直接設 false
+const showtimesLoading = ref(false)
 
-// 進來頁面時，如果還沒載電影列表就去 fetch 一次
+// 選中的狀態
+const selectedCinema = ref(null)
+const selectedDate = ref(null)
+const selectedHallType = ref('所有')
+
+// 進來頁面時載入電影資料（場次等按下台北館才撈）
 onMounted(async () => {
-  if (!moviesStore.movies.length) {
-    await moviesStore.fetchMovies()
+  try {
+    if (!moviesStore.movies.length) {
+      await moviesStore.fetchMovies()
+    }
+  } catch (err) {
+    console.error('Failed to load initial data:', err)
   }
 })
 
@@ -188,18 +213,6 @@ onMounted(async () => {
 const movie = computed(() =>
   moviesStore.getMovieById(route.params.id)
 )
-
-// 從 show store 取得影城列表
-const cinemas = computed(() => showStore.cinemas)
-
-// 選中的影城
-const selectedCinema = ref(null)
-
-// 選中的日期
-const selectedDate = ref(null)
-
-// 選中的廳種篩選
-const selectedHallType = ref('所有')
 
 // 產生日期列表 (未來7天)
 const dateOptions = computed(() => {
@@ -225,7 +238,7 @@ const dateOptions = computed(() => {
   return dates
 })
 
-// 取得選中影城和日期的場次（從 show store）
+// 取得場次（過濾掉已過時間的場次）
 const filteredShowtimes = computed(() => {
   if (!selectedCinema.value || !selectedDate.value) return []
   
@@ -245,7 +258,6 @@ const filteredShowtimes = computed(() => {
   showtimes = showtimes.filter(showtime => {
     // 如果選擇的日期是今天,則需要比對時間
     if (selectedDate.value === currentDate) {
-      // 比較開始時間,只顯示還沒開始的場次
       return showtime.startTime > currentTime
     }
     // 如果是未來的日期,全部顯示
@@ -255,7 +267,7 @@ const filteredShowtimes = computed(() => {
   return showtimes
 })
 
-// 取得可用的廳種選項（從 show store）
+// 取得可用的廳種選項
 const hallTypeOptions = computed(() => {
   if (!selectedCinema.value || !selectedDate.value) return ['所有']
   
@@ -266,28 +278,52 @@ const hallTypeOptions = computed(() => {
   )
 })
 
-// 選擇影城
-const selectCinema = (cinemaId) => {
+// 選擇影城（只有台北館會呼叫到這裡）
+const selectCinema = async (cinemaId) => {
   selectedCinema.value = cinemaId
+  
   // 自動選擇第一個日期
   if (dateOptions.value.length > 0) {
     selectedDate.value = dateOptions.value[0].value
   }
+  
   // 重置廳種篩選
   selectedHallType.value = '所有'
-  console.log('選擇的影城 ID:', cinemaId)
+  
+  // 載入場次
+  await loadShowtimes()
 }
 
 // 選擇日期
-const selectDate = (dateValue) => {
+const selectDate = async (dateValue) => {
   selectedDate.value = dateValue
-  // 重置廳種篩選
   selectedHallType.value = '所有'
+  
+  // 載入場次
+  await loadShowtimes()
 }
 
 // 選擇廳種
 const selectHallType = (hallType) => {
   selectedHallType.value = hallType
+}
+
+// 載入場次（打後端 /shows，前端再用 cinemaId / movieId / date 篩選）
+const loadShowtimes = async () => {
+  if (!selectedCinema.value || !selectedDate.value) return
+  
+  showtimesLoading.value = true
+  try {
+    await showStore.fetchShowtimes({
+      cinemaId: selectedCinema.value,
+      movieId: route.params.id,
+      date: selectedDate.value
+    })
+  } catch (err) {
+    console.error('Failed to load showtimes:', err)
+  } finally {
+    showtimesLoading.value = false
+  }
 }
 
 // 選擇場次
@@ -300,12 +336,26 @@ const selectShowtime = (showtime) => {
     query: {
       movieId: route.params.id,
       cinemaId: showtime.cinemaId,
+      showId: showtime.id, // 傳遞場次 ID
       date: showtime.date,
       startTime: showtime.startTime,
       endTime: showtime.endTime,
       hall: showtime.hall
     }
   })
+}
+
+// 重新載入
+const retryFetch = async () => {
+  await moviesStore.fetchMovies()
+  if (selectedCinema.value && selectedDate.value) {
+    await loadShowtimes()
+  }
+}
+
+// 返回首頁
+const goBack = () => {
+  router.push('/')
 }
 </script>
 
@@ -314,6 +364,90 @@ const selectShowtime = (showtime) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 64px 48px;
+}
+
+/* Loading 樣式 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3d5266;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.empty-text {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Error 樣式 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 16px;
+}
+
+.retry-btn,
+.back-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  background: #3d5266;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.retry-btn:hover,
+.back-btn:hover {
+  background: #2c3e50;
+}
+
+/* Not Found 樣式 */
+.not-found-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.not-found-container p {
+  font-size: 18px;
+  color: #666;
 }
 
 /* 電影簡介區塊 */
@@ -389,12 +523,6 @@ const selectShowtime = (showtime) => {
 .cinema-btn:hover {
   border-color: #3d5266;
   background-color: #f0f2f4;
-}
-
-.cinema-btn.active {
-  background: #3d5266;
-  color: #fff;
-  border-color: #3d5266;
 }
 
 .cinema-btn.active {
@@ -618,7 +746,6 @@ const selectShowtime = (showtime) => {
   margin-bottom: 40px;
 }
 
-/* 海報 */
 .poster-wrap {
   max-width: 100%;
 }
@@ -630,7 +757,6 @@ const selectShowtime = (showtime) => {
   display: block;
 }
 
-/* 文字區（包含標題） */
 .meta-wrap {
   border-left: 1px solid #eee;
   padding-left: 24px;
@@ -663,7 +789,6 @@ const selectShowtime = (showtime) => {
   margin: 4px 0 16px;
 }
 
-/* 基本資訊列表 */
 .info-list {
   list-style: none;
   padding: 0;
@@ -692,12 +817,7 @@ const selectShowtime = (showtime) => {
   height: 20px;
 }
 
-/* 電影簡介區塊 */
-.intro-section {
-  margin-bottom: 0;
-}
-
-/* 響應式：手機就上下排 */
+/* 響應式 */
 @media (max-width: 768px) {
   .movie-detail-page {
     padding: 16px 20px 32px;

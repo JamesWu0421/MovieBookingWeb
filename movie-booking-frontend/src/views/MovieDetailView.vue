@@ -107,7 +107,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMoviesStore } from '../stores/movies';
+import { useMoviesStore } from '../stores/movies'
 
 const route = useRoute()
 const moviesStore = useMoviesStore()
@@ -116,11 +116,9 @@ const moviesStore = useMoviesStore()
 const loading = computed(() => moviesStore.loading)
 const error = computed(() => moviesStore.error)
 
-// 進來頁面時，如果還沒載電影列表就去 fetch 一次
+// 進來頁面時從後端載入電影列表
 onMounted(async () => {
-  if (!moviesStore.movies.length) {
-    await moviesStore.fetchMovies()
-  }
+  await moviesStore.fetchMovies()
 })
 
 // 依照網址上的 :id 找對應電影
@@ -284,8 +282,6 @@ const trailerUrlEmbed = computed(() => {
   color: #6b4bb8;
   cursor: pointer;
 }
-
-
 
 .trailer-frame {
   position: relative;

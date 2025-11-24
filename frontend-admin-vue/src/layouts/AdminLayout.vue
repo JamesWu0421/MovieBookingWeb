@@ -13,7 +13,11 @@
         <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
         <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
-        <el-menu-item index="/showtimes">場次/票價管理</el-menu-item>
+         <el-sub-menu index="/activities">
+        <template #title>票種管理</template>
+        <el-menu-item index="/ticket-package">票種管理</el-menu-item>
+        <el-menu-item index="/showtimes-price">場次票種管理</el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/orders">訂單管理</el-menu-item>
         <el-sub-menu index="/activities">
           <template #title>活動管理</template>
@@ -33,7 +37,7 @@
           <el-button type="text" @click="logout">登出</el-button>
         </div>
       </el-header>
-      <el-main class="main-content">
+      <el-main style="padding: 20px">
         <router-view />
       </el-main>
     </el-container>
@@ -55,7 +59,6 @@ function logout() {
   color: white;
   padding-top: 12px;
 }
-
 .logo {
   text-align: center;
   color: #fff;
@@ -63,7 +66,6 @@ function logout() {
   font-weight: bold;
   padding: 16px 0;
 }
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -73,18 +75,8 @@ function logout() {
   padding: 12px 20px;
   border-bottom: 1px solid #e6e9ee;
 }
-
-/* 右側主內容區撐滿剩餘空間 */
-.main-content {
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  background: #f6f7fb;
-}
-
-/* Element Plus 深度選擇器寫法（若用的是新版） */
-.menu :deep(.el-menu-item),
-.menu :deep(.el-sub-menu__title) {
+.menu >>> .el-menu-item,
+.menu >>> .el-sub-menu__title {
   color: #fff;
 }
 </style>
