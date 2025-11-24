@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import tw.com.ispan.domain.PackageItemsBean;
 import tw.com.ispan.domain.TicketPackageBean;
 import tw.com.ispan.repository.TicketPackageRepository;
 
@@ -22,6 +23,14 @@ public class TicketPackageService {
     public TicketPackageBean createTicketPackage(TicketPackageBean ticketPackage) {
         ticketPackage.setCreatedAt(LocalDateTime.now());
         ticketPackage.setUpdatedAt(LocalDateTime.now());
+        
+        // ⭐ 確保新增時也設定正確的關聯
+        if (ticketPackage.getPackageItems() != null) {
+            for (PackageItemsBean item : ticketPackage.getPackageItems()) {
+                item.setTicketPackage(ticketPackage);
+            }
+        }
+        
         return repository.save(ticketPackage);
     }
 
@@ -36,12 +45,13 @@ public class TicketPackageService {
     }
 
     // ==================== Update ====================
+    // ⭐⭐⭐ 這是關鍵修復！⭐⭐⭐
     public Optional<TicketPackageBean> updateTicketPackage(Long id, TicketPackageBean ticketPackageDetails) {
         Optional<TicketPackageBean> oldData = repository.findById(id);
         if (oldData.isPresent()) {
             TicketPackageBean ticketPackage = oldData.get();
 
-            // 更新基本欄位
+            // 更新基本欄位（保持不變）
             ticketPackage.setPackageType(ticketPackageDetails.getPackageType());
             ticketPackage.setPackageName(ticketPackageDetails.getPackageName());
             ticketPackage.setPackageCode(ticketPackageDetails.getPackageCode());
@@ -52,21 +62,23 @@ public class TicketPackageService {
             ticketPackage.setDisplayOrder(ticketPackageDetails.getDisplayOrder());
             ticketPackage.setValidFrom(ticketPackageDetails.getValidFrom());
             ticketPackage.setValidUntil(ticketPackageDetails.getValidUntil());
-            
-            // ⭐ 新增：更新 enableEarlyBird 欄位（前端有傳送但原本的 Service 沒處理）
             ticketPackage.setEnableEarlyBird(ticketPackageDetails.getEnableEarlyBird());
             
-            // ⭐ 新增：更新 packageItems 欄位（前端有傳送但原本的 Service 沒處理）
-            // 注意：根據你的 Bean 設計，這裡可能需要調整
-            // 如果是 String (JSON)：
+            // ⭐⭐⭐ 關鍵修復：正確處理 packageItems ⭐⭐⭐
             if (ticketPackageDetails.getPackageItems() != null) {
-                ticketPackage.setPackageItems(ticketPackageDetails.getPackageItems());
+                // 1. 清除舊的項目（orphanRemoval = true 會自動刪除資料庫記錄）
+                ticketPackage.getPackageItems().clear();
+                
+                // 2. 添加新的項目，並設定正確的雙向關聯
+                for (PackageItemsBean newItem : ticketPackageDetails.getPackageItems()) {
+                    // 確保是新記錄（不帶 id）
+                    newItem.setId(null);
+                    // ⭐ 最關鍵：設定父對象引用
+                    newItem.setTicketPackage(ticketPackage);
+                    // 添加到集合
+                    ticketPackage.getPackageItems().add(newItem);
+                }
             }
-            // 如果是 List<PackageItem> 關聯：
-            // if (ticketPackageDetails.getPackageItems() != null) {
-            //     ticketPackage.getPackageItems().clear();
-            //     ticketPackage.getPackageItems().addAll(ticketPackageDetails.getPackageItems());
-            // }
             
             ticketPackage.setUpdatedAt(LocalDateTime.now());
 
@@ -84,8 +96,6 @@ public class TicketPackageService {
         return false;
     }
 }
-
-
 
 
 

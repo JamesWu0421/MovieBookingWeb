@@ -441,7 +441,7 @@ function removePackageItem(index) {
   ticketForm.value.packageItems.splice(index, 1)
 }
 
-// 儲存票種（CRUD: Create / Update）
+// 🔧 修復：儲存票種（CRUD: Create / Update）
 async function saveTicket() {
   console.log('===== 開始儲存票種 =====')
   
@@ -460,16 +460,29 @@ async function saveTicket() {
     return
   }
 
-  // 整理要送給後端的資料
+  // 🔧 整理 packageItems，移除可能的 id 欄位（避免後端誤判）
+  const cleanedPackageItems = ticketForm.value.packageItems.map((item, idx) => ({
+    itemType: item.itemType,
+    itemName: item.itemName,
+    itemSpec: item.itemSpec || '',
+    quantity: item.quantity || 1,
+    displayOrder: item.displayOrder || idx + 1
+  }))
+
+  // 🔧 整理要送給後端的資料（不包含 id，因為 id 在 URL 裡）
   const payload = {
-    ...ticketForm.value,
+    packageType: ticketForm.value.packageType,
+    packageName: ticketForm.value.packageName,
+    packageCode: ticketForm.value.packageCode,
+    priceAdjustment: ticketForm.value.priceAdjustment || 0,
+    earlyBirdAdjustment: ticketForm.value.earlyBirdAdjustment || 0,
+    enableEarlyBird: ticketForm.value.enableEarlyBird || false,
+    isActive: ticketForm.value.isActive !== undefined ? ticketForm.value.isActive : true,
+    displayOrder: ticketForm.value.displayOrder || 1,
     validFrom: normalizeDate(ticketForm.value.validFrom),
     validUntil: normalizeDate(ticketForm.value.validUntil),
-    // ✅ 修正：直接傳遞陣列，不要用 JSON.stringify
-    packageItems: ticketForm.value.packageItems.map((item, idx) => ({
-      ...item,
-      displayOrder: item.displayOrder || idx + 1
-    }))
+    imageUrl: ticketForm.value.imageUrl || '',
+    packageItems: cleanedPackageItems
   }
 
   // 清除空值
@@ -477,28 +490,35 @@ async function saveTicket() {
   if (!payload.validUntil) delete payload.validUntil
   if (!payload.imageUrl) delete payload.imageUrl
 
-  console.log('📦 送出的資料:', payload)
+  console.log('📦 送出的資料:', JSON.stringify(payload, null, 2))
 
   try {
-    if (payload.id) {
-      // Update
-      console.log('📡 執行更新: PUT /api/ticket-packages/' + payload.id)
-      await ticketPackageService.update(payload.id, payload)
+    if (ticketForm.value.id) {
+      // 🔧 Update - 不要把 id 放在 payload 裡
+      console.log('📡 執行更新: PUT /api/ticket-packages/' + ticketForm.value.id)
+      const response = await ticketPackageService.update(ticketForm.value.id, payload)
+      console.log('✅ 更新回應:', response)
       ElMessage.success('票種更新成功！')
     } else {
       // Create
       console.log('📡 執行新增: POST /api/ticket-packages')
-      await ticketPackageService.create(payload)
+      const response = await ticketPackageService.create(payload)
+      console.log('✅ 新增回應:', response)
       ElMessage.success('票種新增成功！')
     }
     
     resetTicketForm()
-    fetchTicketList()
+    await fetchTicketList()
   } catch (error) {
     console.error('===== ❌ 儲存失敗 =====')
     console.error('錯誤:', error)
+    console.error('錯誤訊息:', error.message)
     console.error('錯誤回應:', error.response?.data)
-    ElMessage.error('儲存失敗，請檢查欄位內容或聯絡系統管理員')
+    console.error('錯誤狀態:', error.response?.status)
+    
+    // 🔧 顯示更詳細的錯誤訊息
+    const errorMsg = error.response?.data?.message || error.response?.data || error.message || '未知錯誤'
+    ElMessage.error(`儲存失敗：${errorMsg}`)
   }
 }
 
@@ -540,11 +560,11 @@ function getPackageTypeText(type) {
 
 function getPackageTypeTag(type) {
   const tagMap = {
-    'bundle ticket': '',
+    'bundle ticket': 'info',      // ✅ 改為 'info' 而不是空字串
     'single ticket': 'success',
     'special ticket': 'warning'
   }
-  return tagMap[type] || ''
+  return tagMap[type] || 'info'   // ✅ 預設也改為 'info'
 }
 
 function formatDateTime(dateTime) {
@@ -567,7 +587,7 @@ function formatDateTime(dateTime) {
   return dateTime.toString()
 }
 
-// 編輯票種（CRUD: Update → 先把資料塞回表單）
+// 🔧 修復：編輯票種（CRUD: Update → 先把資料塞回表單）
 function editTicket(ticket) {
   console.log('===== 開始編輯票種 =====')
   console.log('原始票種資料:', ticket)
@@ -576,28 +596,37 @@ function editTicket(ticket) {
   const packageItems = parsePackageItems(ticket.packageItems)
   console.log('解析後的 packageItems:', packageItems)
   
-  ticketForm.value = {
-    id: ticket.id,
-    packageType: ticket.packageType,
-    packageName: ticket.packageName,
-    packageCode: ticket.packageCode,
-    priceAdjustment: ticket.priceAdjustment,
-    earlyBirdAdjustment: ticket.earlyBirdAdjustment,
-    imageUrl: ticket.imageUrl || '',
-    enableEarlyBird: ticket.enableEarlyBird,
-    isActive: ticket.isActive,
-    displayOrder: ticket.displayOrder,
-    validFrom: ticket.validFrom ? ticket.validFrom.replace('T', ' ') : null,
-    validUntil: ticket.validUntil ? ticket.validUntil.replace('T', ' ') : null,
-    packageItems: packageItems.length > 0 ? packageItems : [
-      {
+  // 🔧 確保 packageItems 都有正確的結構
+  const cleanedItems = packageItems.length > 0 
+    ? packageItems.map((item, idx) => ({
+        itemType: item.itemType || '',
+        itemName: item.itemName || '',
+        itemSpec: item.itemSpec || '',
+        quantity: item.quantity || 1,
+        displayOrder: item.displayOrder || idx + 1
+      }))
+    : [{
         itemType: '',
         itemName: '',
         itemSpec: '',
         quantity: 1,
         displayOrder: 1
-      }
-    ]
+      }]
+  
+  ticketForm.value = {
+    id: ticket.id,
+    packageType: ticket.packageType,
+    packageName: ticket.packageName,
+    packageCode: ticket.packageCode,
+    priceAdjustment: ticket.priceAdjustment || 0,
+    earlyBirdAdjustment: ticket.earlyBirdAdjustment || 0,
+    imageUrl: ticket.imageUrl || '',
+    enableEarlyBird: ticket.enableEarlyBird || false,
+    isActive: ticket.isActive !== undefined ? ticket.isActive : true,
+    displayOrder: ticket.displayOrder || 1,
+    validFrom: ticket.validFrom ? ticket.validFrom.replace('T', ' ') : null,
+    validUntil: ticket.validUntil ? ticket.validUntil.replace('T', ' ') : null,
+    packageItems: cleanedItems
   }
   
   console.log('載入到表單的資料:', ticketForm.value)
