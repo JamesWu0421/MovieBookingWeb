@@ -152,7 +152,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMoviesStore } from '../stores/movies'
 import { useShowStore } from '../stores/show'
@@ -294,9 +294,10 @@ const getMaxQuantity = (ticket) => {
   return Math.min(6, maxForThisTicket + currentQty)
 }
 
-// ✨ 修改：更新票種數量
-const updateQuantity = (ticket, quantity) => {
+// ✨✨✨ 重點修改：更新票種數量 - 超過6張時自動歸零最後一次選擇
+const updateQuantity = async (ticket, quantity) => {
   const qty = parseInt(quantity)
+  const currentQty = getTicketQuantity(ticket.id)
   
   // 使用整合服務計算該票種包含的電影票數
   const ticketsPerItem = ticketIntegrationService.getMovieTicketCount(ticket)
@@ -313,12 +314,36 @@ const updateQuantity = (ticket, quantity) => {
   
   // 檢查是否超過6張
   if (newTotal > 6) {
-    alert('單次買票最多6張電影票')
+    // 顯示提示訊息
+    alert('單次買票最多6張電影票，已自動重置此票種數量')
+    
+    // 將這個票種的數量歸零
+    ticketsPackagesStore.updateCartItemQuantity(ticket.id, 0)
+    
+    // 等待 DOM 更新後，重新觸發選擇器的更新
+    await nextTick()
+    
+    // 強制更新選擇器的值（防止視覺上顯示錯誤的數字）
+    const selectElements = document.querySelectorAll('.quantity-select')
+    selectElements.forEach(select => {
+      if (select.closest('.ticket-item') && 
+          select.closest('.ticket-item').querySelector('.ticket-name')?.textContent.includes(ticket.name)) {
+        select.value = '0'
+      }
+    })
+    
     return
   }
   
-  // 更新數量
+  // 如果沒有超過，正常更新數量
   ticketsPackagesStore.updateCartItemQuantity(ticket.id, qty)
+  
+  console.log('更新票種數量:', {
+    ticketName: ticket.name,
+    newQuantity: qty,
+    ticketsPerItem: ticketsPerItem,
+    totalTickets: newTotal
+  })
 }
 
 // 切換票種類別
