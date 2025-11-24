@@ -157,6 +157,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useMoviesStore } from '../stores/movies'
 import { useShowStore } from '../stores/show'
 import { useTicketsPackagesStore } from '../stores/ticketspackages'
+// ✨ 新增：匯入整合服務
+import ticketIntegrationService from '../services/ticketIntegrationService'
 
 const route = useRoute()
 const router = useRouter()
@@ -244,19 +246,23 @@ const currentTickets = computed(() => {
 const cart = computed(() => ticketsPackagesStore.cart)
 const totalAmount = computed(() => ticketsPackagesStore.totalAmount)
 
-// 計算總票數
+// ✨ 修正：計算總票數 - 正確計算實際電影票張數
 const totalTickets = computed(() => {
-  return cart.value.reduce((sum, item) => {
-    // 如果是套票,需要計算實際包含的電影票數量
-    if (item.items) {
-      const movieTickets = item.items.find(i => i.name === '電影票')
-      if (movieTickets) {
-        return sum + (movieTickets.quantity * item.quantity)
-      }
-    }
-    // 一般票種直接計算數量
-    return sum + item.quantity
-  }, 0)
+  let total = 0
+  
+  cart.value.forEach(item => {
+    // 使用整合服務計算每個套票/票種包含的電影票數
+    const ticketsPerItem = ticketIntegrationService.getMovieTicketCount(item)
+    // 乘以購買數量
+    total += ticketsPerItem * item.quantity
+  })
+  
+  console.log('計算總票數:', {
+    cart: cart.value,
+    total: total
+  })
+  
+  return total
 })
 
 // 取得票種數量
@@ -265,31 +271,19 @@ const getTicketQuantity = (ticketId) => {
   return item ? item.quantity : 0
 }
 
-// 計算某個票種可選擇的最大數量
+// ✨ 修改：計算某個票種可選擇的最大數量
 const getMaxQuantity = (ticket) => {
   const currentQty = getTicketQuantity(ticket.id)
   
-  // 計算如果選擇這個票種,會增加多少張電影票
-  let ticketsPerItem = 1 // 預設每個票種包含1張電影票
-  
-  if (ticket.items) {
-    const movieTickets = ticket.items.find(i => i.name === '電影票')
-    if (movieTickets) {
-      ticketsPerItem = movieTickets.quantity
-    }
-  }
+  // 使用整合服務計算每個票種包含的電影票數
+  const ticketsPerItem = ticketIntegrationService.getMovieTicketCount(ticket)
   
   // 計算其他票種已經佔用的票數
   const otherTicketsCount = cart.value
     .filter(item => item.id !== ticket.id)
     .reduce((sum, item) => {
-      if (item.items) {
-        const movieTickets = item.items.find(i => i.name === '電影票')
-        if (movieTickets) {
-          return sum + (movieTickets.quantity * item.quantity)
-        }
-      }
-      return sum + item.quantity
+      const count = ticketIntegrationService.getMovieTicketCount(item)
+      return sum + (count * item.quantity)
     }, 0)
   
   // 計算還可以選擇多少張
@@ -300,48 +294,31 @@ const getMaxQuantity = (ticket) => {
   return Math.min(6, maxForThisTicket + currentQty)
 }
 
-// 更新票種數量
+// ✨ 修改：更新票種數量
 const updateQuantity = (ticket, quantity) => {
   const qty = parseInt(quantity)
-  const currentQty = getTicketQuantity(ticket.id)
   
-  // 計算這個票種包含多少張電影票
-  let ticketsPerItem = 1
-  if (ticket.items) {
-    const movieTickets = ticket.items.find(i => i.name === '電影票')
-    if (movieTickets) {
-      ticketsPerItem = movieTickets.quantity
-    }
-  }
+  // 使用整合服務計算該票種包含的電影票數
+  const ticketsPerItem = ticketIntegrationService.getMovieTicketCount(ticket)
   
-  // 計算選擇這個數量後的總票數
+  // 計算其他票種已經佔用的票數
   const otherTicketsCount = cart.value
     .filter(item => item.id !== ticket.id)
     .reduce((sum, item) => {
-      if (item.items) {
-        const movieTickets = item.items.find(i => i.name === '電影票')
-        if (movieTickets) {
-          return sum + (movieTickets.quantity * item.quantity)
-        }
-      }
-      return sum + item.quantity
+      const count = ticketIntegrationService.getMovieTicketCount(item)
+      return sum + (count * item.quantity)
     }, 0)
   
   const newTotal = otherTicketsCount + (qty * ticketsPerItem)
   
   // 檢查是否超過6張
   if (newTotal > 6) {
-    alert('單次買票最多6張')
+    alert('單次買票最多6張電影票')
     return
   }
   
   // 更新數量
   ticketsPackagesStore.updateCartItemQuantity(ticket.id, qty)
-  
-  // 如果數量大於0但購物車中沒有,則新增
-  if (qty > 0 && !cart.value.find(item => item.id === ticket.id)) {
-    ticketsPackagesStore.addToCart(ticket, qty)
-  }
 }
 
 // 切換票種類別
@@ -349,39 +326,43 @@ const selectCategory = (categoryId) => {
   ticketsPackagesStore.setCategory(categoryId)
 }
 
-// 計算票種顯示文字
+// ✨ 修改：計算票種顯示文字（修正計算邏輯）
 const ticketSummaryText = computed(() => {
   return cart.value.map(item => {
-    const count = getItemTicketCount(item)
-    return `${item.name} × ${count}`
+    // 計算每個 item 包含的電影票數
+    const ticketsPerItem = ticketIntegrationService.getMovieTicketCount(item)
+    // 總票數 = 每個item的票數 × 購買數量
+    const totalTickets = ticketsPerItem * item.quantity
+    
+    // 如果是套票且購買數量 > 1，顯示套票數量和總票數
+    if (ticketsPerItem > 1 || item.items?.length > 1) {
+      return `${item.name} × ${item.quantity} (共 ${totalTickets} 張票)`
+    }
+    // 單張票就直接顯示總數
+    return `${item.name} × ${totalTickets}`
   }).join(', ')
 })
 
-// 計算明細顯示文字
+// ✨ 修改：計算明細顯示文字（顯示套票內容物）
 const detailSummaryText = computed(() => {
   const details = []
+  
   cart.value.forEach(item => {
-    if (item.items) {
+    if (item.items && item.items.length > 0) {
+      // 有內容物的套票
       item.items.forEach(subItem => {
-        details.push(`${subItem.name} × ${subItem.quantity * item.quantity}`)
+        const totalQty = subItem.quantity * item.quantity
+        const spec = subItem.spec ? ` ${subItem.spec}` : ''
+        details.push(`${subItem.name}${spec} × ${totalQty}`)
       })
     } else {
+      // 單一票種
       details.push(`電影票 × ${item.quantity}`)
     }
   })
+  
   return details.join(', ')
 })
-
-// 計算每個項目包含的票數
-const getItemTicketCount = (item) => {
-  if (item.items) {
-    const movieTickets = item.items.find(i => i.name === '電影票')
-    if (movieTickets) {
-      return movieTickets.quantity * item.quantity
-    }
-  }
-  return item.quantity
-}
 
 // 顯示票種資訊
 const showTicketInfo = (ticket) => {
@@ -409,7 +390,7 @@ const goToSeatSelection = () => {
   })
 }
 
-// 載入資料
+// ✨ 修改：載入資料
 const loadData = async () => {
   loading.value = true
   error.value = null
@@ -420,7 +401,7 @@ const loadData = async () => {
       await moviesStore.fetchMovies()
     }
     
-    // 2. 如果有 showId，從 store 取得場次詳細資料
+    // 2. 載入場次資訊
     if (showId) {
       // 先確保場次資料已載入
       if (!showStore.shows.length) {
@@ -466,6 +447,17 @@ const loadData = async () => {
         hallType: 'NORMAL_2D',
         cinemaName: '台北館'
       }
+    }
+    
+    // ✨ 新增：3. 載入該場次的票種資訊
+    console.log('開始載入場次票種，showId:', showId)
+    
+    if (showId) {
+      await ticketsPackagesStore.fetchTicketsByShowId(showId)
+      console.log('票種載入完成:', ticketsPackagesStore.tickets.length)
+    } else {
+      console.warn('缺少 showId，無法載入票種')
+      error.value = '缺少場次資訊，無法載入票種'
     }
     
     console.log('場次資訊已載入:', showtimeInfo.value)

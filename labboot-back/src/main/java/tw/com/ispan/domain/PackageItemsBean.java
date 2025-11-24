@@ -3,6 +3,7 @@ package tw.com.ispan.domain;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -118,6 +119,10 @@ private TicketPackageBean ticketPackage;
   public LocalDateTime getUpdatedAt() {
     return updatedAt;
   }
+  @JsonProperty("packageId")
+public Long getPackageId() {
+    return ticketPackage != null ? ticketPackage.getId() : null;
+}
 
   public void setUpdatedAt(LocalDateTime updatedAt) {
     this.updatedAt = updatedAt;
