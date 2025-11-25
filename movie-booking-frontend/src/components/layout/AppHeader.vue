@@ -6,13 +6,19 @@
     <nav class="nav-links">
       <router-link to="/movies">現正熱映</router-link>
       <router-link to="#">即將上映</router-link>
-      <router-link to="/booking/QuickBooking">快速訂票</router-link>
-      <router-link to="/profile">個人資料</router-link>
+
+      <!-- 快速訂票 - 始終顯示,未登入點擊會被路由守衛導向 login -->
+      <router-link to="/booking/QuickBooking"> 快速訂票 </router-link>
+
+      <!-- 個人資料 - 只有登入時才顯示 -->
+      <router-link v-if="authStore.isAuthenticated" to="/profile">
+        個人資料
+      </router-link>
 
       <!-- 登入/登出按鈕 -->
-      <router-link v-if="!authStore.isAuthenticated" to="/login"
-        >會員登入</router-link
-      >
+      <router-link v-if="!authStore.isAuthenticated" to="/login">
+        會員登入
+      </router-link>
       <button v-else @click="handleLogout" class="logout-btn">登出</button>
     </nav>
   </header>
@@ -21,13 +27,15 @@
 <script setup>
 import { useAuthStore } from "../../stores/login";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const handleLogout = async () => {
   await authStore.logout();
-  router.push("/login");
+  ElMessage.success("已登出");
+  router.push("/");
 };
 </script>
 
