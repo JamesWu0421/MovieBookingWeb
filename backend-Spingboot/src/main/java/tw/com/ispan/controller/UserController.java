@@ -171,25 +171,31 @@ public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String autho
 }
 
   //   用戶更新個人資料
-    @PutMapping("/user/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
-                                           @RequestHeader("Authorization") String authorizationHeader) {
-        // 取出 token
+  @PutMapping("/user/profile")
+public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
+                                       @RequestHeader("Authorization") String authorizationHeader) {
+    try {
         String token = authorizationHeader.substring(7);
-
-        // 解析 token 得到 username
         String username = jwtUtility.validateToken(token);
+        
         if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", "Token 無效");
+            error.put("status", 401);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
-        // 呼叫 service 根據 username 更新資料（防止用戶改別人資料）
-        try {
-            UserEntity updatedUser = userService.updateUserProfile(username, req);
-            return ResponseEntity.ok(updatedUser);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+
+        UserEntity updatedUser = userService.updateUserProfile(username, req);
+        return ResponseEntity.ok(updatedUser);
+        
+    } catch (Exception e) {
+        // ✅ 返回 JSON 格式的錯誤
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", e.getMessage());
+        error.put("status", 400);
+        return ResponseEntity.badRequest().body(error);
     }
+}
 
      //用戶更新個人密碼
     @PutMapping("/user/change_password")
@@ -208,20 +214,5 @@ public ResponseEntity<String> changePassword(@RequestBody UserChangePwdRequest r
     }
 }
 
-
-
-//      @PostMapping("/oauth2/login")
-// public ResponseEntity<?> oauth2Login(@RequestBody OAuth2LoginRequest req) {
-//     UserEntity user = userService.loginOrCreateThirdPartyUser(
-//             req.getProviderId(),   // 例如 Google 回傳的用戶ID 
-//             req.getProviderName() // 例如 "google"
-//     );
-
-//     String token = jwtUtility.createToken(user.getUsername());
-//     Map<String, Object> resp = new HashMap<>();
-//     resp.put("token", token);
-//     resp.put("user", user);
-//     return ResponseEntity.ok(resp);
-// }
 
 }
