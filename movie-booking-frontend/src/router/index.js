@@ -10,6 +10,7 @@ import BookingResultView from "../views/BookingResultView.vue";
 import QuickBookingView from "../views/QuickBookingView.vue";
 import TicketBookingView from "../views/TicketBookingView .vue";
 import TicketSelectionView from "../views/TicketSelectionView.vue";
+
 import Login from "../views/Login/Login.vue";
 import Register from "../views/Login/Register.vue";
 import ForgotPasswordView from "../views/Login/ForgotPasswordView.vue";
@@ -22,6 +23,8 @@ import TicketView from "../components/qrcode/TicketView.vue";
 import VerifyView from "../components/qrcode/VerifyView.vue";
 
 const routes = [
+
+  // ===== 公開頁面 =====
   {
     path: "/",
     name: "HomeView",
@@ -33,29 +36,30 @@ const routes = [
     component: MoviesView,
   },
   {
+    path: "/movies/:id",
+    name: "movie-detail",
+    component: MovieDetailView,
+    props: true,
+  },
+
+  // ===== 登入/註冊相關 (已登入不能訪問) =====
+  {
     path: "/login",
     name: "Login",
     component: Login,
-  },
-  {
-    path: "/forgot-password",
-    name: "ForgotPasswordView",
-    component: ForgotPasswordView,
-  },
-  {
-    path: "/profile",
-    name: "ProfileView",
-    component: ProfileView,
+    meta: { requiresGuest: true },
   },
   {
     path: "/register",
     name: "Register",
     component: Register,
+    meta: { requiresGuest: true },
   },
   {
-    path: "/change-password",
-    name: "ChangePassword",
-    component: ChangePassword,
+    path: "/forgot-password",
+    name: "ForgotPasswordView",
+    component: ForgotPasswordView,
+    meta: { requiresGuest: true },
   },
   {
     path: "/verify-success",
@@ -67,27 +71,40 @@ const routes = [
     name: "VerifyFailed",
     component: VerifyFailed,
   },
+
+  // ===== 需要登入的頁面 =====
   {
-    path: "/movies/:id",
-    name: "movie-detail",
-    component: MovieDetailView,
-    props: true,
+    path: "/profile",
+    name: "ProfileView",
+    component: ProfileView,
+    meta: { requiresAuth: true },
   },
+  {
+    path: "/change-password",
+    name: "ChangePassword",
+    component: ChangePassword,
+    meta: { requiresAuth: true },
+  },
+
+  // ===== 訂票流程 (需要登入) =====
   {
     path: "/booking/:showtimeId/seats",
     name: "seat-selection",
     component: SeatSelectionView,
     props: true,
+    meta: { requiresAuth: true },
   },
   {
     path: "/booking/checkout",
     name: "checkout",
     component: CheckoutView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/booking/result",
     name: "booking-result",
     component: BookingResultView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/booking/QuickBooking",
@@ -99,12 +116,14 @@ const routes = [
     path: "/booking/TicketBooking/:id",
     name: "TicketBooking",
     component: TicketBookingView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/booking/ticket-selection",
     name: "TicketSelection",
     component: TicketSelectionView,
-  }, { path: "/", redirect: "/ticket" },
+    meta: { requiresAuth: true },
+  },
 
   // ⭐ 前台建立 + 查看票券（直接在 TicketView.vue 建立）
   { path: "/ticket", name: "Ticket", component: TicketView },
@@ -114,6 +133,8 @@ const routes = [
 
   // ⭐ 掃 QR 後（帶 code）→ 驗票頁
   { path: "/verify/:code", name: "VerifyCode", component: VerifyView, meta: { requiresAuth: true } },
+
+  // ⭐（保留你的原始 verify 註解，不執行）
   // {
   //   path: "/auth/verify",
   //   name: "Verify",
@@ -123,7 +144,6 @@ const routes = [
   //       next("/verify-failed");
   //       return;
   //     }
-
   //     try {
   //       const authApi = await import("../services/api");
   //       await authApi.verifyEmail(code);
@@ -133,6 +153,9 @@ const routes = [
   //     }
   //   },
   // },
+
+  // ⭐ 統一處理 redirect —— 避免覆蓋 "/"
+  { path: "/ticket-home", redirect: "/ticket" },
 ];
 
 const router = createRouter({
@@ -140,8 +163,7 @@ const router = createRouter({
   routes,
 });
 
-//其他功能開發完後再補充
-// 路由守衛
+// ===== 路由守衛 =====
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const isAuthenticated = authStore.isAuthenticated;
@@ -150,9 +172,9 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated) {
     next("/login");
   }
-  // 已登入不能訪問的頁面(如登入、註冊)
+  // 已登入不能訪問的頁面
   else if (to.meta.requiresGuest && isAuthenticated) {
-    next("/profile");
+    next("/");
   } else {
     next();
   }

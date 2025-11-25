@@ -1,12 +1,13 @@
 <template>
   <div class="employees-page">
-    <el-row class="toolbar">
+    <el-row class="toolbar" style="margin-bottom: 12px">
       <el-col :span="12">
         <el-input
           placeholder="搜尋姓名 / Email"
           v-model="query"
           @keyup.enter="fetchList"
           clearable
+          @clear="fetchList"
         />
       </el-col>
       <el-col :span="12" style="text-align: right">
@@ -14,14 +15,13 @@
       </el-col>
     </el-row>
 
-    <el-table :data="list" class="employees-table">
-      <el-table-column type="index" label="" width="80" />
-      <el-table-column prop="empName" label="姓名" />
-      <el-table-column prop="empEmail" label="Email" />
-      <el-table-column prop="empPhone" label="手機號碼" width="160" />
+    <el-table :data="list" style="width: 100%" v-loading="loading">
+      <el-table-column type="index" label="#" width="80" />
+      <el-table-column prop="empName" label="姓名" width="140" />
+      <el-table-column prop="empEmail" label="Email" width="220" />
+      <el-table-column prop="empPhone" label="手機號碼" />
 
-      <!-- 顯示第一個角色名稱（如果有） -->
-      <el-table-column label="角色" width="140">
+      <el-table-column label="角色">
         <template #default="{ row }">
           <span v-if="row.roles && row.roles.length">
             {{ row.roles[0].roleName }}
@@ -48,7 +48,17 @@
       </el-table-column>
     </el-table>
 
-    <!-- 新增/編輯對話框 -->
+    <div class="pagination-wrapper" style="margin-top: 12px; text-align: right">
+      <el-pagination
+        background
+        layout="prev, pager, next, jumper, ->, total"
+        :current-page="page"
+        :page-size="pageSize"
+        :total="total"
+        @current-change="handlePageChange"
+      />
+    </div>
+
     <el-dialog v-model="dialogVisible" title="員工資料" width="500px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="90px">
         <el-form-item label="姓名" prop="empName">
@@ -114,19 +124,23 @@ const list = ref([]);
 const query = ref("");
 const dialogVisible = ref(false);
 const formRef = ref(null);
+const loading = ref(false);
+
+const page = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
 
 const form = ref({
   id: null,
   empName: "",
   empEmail: "",
   empPhone: "",
-  status: 1, // 1=啟用, 0=停用, 2=封鎖
-  roleId: null, // 對應後端 controller 的 ?roleId=
+  status: 1,
+  roleId: null,
 });
 
-const plainPassword = ref(""); // 新增時用的原始密碼
+const plainPassword = ref("");
 
-// 表單驗證
 const rules = {
   empName: [{ required: true, message: "請輸入姓名", trigger: "blur" }],
   empEmail: [
@@ -139,16 +153,34 @@ const rules = {
 };
 
 async function fetchList() {
+  loading.value = true;
   try {
+    let resp;
     if (query.value && query.value.trim()) {
-      list.value = await searchEmployees(query.value.trim());
+      resp = await searchEmployees({
+        keyword: query.value.trim(),
+        page: page.value - 1,
+        size: pageSize.value,
+      });
     } else {
-      list.value = await fetchEmployees();
+      resp = await fetchEmployees({
+        page: page.value - 1,
+        size: pageSize.value,
+      });
     }
+    list.value = resp.content || [];
+    total.value = resp.totalElements || 0;
   } catch (error) {
-    console.error("Failed to fetch employees:", error);
+    console.error("取得員工資料失敗:", error);
     ElMessage.error("載入員工列表失敗");
+  } finally {
+    loading.value = false;
   }
+}
+
+function handlePageChange(newPage) {
+  page.value = newPage; // 設為你點的頁碼
+  fetchList(); // 重新請求當前頁資料
 }
 
 function openCreate() {
@@ -179,32 +211,36 @@ function openEdit(row) {
 
 async function save() {
   await formRef.value.validate();
-
   try {
     if (form.value.id) {
-      const payload = {
-        empName: form.value.empName,
-        empEmail: form.value.empEmail,
-        empPhone: form.value.empPhone,
-        status: form.value.status,
-      };
-      await updateEmployee(form.value.id, payload, form.value.roleId);
+      await updateEmployee(
+        form.value.id,
+        {
+          empName: form.value.empName,
+          empEmail: form.value.empEmail,
+          empPhone: form.value.empPhone,
+          status: form.value.status,
+        },
+        form.value.roleId
+      );
       ElMessage.success("更新成功");
     } else {
-      const payload = {
-        empName: form.value.empName,
-        empEmail: form.value.empEmail,
-        empPhone: form.value.empPhone,
-        status: form.value.status,
-        plainPassword: plainPassword.value || "123456",
-      };
-      await createEmployee(payload, form.value.roleId);
+      await createEmployee(
+        {
+          empName: form.value.empName,
+          empEmail: form.value.empEmail,
+          empPhone: form.value.empPhone,
+          status: form.value.status,
+          empPasswordHash: plainPassword.value || "123456",
+        },
+        form.value.roleId
+      );
       ElMessage.success("新增成功");
     }
     dialogVisible.value = false;
     fetchList();
   } catch (error) {
-    console.error("Failed to save employee:", error);
+    console.error("儲存失敗:", error);
     ElMessage.error("儲存失敗");
   }
 }
@@ -215,13 +251,12 @@ async function remove(row) {
     "提示",
     { type: "warning" }
   );
-
   try {
     await deleteEmployee(row.id);
     ElMessage.success("刪除成功");
     fetchList();
   } catch (error) {
-    console.error("Failed to delete employee:", error);
+    console.error("刪除失敗:", error);
     ElMessage.error("刪除失敗");
   }
 }
@@ -234,12 +269,10 @@ onMounted(fetchList);
   width: 100%;
   box-sizing: border-box;
 }
-
 .toolbar {
   margin-bottom: 12px;
 }
-
-.employees-table {
+.el-table {
   width: 100%;
 }
 </style>
