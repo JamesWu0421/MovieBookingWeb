@@ -1,5 +1,5 @@
 // src/services/ticketIntegrationService.js
-// ✅ 修正版：支援後端的 imageUrl 欄位
+// 修正版：支援後端的 imageUrl 欄位
 import showTicketPricesService from './showTicketPriceService'
 import ticketPackageService from './ticketPackageService'
 import packageItemsService from './packageItemsService'
@@ -21,9 +21,9 @@ export default {
       const packages = packagesRes.data
       const allItems = itemsRes.data
 
-      console.log('📦 票價資料:', ticketPrices)
-      console.log('📦 套票資料:', packages)
-      console.log('📦 內容物資料:', allItems)
+      console.log('票價資料:', ticketPrices)
+      console.log('套票資料:', packages)
+      console.log('內容物資料:', allItems)
 
       if (!ticketPrices || ticketPrices.length === 0) {
         return []
@@ -38,7 +38,7 @@ export default {
       // 3. 建立 items 映射表
       const itemsMap = this._buildItemsMap(allItems)
       
-      console.log('🗺️ items 映射表:', itemsMap)
+      console.log('items 映射表:', itemsMap)
 
       // 4. 整合資料
       const tickets = ticketPrices.map(priceData => {
@@ -53,7 +53,7 @@ export default {
         const items = itemsMap[packageId] || []
         const packageCode = pkg.packageCode || pkg.package_code
         
-        // ✅ 關鍵修正：支援多種可能的欄位名稱
+        // 關鍵修正：支援多種可能的欄位名稱
         // 後端如果是 getImageUrl()，JSON 會是 imageUrl
         // 後端如果是 getPackageImage()，JSON 會是 packageImage
         const packageImage = pkg.imageUrl || pkg.image_url || pkg.packageImage || pkg.package_image
@@ -78,7 +78,7 @@ export default {
           items: items,
           description: this.generateDescription(pkg, items),
           
-          // ✅ 關鍵修復：取得圖片 URL
+          // 關鍵修復：取得圖片 URL
           image: this.getPackageImage(packageImage),
           
           isAvailable: true,
@@ -86,7 +86,7 @@ export default {
         }
       }).filter(ticket => ticket !== null)
 
-      console.log('✅ 整合後的票種:', tickets)
+      console.log('整合後的票種:', tickets)
       return tickets
 
     } catch (error) {
@@ -96,7 +96,7 @@ export default {
   },
 
   /**
-   * ✅ 簡化的圖片處理 - 支援完整 URL 和相對路徑
+   * 簡化的圖片處理 - 支援完整 URL 和相對路徑
    */
   getPackageImage(imageUrl) {
     // 安全檢查
@@ -106,15 +106,15 @@ export default {
         typeof imageUrl !== 'string' ||
         imageUrl.trim() === '' ||
         imageUrl === 'http://') {
-      console.log('⚠️ 無效的圖片 URL:', imageUrl)
+      console.log('無效的圖片 URL:', imageUrl)
       return null
     }
 
-    console.log('📷 處理圖片:', imageUrl)
+    console.log('處理圖片:', imageUrl)
 
     // 如果已經是完整 URL（http:// 或 https://），直接返回
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      console.log('✅ 使用完整 URL:', imageUrl)
+      console.log('使用完整 URL:', imageUrl)
       return imageUrl
     }
 
@@ -123,28 +123,54 @@ export default {
     const imagePath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
     const fullUrl = `${API_BASE_URL}${imagePath}`
     
-    console.log('✅ 組合完整 URL:', fullUrl)
+    console.log('組合完整 URL:', fullUrl)
     return fullUrl
   },
 
   /**
    * 建立 items 映射表
    */
-  _buildItemsMap(allItems) {
-    const itemsMap = {}
-    
+    _buildItemsMap(allItemsRaw) {
+    console.log("進入 _buildItemsMap，原始輸入:", allItemsRaw);
+
+    let allItems = [];
+
+    if (Array.isArray(allItemsRaw)) {
+      allItems = allItemsRaw;
+    } else if (allItemsRaw && typeof allItemsRaw === 'object') {
+      allItems =
+        allItemsRaw.items ||
+        allItemsRaw.itemList ||
+        allItemsRaw.item_list ||
+        allItemsRaw.data ||
+        allItemsRaw.content ||
+        [];
+
+      if (!Array.isArray(allItems)) {
+        console.warn("allItemsRaw 不是陣列也不是 items/content 格式:", allItemsRaw);
+        allItems = [];
+      }
+    } else {
+      console.warn("allItemsRaw 不是物件也不是陣列:", allItemsRaw);
+      allItems = [];
+    }
+
+    console.log("整理後的 allItems:", allItems);
+
+    const itemsMap = {};
+
     allItems.forEach(item => {
-      const packageId = item.packageId || item.package_id
-      
+      const packageId = item.packageId || item.package_id;
+
       if (!packageId) {
-        console.warn('⚠️ item 缺少 packageId:', item)
-        return
+        console.warn("item 缺 packageId:", item);
+        return;
       }
-      
+
       if (!itemsMap[packageId]) {
-        itemsMap[packageId] = []
+        itemsMap[packageId] = [];
       }
-      
+
       itemsMap[packageId].push({
         id: item.id,
         type: item.itemType || item.item_type,
@@ -152,15 +178,16 @@ export default {
         spec: item.itemSpec || item.item_spec,
         quantity: item.quantity,
         displayOrder: item.displayOrder || item.display_order
-      })
-    })
-    
-    Object.keys(itemsMap).forEach(packageId => {
-      itemsMap[packageId].sort((a, b) => a.displayOrder - b.displayOrder)
-    })
-    
-    return itemsMap
-  },
+      });
+    });
+
+    Object.keys(itemsMap).forEach(key => {
+      itemsMap[key].sort((a, b) => a.displayOrder - b.displayOrder);
+    });
+
+    return itemsMap;
+    }, 
+
 
   /**
    * 根據場次 ID 取得可用的票種
@@ -215,11 +242,34 @@ export default {
    * 計算票種包含的電影票數量
    */
   getMovieTicketCount(ticket) {
-    if (!ticket.items) return 1
-    
-    const movieTickets = ticket.items.filter(item => item.type === 'ticket')
-    return movieTickets.reduce((sum, item) => sum + item.quantity, 0)
-  },
+  // 如果沒有 items，當成一張電影票
+  if (!ticket.items || ticket.items.length === 0) {
+    return 1
+  }
+
+  // 比較保險：type 用小寫判斷，抓到「看起來像電影票」的項目
+  const movieTickets = ticket.items.filter(item => {
+    const t = (item.type || '').toLowerCase()
+    return (
+      t === 'ticket' ||
+      t === 'movie_ticket' ||
+      t === 'movie' ||
+      t.includes('ticket')   // 例如 MOVIE_TICKET、TICKET_xxx 都會被抓到
+    )
+  })
+
+  // 如果找不到任何「電影票」類型，就預設整個 package 當 1 張
+  if (movieTickets.length === 0) {
+    return 1
+  }
+
+  // 把 movie 類的數量加總
+  return movieTickets.reduce((sum, item) => {
+    const qty = item.quantity != null ? item.quantity : 1
+    return sum + qty
+  }, 0)
+},
+
 
   /**
    * 格式化票種內容物顯示文字
@@ -236,54 +286,3 @@ export default {
       .join('、')
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

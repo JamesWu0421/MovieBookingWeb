@@ -1,5 +1,4 @@
 <template>
-  <!-- loading / error / 找不到 -->
   <div v-if="loading" class="movie-detail-page">
     載入中…
   </div>
@@ -107,7 +106,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMoviesStore } from '../stores/movies'
+import { useMoviesStore } from '../stores/movies';
 
 const route = useRoute()
 const moviesStore = useMoviesStore()
@@ -116,9 +115,11 @@ const moviesStore = useMoviesStore()
 const loading = computed(() => moviesStore.loading)
 const error = computed(() => moviesStore.error)
 
-// 進來頁面時從後端載入電影列表
+// 進來頁面時，如果還沒載電影列表就去 fetch 一次
 onMounted(async () => {
-  await moviesStore.fetchMovies()
+  if (!moviesStore.movies.length) {
+    await moviesStore.fetchMovies()
+  }
 })
 
 // 依照網址上的 :id 找對應電影
@@ -139,7 +140,6 @@ const toggleIntro = () => {
   showFullIntro.value = !showFullIntro.value
 }
 
-// 把 watch?v= 轉成 embed/，你現在 trailerUrl 用的是 watch 版
 const trailerUrlEmbed = computed(() => {
   if (!movie.value || !movie.value.trailerUrl) return ''
   return movie.value.trailerUrl.replace('watch?v=', 'embed/')
@@ -277,11 +277,18 @@ const trailerUrlEmbed = computed(() => {
   padding: 4px 14px;
   font-size: 13px;
   border-radius: 4px;
-  border: 1px solid #6b4bb8;
+  border: 1px solid #ad9278;
   background: #fff;
-  color: #6b4bb8;
+  color: #ad9278;
   cursor: pointer;
 }
+
+.more-btn:hover {
+  background: #ad9278;
+  color: #fff;
+}
+
+
 
 .trailer-frame {
   position: relative;

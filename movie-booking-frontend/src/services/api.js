@@ -61,13 +61,29 @@ export const showApi = {
 
 export const seatApi = {
   getByScreen(screenId) {
+    // 對應 GET /api/seats?screenId=xxx
     return api.get('/seats', { params: { screenId } });
   },
   updateBlocked(id, blocked) {
+    // 對應 PATCH /api/seats/{id}/block
     return api.patch(`/seats/${id}/block`, { blocked });
   },
-  batchCreate(payload) {
-    return api.post('/seats/batch', payload);
+};
+
+export const seatLockApi = {
+  // 鎖定座位
+  lockSeats(payload) {
+    return api.post('/seat-locks/lock', payload);
+  },
+
+  // 釋放座位（之後如果要用）
+  releaseSeats(payload) {
+    return api.post('/seat-locks/release', payload);
+  },
+
+  // 撈某場次目前 active 的 lock（之後如果 SeatMap 要用）
+  getActive(showId) {
+    return api.get('/seat-locks/active', { params: { showId } });
   },
 };
 

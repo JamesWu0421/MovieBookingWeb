@@ -4,7 +4,7 @@ spring:
 
   # 資料庫連線設定
   datasource:
-    url: jdbc:sqlserver://localhost:1433;database=javacrud2;encrypt=true;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;database=final;encrypt=true;trustServerCertificate=true
     username: sa
     password: P@ssw0rd
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

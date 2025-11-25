@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import tw.com.ispan.domain.PackageItemsBean;
 import tw.com.ispan.domain.TicketPackageBean;
+import tw.com.ispan.dto.TicketPackageRequestDTO;
+import tw.com.ispan.dto.TicketPackageResponseDTO;
+import tw.com.ispan.mapper.TicketPackageMapper;
+import tw.com.ispan.repository.PackageItemsRepository;
 import tw.com.ispan.repository.TicketPackageRepository;
 
 @Service
@@ -18,13 +22,140 @@ public class TicketPackageService {
 
     @Autowired
     private TicketPackageRepository repository;
+    
+    @Autowired
+    private PackageItemsRepository packageItemsRepository;
 
-    // ==================== Create ====================
-    public TicketPackageBean createTicketPackage(TicketPackageBean ticketPackage) {
+    /**
+     * 創建套餐 (使用 DTO) - 修復版
+     */
+    public TicketPackageResponseDTO createTicketPackage(TicketPackageRequestDTO requestDTO) {
+        // 將 DTO 轉換為 Entity
+        TicketPackageBean entity = TicketPackageMapper.toEntity(requestDTO);
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setUpdatedAt(LocalDateTime.now());
+        
+        // ⭐ 優先處理完整的 packageItems 物件
+        if (requestDTO.getPackageItems() != null && !requestDTO.getPackageItems().isEmpty()) {
+            for (TicketPackageRequestDTO.PackageItemDTO itemDTO : requestDTO.getPackageItems()) {
+                PackageItemsBean item = new PackageItemsBean();
+                item.setItemType(itemDTO.getItemType());
+                item.setItemName(itemDTO.getItemName());
+                item.setItemSpec(itemDTO.getItemSpec());
+                item.setQuantity(itemDTO.getQuantity() != null ? itemDTO.getQuantity() : 1);
+                item.setDisplayOrder(itemDTO.getDisplayOrder() != null ? itemDTO.getDisplayOrder() : 1);
+                item.setCreatedAt(LocalDateTime.now());
+                item.setUpdatedAt(LocalDateTime.now());
+                
+                // 建立雙向關聯
+                entity.addPackageItem(item);
+            }
+        }
+        // 如果沒有 packageItems,才使用 packageItemIds (向後兼容)
+        else if (requestDTO.getPackageItemIds() != null && !requestDTO.getPackageItemIds().isEmpty()) {
+            for (Long itemId : requestDTO.getPackageItemIds()) {
+                PackageItemsBean item = packageItemsRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("找不到項目,ID: " + itemId));
+                entity.addPackageItem(item);
+            }
+        }
+        
+        // 保存並返回 ResponseDTO
+        TicketPackageBean saved = repository.save(entity);
+        return TicketPackageMapper.toResponseDTO(saved);
+    }
+
+    /**
+     * 獲取所有套餐 (返回 DTO List)
+     */
+    public List<TicketPackageResponseDTO> getAllTicketPackages() {
+        List<TicketPackageBean> entities = repository.findAll();
+        return TicketPackageMapper.toResponseDTOList(entities);
+    }
+
+    /**
+     * 根據 ID 獲取套餐 (返回 DTO)
+     */
+    public Optional<TicketPackageResponseDTO> getTicketPackageById(Long id) {
+        return repository.findById(id)
+                .map(TicketPackageMapper::toResponseDTO);
+    }
+
+    /**
+     * 更新套餐 (使用 DTO) - 修復版
+     */
+    public Optional<TicketPackageResponseDTO> updateTicketPackage(Long id, TicketPackageRequestDTO requestDTO) {
+        Optional<TicketPackageBean> oldData = repository.findById(id);
+        
+        if (oldData.isPresent()) {
+            TicketPackageBean entity = oldData.get();
+            
+            // 更新基本欄位
+            TicketPackageMapper.updateEntityFromDTO(entity, requestDTO);
+            
+            // ⭐ 優先處理完整的 packageItems 物件
+            if (requestDTO.getPackageItems() != null) {
+                // 清除舊的關聯 (orphanRemoval = true 會自動刪除)
+                entity.getPackageItems().clear();
+                
+                // 添加新的 packageItems
+                for (TicketPackageRequestDTO.PackageItemDTO itemDTO : requestDTO.getPackageItems()) {
+                    PackageItemsBean item = new PackageItemsBean();
+                    item.setItemType(itemDTO.getItemType());
+                    item.setItemName(itemDTO.getItemName());
+                    item.setItemSpec(itemDTO.getItemSpec());
+                    item.setQuantity(itemDTO.getQuantity() != null ? itemDTO.getQuantity() : 1);
+                    item.setDisplayOrder(itemDTO.getDisplayOrder() != null ? itemDTO.getDisplayOrder() : 1);
+                    item.setCreatedAt(LocalDateTime.now());
+                    item.setUpdatedAt(LocalDateTime.now());
+                    
+                    // 建立雙向關聯
+                    entity.addPackageItem(item);
+                }
+            }
+            // 如果沒有 packageItems,才使用 packageItemIds (向後兼容)
+            else if (requestDTO.getPackageItemIds() != null) {
+                // 清除舊的關聯
+                entity.getPackageItems().clear();
+                
+                // 添加新的關聯
+                for (Long itemId : requestDTO.getPackageItemIds()) {
+                    PackageItemsBean item = packageItemsRepository.findById(itemId)
+                        .orElseThrow(() -> new RuntimeException("找不到項目,ID: " + itemId));
+                    entity.addPackageItem(item);
+                }
+            }
+            
+            entity.setUpdatedAt(LocalDateTime.now());
+            
+            TicketPackageBean updated = repository.save(entity);
+            return Optional.of(TicketPackageMapper.toResponseDTO(updated));
+        }
+        
+        return Optional.empty();
+    }
+
+    /**
+     * 刪除套餐
+     */
+    public boolean deleteTicketPackage(Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    // ===== 以下是保持向後兼容的方法(直接使用 Entity) =====
+    
+    /**
+     * @deprecated 請使用 createTicketPackage(TicketPackageRequestDTO)
+     */
+    @Deprecated
+    public TicketPackageBean createTicketPackageLegacy(TicketPackageBean ticketPackage) {
         ticketPackage.setCreatedAt(LocalDateTime.now());
         ticketPackage.setUpdatedAt(LocalDateTime.now());
         
-        // ⭐ 確保新增時也設定正確的關聯
         if (ticketPackage.getPackageItems() != null) {
             for (PackageItemsBean item : ticketPackage.getPackageItems()) {
                 item.setTicketPackage(ticketPackage);
@@ -34,24 +165,31 @@ public class TicketPackageService {
         return repository.save(ticketPackage);
     }
 
-    // ==================== Read All ====================
-    public List<TicketPackageBean> getAllTicketPackages() {
+    /**
+     * @deprecated 請使用 getAllTicketPackages() 返回 DTO
+     */
+    @Deprecated
+    public List<TicketPackageBean> getAllTicketPackagesLegacy() {
         return repository.findAll();
     }
 
-    // ==================== Read by ID ====================
-    public Optional<TicketPackageBean> getTicketPackageById(Long id) {
+    /**
+     * @deprecated 請使用 getTicketPackageById(Long) 返回 DTO
+     */
+    @Deprecated
+    public Optional<TicketPackageBean> getTicketPackageByIdLegacy(Long id) {
         return repository.findById(id);
     }
 
-    // ==================== Update ====================
-    // ⭐⭐⭐ 這是關鍵修復！⭐⭐⭐
-    public Optional<TicketPackageBean> updateTicketPackage(Long id, TicketPackageBean ticketPackageDetails) {
+    /**
+     * @deprecated 請使用 updateTicketPackage(Long, TicketPackageRequestDTO)
+     */
+    @Deprecated
+    public Optional<TicketPackageBean> updateTicketPackageLegacy(Long id, TicketPackageBean ticketPackageDetails) {
         Optional<TicketPackageBean> oldData = repository.findById(id);
         if (oldData.isPresent()) {
             TicketPackageBean ticketPackage = oldData.get();
 
-            // 更新基本欄位（保持不變）
             ticketPackage.setPackageType(ticketPackageDetails.getPackageType());
             ticketPackage.setPackageName(ticketPackageDetails.getPackageName());
             ticketPackage.setPackageCode(ticketPackageDetails.getPackageCode());
@@ -64,18 +202,12 @@ public class TicketPackageService {
             ticketPackage.setValidUntil(ticketPackageDetails.getValidUntil());
             ticketPackage.setEnableEarlyBird(ticketPackageDetails.getEnableEarlyBird());
             
-            // ⭐⭐⭐ 關鍵修復：正確處理 packageItems ⭐⭐⭐
             if (ticketPackageDetails.getPackageItems() != null) {
-                // 1. 清除舊的項目（orphanRemoval = true 會自動刪除資料庫記錄）
                 ticketPackage.getPackageItems().clear();
                 
-                // 2. 添加新的項目，並設定正確的雙向關聯
                 for (PackageItemsBean newItem : ticketPackageDetails.getPackageItems()) {
-                    // 確保是新記錄（不帶 id）
                     newItem.setId(null);
-                    // ⭐ 最關鍵：設定父對象引用
                     newItem.setTicketPackage(ticketPackage);
-                    // 添加到集合
                     ticketPackage.getPackageItems().add(newItem);
                 }
             }
@@ -86,17 +218,4 @@ public class TicketPackageService {
         }
         return Optional.empty();
     }
-
-    // ==================== Delete ====================
-    public boolean deleteTicketPackage(Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
 }
-
-
-
-

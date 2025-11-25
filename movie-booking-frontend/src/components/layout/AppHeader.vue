@@ -5,7 +5,7 @@
         </div>
     <nav class="nav-links">
       <router-link to="/movies">現正熱映</router-link>
-      <router-link to="#">即將上映</router-link>
+      <router-link to="/upcomingmovies">即將上映</router-link>
       <router-link to="/booking/QuickBooking">快速訂票</router-link>
       <router-link to="#">會員登入</router-link>
     </nav>

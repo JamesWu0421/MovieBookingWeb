@@ -1,26 +1,146 @@
 <template>
   <div class="seat-selection-view">
-  <div class="div1">
+    <div class="div1">
       <div class="div2">選取座位</div>
+    </div>
+
+    <section>
+      <p v-if="loadingShow">載入場次資料中...</p>
+      <p v-else-if="error" style="color:red;">{{ error }}</p>
+
+      <div v-else>
+        <!-- 座位圖 -->
+        <SeatMap
+          v-if="screenId"
+          :screen-id="screenId"
+          :show-id="Number(showtimeId)"
+        />
+
+        <!-- 下方確認區 -->
+        <div class="confirm-bar">
+          <div>
+            已選座位：
+            <span v-if="!selectedSeats.length">尚未選取</span>
+            <span v-else>
+              {{ selectedSeatsText }}
+            </span>
+          </div>
+
+          <button
+            class="confirm-btn"
+            :disabled="!selectedSeats.length || locking"
+            @click="confirmSeats"
+          >
+            {{ locking ? '處理中...' : '確認座位' }}
+          </button>
+        </div>
       </div>
-  <section>
-    
-    <!-- <p>Showtime ID：{{ showtimeId }}</p> -->
-    <SeatMap />
-  </section>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useBookingStore } from '../stores/booking';
 import SeatMap from '../components/booking/SeatMap.vue';
+import { showApi, seatLockApi } from '../services/api';
+import Swal from 'sweetalert2';
 
 const route = useRoute();
-const showtimeId = route.params.showtimeId;
+const router = useRouter();
+const showtimeId = route.params.showtimeId; // = showId
+
+const screenId = ref(null);
+const loadingShow = ref(false);
+const error = ref('');
+const locking = ref(false);
+
+const bookingStore = useBookingStore();
+
+const selectedSeats = computed(() => bookingStore.selectedSeats || []);
+
+const selectedSeatsText = computed(() =>
+  selectedSeats.value.map(s => `${s.rowLabel}${s.seatNumber}`).join('、')
+);
+
+// 撈場次資料，取得 screenId
+const loadShow = async () => {
+  loadingShow.value = true;
+  error.value = '';
+
+  try {
+    const res = await showApi.getById(showtimeId);
+    screenId.value = res.data.screenId;
+
+    if (!screenId.value) {
+      error.value = '此場次尚未設定影廳';
+      await Swal.fire('錯誤', '此場次尚未設定影廳', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    error.value = '載入場次資料失敗';
+    await Swal.fire('錯誤', '載入場次資料失敗', 'error');
+  } finally {
+    loadingShow.value = false;
+  }
+};
+
+// 確認座位 → 呼叫 seat_locks
+const confirmSeats = async () => {
+  if (!selectedSeats.value.length) {
+    await Swal.fire('提示', '請先選擇座位', 'info');
+    return;
+  }
+
+  locking.value = true;
+  error.value = '';
+
+  try {
+    const payload = {
+      showId: Number(showtimeId),
+      seatIds: selectedSeats.value.map(s => s.seatId),
+      userId: 1,        // 先寫死，之後換成登入會員 ID
+      lockSeconds: 600, // 暫鎖 10 分鐘
+    };
+
+    const res = await seatLockApi.lockSeats(payload);
+    const { lockedSeatIds, failedSeatIds } = res.data || {};
+
+    // 有鎖失敗的 → 表示被別人搶先了
+    if (failedSeatIds && failedSeatIds.length) {
+      bookingStore.selectedSeats = bookingStore.selectedSeats
+        .filter(s => !failedSeatIds.includes(s.seatId));
+
+      await Swal.fire(
+        '部分座位已被選取',
+        `有 ${failedSeatIds.length} 個座位已被其他人選取，已自動移除，請重新確認座位。`,
+        'warning'
+      );
+    } else {
+      await Swal.fire(
+        '成功！',
+        `座位 ${selectedSeatsText.value} 已暫時鎖定！請於 10 分鐘內完成購票!`,
+        'success'
+      );
+    }
+
+  } catch (err) {
+    console.error(err);
+    await Swal.fire(
+      '鎖定失敗',
+      '座位鎖定失敗，可能已被他人選取',
+      'error'
+    );
+  } finally {
+    locking.value = false;
+  }
+};
+
+onMounted(loadShow);
 </script>
 
 <style scoped>
-
 .seat-selection-view {
   max-width: 1200px;
   margin: 0 auto;
@@ -42,12 +162,46 @@ const showtimeId = route.params.showtimeId;
   height: 100%;
   width: 145px;
   font-size: 1.5em;
-  padding: 0px 2em;
+  padding: 0 2em;
   display: flex;
-  -webkit-box-align: center;
   align-items: center;
   border-left: 1px solid rgb(230, 230, 230);
   border-right: 1px solid rgb(230, 230, 230);
-  background: repeating-linear-gradient(-45deg, rgba(99, 99, 99, 0.067), rgba(103, 103, 103, 0.067) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 4px);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(99, 99, 99, 0.067),
+    rgba(103, 103, 103, 0.067) 2px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0) 4px
+  );
+}
+
+.confirm-bar {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.confirm-btn {
+  padding: 8px 20px;
+  border-radius: 4px;
+  border: none;
+  background: #ad9278;
+  color: #fff;
+  cursor: pointer;
+}
+
+.confirm-btn:hover {
+  background: #a17c5a;
+  color: #fff;
+
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 </style>

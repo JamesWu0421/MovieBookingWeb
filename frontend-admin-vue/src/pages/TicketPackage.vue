@@ -30,7 +30,7 @@
             style="margin-bottom: 20px;"
           >
             <template #default>
-              正在編輯票種：{{ ticketForm.packageName }}（{{ ticketForm.packageCode }}）
+              正在編輯票種:{{ ticketForm.packageName }}({{ ticketForm.packageCode }})
             </template>
           </el-alert>
 
@@ -166,7 +166,7 @@
                   <el-input v-model="item.itemName" placeholder="商品名稱" size="default"></el-input>
                 </el-col>
                 <el-col :span="5">
-                  <el-input v-model="item.itemSpec" placeholder="規格（選填）" size="default"></el-input>
+                  <el-input v-model="item.itemSpec" placeholder="規格(選填)" size="default"></el-input>
                 </el-col>
                 <el-col :span="4">
                   <el-input-number 
@@ -222,7 +222,7 @@
       </template>
 
       <div v-if="ticketList.length === 0" class="empty-state">
-        <el-empty description="尚未建立任何票種，請在上方「票種設定」區塊新增"></el-empty>
+        <el-empty description="尚未建立任何票種,請在上方「票種設定」區塊新增"></el-empty>
       </div>
 
       <el-row v-else :gutter="20">
@@ -257,11 +257,11 @@
             <el-divider></el-divider>
             <div class="price-section">
               <div class="price-item">
-                <span class="label">價格調整：</span>
+                <span class="label">價格調整:</span>
                 <span class="value">{{ ticket.priceAdjustment >= 0 ? '+' : '' }}{{ ticket.priceAdjustment }} 元</span>
               </div>
               <div v-if="ticket.enableEarlyBird" class="price-item">
-                <span class="label">早場調整：</span>
+                <span class="label">早場調整:</span>
                 <span class="value">{{ ticket.earlyBirdAdjustment >= 0 ? '+' : '' }}{{ ticket.earlyBirdAdjustment }} 元</span>
               </div>
             </div>
@@ -269,7 +269,7 @@
             <!-- 套票內容 -->
             <el-divider></el-divider>
             <div class="package-items">
-              <div class="section-label">套票內容：</div>
+              <div class="section-label">套票內容:</div>
               <div class="items-container">
                 <el-tag 
                   v-for="(item, index) in (ticket.packageItems || [])" 
@@ -289,10 +289,10 @@
             <div v-if="ticket.validFrom || ticket.validUntil">
               <el-divider></el-divider>
               <div class="validity-info">
-                <div class="section-label">有效期間：</div>
+                <div class="section-label">有效期間:</div>
                 <div style="font-size: 13px; color: #606266; margin-top: 4px;">
-                  <div v-if="ticket.validFrom">開始：{{ formatDateTime(ticket.validFrom) }}</div>
-                  <div v-if="ticket.validUntil">結束：{{ formatDateTime(ticket.validUntil) }}</div>
+                  <div v-if="ticket.validFrom">開始:{{ formatDateTime(ticket.validFrom) }}</div>
+                  <div v-if="ticket.validUntil">結束:{{ formatDateTime(ticket.validUntil) }}</div>
                 </div>
               </div>
             </div>
@@ -348,27 +348,38 @@ const ticketForm = ref({
 // 票種列表
 const ticketList = ref([])
 
-// 判斷是否可以啟用早場優惠（僅特殊票種可以）
+// 判斷是否可以啟用早場優惠(僅特殊票種可以)
 const canEnableEarlyBird = computed(() => {
   return ticketForm.value.packageType === 'special ticket' && ticketForm.value.enableEarlyBird
 })
 
 // 監聽套餐類型變化
 watch(() => ticketForm.value.packageType, (newType) => {
-  // 只有特殊票種可以啟用早場，其他類型強制關閉
+  // 只有特殊票種可以啟用早場,其他類型強制關閉
   if (newType !== 'special ticket') {
     ticketForm.value.enableEarlyBird = false
     ticketForm.value.earlyBirdAdjustment = 0
   }
 })
 
-// 小工具：處理日期（空值 → null；有空白就換成 T）
-function normalizeDate(val) {
-  if (!val) return null
-  return val.includes('T') ? val : val.replace(' ', 'T')
+// ⭐ 新增:格式化日期時間為 ISO 8601 格式(後端需要的格式)
+function formatDateTimeForBackend(dateTimeStr) {
+  if (!dateTimeStr) return null
+  
+  // 如果已經是 ISO 格式就直接返回
+  if (dateTimeStr.includes('T')) {
+    return dateTimeStr
+  }
+  
+  // 如果是 "YYYY-MM-DD HH:mm:ss" 格式,轉換為 "YYYY-MM-DDTHH:mm:ss"
+  if (dateTimeStr.includes(' ')) {
+    return dateTimeStr.replace(' ', 'T')
+  }
+  
+  return dateTimeStr
 }
 
-// ⭐ 小工具：解析 packageItems（可能是字串或陣列）
+// ⭐ 解析 packageItems(可能是字串或陣列)
 function parsePackageItems(packageItems) {
   if (!packageItems) return []
   
@@ -388,7 +399,7 @@ function parsePackageItems(packageItems) {
   return []
 }
 
-// 載入票種列表（CRUD: Read）
+// 載入票種列表(CRUD: Read)
 async function fetchTicketList() {
   console.log('===== 開始載入票種列表 =====')
   
@@ -401,7 +412,7 @@ async function fetchTicketList() {
     if (res && res.data) {
       console.log('資料筆數:', res.data.length)
       
-      // ⭐ 處理每個票種的 packageItems（可能是 JSON 字串）
+      // ⭐ 處理每個票種的 packageItems(可能是 JSON 字串)
       ticketList.value = res.data.map(ticket => ({
         ...ticket,
         packageItems: parsePackageItems(ticket.packageItems)
@@ -441,9 +452,10 @@ function removePackageItem(index) {
   ticketForm.value.packageItems.splice(index, 1)
 }
 
-// 🔧 修復：儲存票種（CRUD: Create / Update）
+// 🔧 修復:儲存票種(CRUD: Create / Update)
 async function saveTicket() {
   console.log('===== 開始儲存票種 =====')
+  console.log('📋 當前表單資料:', JSON.stringify(ticketForm.value, null, 2))
   
   // 驗證必填欄位
   if (!ticketForm.value.packageType || !ticketForm.value.packageName || !ticketForm.value.packageCode) {
@@ -460,65 +472,92 @@ async function saveTicket() {
     return
   }
 
-  // 🔧 整理 packageItems，移除可能的 id 欄位（避免後端誤判）
+  // 🔧 整理 packageItems,移除 id 欄位並確保所有欄位都存在
   const cleanedPackageItems = ticketForm.value.packageItems.map((item, idx) => ({
-    itemType: item.itemType,
-    itemName: item.itemName,
+    itemType: item.itemType || '',
+    itemName: item.itemName || '',
     itemSpec: item.itemSpec || '',
-    quantity: item.quantity || 1,
-    displayOrder: item.displayOrder || idx + 1
+    quantity: Number(item.quantity) || 1,
+    displayOrder: Number(item.displayOrder) || (idx + 1)
   }))
 
-  // 🔧 整理要送給後端的資料（不包含 id，因為 id 在 URL 裡）
+  // 🔧 整理要送給後端的資料
+  // 注意:不包含 id,因為:
+  // - 新增時:不需要 id
+  // - 更新時:id 在 URL 裡
   const payload = {
     packageType: ticketForm.value.packageType,
     packageName: ticketForm.value.packageName,
     packageCode: ticketForm.value.packageCode,
-    priceAdjustment: ticketForm.value.priceAdjustment || 0,
-    earlyBirdAdjustment: ticketForm.value.earlyBirdAdjustment || 0,
-    enableEarlyBird: ticketForm.value.enableEarlyBird || false,
-    isActive: ticketForm.value.isActive !== undefined ? ticketForm.value.isActive : true,
-    displayOrder: ticketForm.value.displayOrder || 1,
-    validFrom: normalizeDate(ticketForm.value.validFrom),
-    validUntil: normalizeDate(ticketForm.value.validUntil),
+    priceAdjustment: Number(ticketForm.value.priceAdjustment) || 0,
+    earlyBirdAdjustment: Number(ticketForm.value.earlyBirdAdjustment) || 0,
+    enableEarlyBird: Boolean(ticketForm.value.enableEarlyBird),
+    isActive: ticketForm.value.isActive !== undefined ? Boolean(ticketForm.value.isActive) : true,
+    displayOrder: Number(ticketForm.value.displayOrder) || 1,
+    validFrom: formatDateTimeForBackend(ticketForm.value.validFrom),
+    validUntil: formatDateTimeForBackend(ticketForm.value.validUntil),
     imageUrl: ticketForm.value.imageUrl || '',
     packageItems: cleanedPackageItems
   }
 
-  // 清除空值
-  if (!payload.validFrom) delete payload.validFrom
-  if (!payload.validUntil) delete payload.validUntil
+  // 清除空值(但保留 false 和 0)
+  if (payload.validFrom === null) delete payload.validFrom
+  if (payload.validUntil === null) delete payload.validUntil
   if (!payload.imageUrl) delete payload.imageUrl
 
-  console.log('📦 送出的資料:', JSON.stringify(payload, null, 2))
+  console.log('📦 準備送出的資料:', JSON.stringify(payload, null, 2))
 
   try {
+    let response
+    
     if (ticketForm.value.id) {
-      // 🔧 Update - 不要把 id 放在 payload 裡
+      // 更新 - id 放在 URL 裡,不放在 payload 裡
       console.log('📡 執行更新: PUT /api/ticket-packages/' + ticketForm.value.id)
-      const response = await ticketPackageService.update(ticketForm.value.id, payload)
+      response = await ticketPackageService.update(ticketForm.value.id, payload)
       console.log('✅ 更新回應:', response)
-      ElMessage.success('票種更新成功！')
+      ElMessage.success('票種更新成功!')
     } else {
-      // Create
+      // 新增
       console.log('📡 執行新增: POST /api/ticket-packages')
-      const response = await ticketPackageService.create(payload)
+      response = await ticketPackageService.create(payload)
       console.log('✅ 新增回應:', response)
-      ElMessage.success('票種新增成功！')
+      ElMessage.success('票種新增成功!')
     }
+    
+    console.log('📥 後端回傳的資料:', response.data)
     
     resetTicketForm()
     await fetchTicketList()
   } catch (error) {
     console.error('===== ❌ 儲存失敗 =====')
-    console.error('錯誤:', error)
+    console.error('錯誤物件:', error)
     console.error('錯誤訊息:', error.message)
-    console.error('錯誤回應:', error.response?.data)
-    console.error('錯誤狀態:', error.response?.status)
+    console.error('錯誤回應:', error.response)
+    console.error('錯誤回應資料:', error.response?.data)
+    console.error('錯誤狀態碼:', error.response?.status)
+    console.error('錯誤 Headers:', error.response?.headers)
     
     // 🔧 顯示更詳細的錯誤訊息
-    const errorMsg = error.response?.data?.message || error.response?.data || error.message || '未知錯誤'
-    ElMessage.error(`儲存失敗：${errorMsg}`)
+    let errorMsg = '未知錯誤'
+    
+    if (error.response?.data) {
+      // 如果後端回傳的是字串
+      if (typeof error.response.data === 'string') {
+        errorMsg = error.response.data
+      }
+      // 如果後端回傳的是物件
+      else if (error.response.data.message) {
+        errorMsg = error.response.data.message
+      }
+      // 如果有其他錯誤資訊
+      else {
+        errorMsg = JSON.stringify(error.response.data)
+      }
+    } else if (error.message) {
+      errorMsg = error.message
+    }
+    
+    ElMessage.error(`儲存失敗:${errorMsg}`)
   }
 }
 
@@ -560,11 +599,11 @@ function getPackageTypeText(type) {
 
 function getPackageTypeTag(type) {
   const tagMap = {
-    'bundle ticket': 'info',      // ✅ 改為 'info' 而不是空字串
+    'bundle ticket': 'info',
     'single ticket': 'success',
     'special ticket': 'warning'
   }
-  return tagMap[type] || 'info'   // ✅ 預設也改為 'info'
+  return tagMap[type] || 'info'
 }
 
 function formatDateTime(dateTime) {
@@ -587,7 +626,7 @@ function formatDateTime(dateTime) {
   return dateTime.toString()
 }
 
-// 🔧 修復：編輯票種（CRUD: Update → 先把資料塞回表單）
+// 🔧 修復:編輯票種(CRUD: Update → 先把資料塞回表單)
 function editTicket(ticket) {
   console.log('===== 開始編輯票種 =====')
   console.log('原始票種資料:', ticket)
@@ -634,14 +673,14 @@ function editTicket(ticket) {
   collapsedSections.value.ticket = false
   window.scrollTo({ top: 0, behavior: 'smooth' })
   
-  ElMessage.info('已載入票種資料，請修改後點擊「更新票種」')
+  ElMessage.info('已載入票種資料,請修改後點擊「更新票種」')
 }
 
-// 刪除票種（CRUD: Delete）
+// 刪除票種(CRUD: Delete)
 async function removeTicket(ticket) {
   try {
     await ElMessageBox.confirm(
-      '確定要刪除此票種嗎？',
+      '確定要刪除此票種嗎?',
       '警告',
       {
         confirmButtonText: '確定',
@@ -659,7 +698,7 @@ async function removeTicket(ticket) {
     if (error !== 'cancel') {
       console.error('===== ❌ 刪除失敗 =====')
       console.error('錯誤:', error)
-      ElMessage.error('刪除失敗，請檢查網路連線或聯絡系統管理員')
+      ElMessage.error('刪除失敗,請檢查網路連線或聯絡系統管理員')
     }
   }
 }

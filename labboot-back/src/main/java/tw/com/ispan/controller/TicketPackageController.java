@@ -8,21 +8,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import tw.com.ispan.domain.TicketPackageBean;
+import tw.com.ispan.dto.TicketPackageRequestDTO;
+import tw.com.ispan.dto.TicketPackageResponseDTO;
 import tw.com.ispan.service.TicketPackageService;
 
 @RestController
-@RequestMapping("/api/ticket-packages") // 統一路徑開頭
+@RequestMapping("/api/ticket-packages")
 public class TicketPackageController {
 
     @Autowired
     private TicketPackageService ticketPackageService;
 
-    // 取得所有票券套餐
+    /**
+     * 取得所有票券套餐
+     * GET /api/ticket-packages
+     */
     @GetMapping
-    public ResponseEntity<List<TicketPackageBean>> getAllTicketPackages() {
+    public ResponseEntity<List<TicketPackageResponseDTO>> getAllTicketPackages() {
         try {
-            List<TicketPackageBean> packageList = ticketPackageService.getAllTicketPackages();
+            List<TicketPackageResponseDTO> packageList = ticketPackageService.getAllTicketPackages();
             if (packageList.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
@@ -32,36 +36,74 @@ public class TicketPackageController {
         }
     }
 
-    // 依ID取得票券套餐
+    /**
+     * 依 ID 取得票券套餐
+     * GET /api/ticket-packages/{id}
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<TicketPackageBean> getTicketPackageById(@PathVariable Long id) {
-        Optional<TicketPackageBean> packageData = ticketPackageService.getTicketPackageById(id);
-        return packageData.map(pkg -> new ResponseEntity<>(pkg, HttpStatus.OK))
+    public ResponseEntity<TicketPackageResponseDTO> getTicketPackageById(@PathVariable Long id) {
+        Optional<TicketPackageResponseDTO> packageData = ticketPackageService.getTicketPackageById(id);
+        return packageData.map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
                           .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // 新增票券套餐
+    /**
+     * 新增票券套餐
+     * POST /api/ticket-packages
+     * Request Body: TicketPackageRequestDTO
+     */
     @PostMapping
-    public ResponseEntity<TicketPackageBean> createTicketPackage(@RequestBody TicketPackageBean ticketPackage) {
+    public ResponseEntity<?> createTicketPackage(@RequestBody TicketPackageRequestDTO requestDTO) {
         try {
-            TicketPackageBean created = ticketPackageService.createTicketPackage(ticketPackage);
+            // 基本驗證
+            if (requestDTO.getPackageName() == null || requestDTO.getPackageName().trim().isEmpty()) {
+                return new ResponseEntity<>("套餐名稱不能為空", HttpStatus.BAD_REQUEST);
+            }
+            if (requestDTO.getPackageType() == null || requestDTO.getPackageType().trim().isEmpty()) {
+                return new ResponseEntity<>("套餐類型不能為空", HttpStatus.BAD_REQUEST);
+            }
+            
+            TicketPackageResponseDTO created = ticketPackageService.createTicketPackage(requestDTO);
             return new ResponseEntity<>(created, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("創建失敗: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // 更新票券套餐
+    /**
+     * 更新票券套餐
+     * PUT /api/ticket-packages/{id}
+     * Request Body: TicketPackageRequestDTO
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<TicketPackageBean> updateTicketPackage(
+    public ResponseEntity<?> updateTicketPackage(
             @PathVariable Long id,
-            @RequestBody TicketPackageBean ticketPackageDetails) {
-        Optional<TicketPackageBean> updated = ticketPackageService.updateTicketPackage(id, ticketPackageDetails);
-        return updated.map(pkg -> new ResponseEntity<>(pkg, HttpStatus.OK))
-                      .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            @RequestBody TicketPackageRequestDTO requestDTO) {
+        try {
+            // 基本驗證
+            if (requestDTO.getPackageName() == null || requestDTO.getPackageName().trim().isEmpty()) {
+                return new ResponseEntity<>("套餐名稱不能為空", HttpStatus.BAD_REQUEST);
+            }
+            if (requestDTO.getPackageType() == null || requestDTO.getPackageType().trim().isEmpty()) {
+                return new ResponseEntity<>("套餐類型不能為空", HttpStatus.BAD_REQUEST);
+            }
+            
+            Optional<TicketPackageResponseDTO> updated = ticketPackageService.updateTicketPackage(id, requestDTO);
+            return updated.map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                          .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("更新失敗: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    // 刪除票券套餐
+    /**
+     * 刪除票券套餐
+     * DELETE /api/ticket-packages/{id}
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteTicketPackage(@PathVariable Long id) {
         boolean deleted = ticketPackageService.deleteTicketPackage(id);
@@ -69,6 +111,3 @@ public class TicketPackageController {
                        : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
-
-
-

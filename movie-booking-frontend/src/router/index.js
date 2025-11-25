@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import HomeView from '../views/HomeView.vue';
 import MoviesView from '../views/MoviesView.vue';
+import UpcomingMoviesView from '../views/UpcomingMoviesView.vue';
 import MovieDetailView from '../views/MovieDetailView.vue';
 import SeatSelectionView from '../views/SeatSelectionView.vue';
 import CheckoutView from '../views/CheckoutView.vue';
@@ -20,6 +21,11 @@ const routes = [
     path: '/movies',
     name: 'MoviesView',
     component: MoviesView,
+  },
+  {
+    path: '/upcomingmovies',
+    name: 'UpcomingMovies',
+    component: UpcomingMoviesView,
   },
   {
     path: '/movies/:id',

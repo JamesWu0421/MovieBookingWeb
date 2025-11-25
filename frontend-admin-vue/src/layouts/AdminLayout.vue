@@ -1,7 +1,10 @@
 <template>
   <el-container style="height: 100vh">
     <el-aside width="240px" class="sidebar">
-      <div class="logo">🎬 電影訂票管理</div>
+      <div class="logo">
+        <img src="/images/theater6.png" alt="" class="logo-img" />
+        <span class="logo-text">電影訂票管理</span>
+      </div>
       <el-menu
         router
         :default-active="$route.path"
@@ -12,7 +15,12 @@
         <el-menu-item index="/dashboard">儀表板</el-menu-item>
         <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
-        <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
+        <el-sub-menu index="/activities">
+        <template #title>電影/影廳管理</template>
+          <el-menu-item index="/movies">電影管理</el-menu-item>
+          <el-menu-item index="/screens">影廳管理</el-menu-item>
+          <el-menu-item index="/shows">場次管理</el-menu-item>
+          </el-sub-menu>
          <el-sub-menu index="/activities">
         <template #title>票種管理</template>
         <el-menu-item index="/ticket-package">票種管理</el-menu-item>
@@ -60,11 +68,13 @@ function logout() {
   padding-top: 12px;
 }
 .logo {
-  text-align: center;
+  display: flex;
+  align-items: center;        
+  gap: 3px;
   color: #fff;
   font-size: 18px;
   font-weight: bold;
-  padding: 16px 0;
+  padding: 10px;
 }
 .header {
   display: flex;
@@ -78,5 +88,16 @@ function logout() {
 .menu >>> .el-menu-item,
 .menu >>> .el-sub-menu__title {
   color: #fff;
+}
+
+.logo-img {
+  width: 70px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-text {
+  letter-spacing: 2px;
 }
 </style>

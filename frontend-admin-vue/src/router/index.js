@@ -11,7 +11,9 @@ const routes = [
       { path: "/dashboard", component: Dashboard },
       { path: "/members", component: () => import("../pages/Members.vue") },
       { path: "/employees", component: () => import("../pages/Employees.vue") },
-      { path: "/movies", component: () => import("../pages/Movies.vue") },
+      { path: "/movies",
+        name: 'movies',
+        component: () => import("../pages/Movies.vue") },
       { path: "/orders", component: () => import("../pages/Orders.vue") },
       // 票種與場次管理
       {
@@ -41,6 +43,55 @@ const routes = [
       {
         path: "/security",
         component: () => import("../pages/SecurityLogs.vue"),
+      },
+      {
+        path: '/movies/new',
+        name: 'movie-new',
+        component: () => import("../pages/MovieFormView.vue"),
+      },
+      {
+        path: '/movies/:id/edit',
+        name: 'movie-edit',
+        component: () => import("../pages/MovieFormView.vue"),
+        props: true,
+      },
+      {
+        path: '/screens',
+        name: 'admin-screens',
+        component: () => import("../pages/Screens.vue"),
+      },
+      {
+        path: '/screens/new',
+        component: () => import("../pages/ScreenFormView.vue"),
+      },
+      {
+        path: '/screens/:id/edit',
+        component: () => import("../pages/ScreenFormView.vue"),
+      },
+      {
+        path: '/shows',
+        name: 'admin-shows',
+        component: () => import("../pages/Shows.vue"),
+      },
+      {
+        path: '/shows/new',
+        component: () => import("../pages/ShowFormView.vue"),
+      },
+      {
+        path: '/shows/:id/edit',
+        component: () => import("../pages/ShowFormView.vue"),
+      },
+      {
+        path: '/seats/batch',
+        component: () => import("../pages/SeatBatchView.vue"),
+      },
+      {
+        path: '/screens/:screenId/seats',
+        component: () => import("../pages/Seats.vue"),
+      },
+      {
+        path: '/screens/:screenId/seat-map',
+        component: () => import("../pages/SeatMapView.vue"),
       },
     ],
   },
