@@ -27,14 +27,12 @@
 <script setup>
 import { useAuthStore } from "../../stores/login";
 import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const handleLogout = async () => {
   await authStore.logout();
-  ElMessage.success("已登出");
   router.push("/");
 };
 </script>
