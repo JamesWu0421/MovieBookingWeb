@@ -1,0 +1,30 @@
+package com.example.movie.controller;
+
+import com.example.movie.dto.EventDetailDTO;
+import com.example.movie.dto.EventHomeDTO;
+import com.example.movie.service.EventPublicService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/events")
+@RequiredArgsConstructor
+@CrossOrigin
+public class EventPublicController {
+
+    private final EventPublicService eventPublicService;
+
+    // 列表
+    @GetMapping("/home")
+    public List<EventHomeDTO> getHomeEvents() {
+        return eventPublicService.getHomeEvents();
+    }
+
+    // 詳細
+    @GetMapping("/{id}")
+    public EventDetailDTO getEventDetail(@PathVariable Integer id) {
+        return eventPublicService.getEventDetail(id);
+    }
+}

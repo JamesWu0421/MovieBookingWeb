@@ -19,6 +19,26 @@ import VerifySuccess from "../views/Login/VerifySuccess.vue";
 import VerifyFailed from "../views/Login/VerifyFailed.vue";
 
 const routes = [
+
+ // ===== 活動和通知 ======
+{
+    path: "/events",
+    name: "EventList",
+    component: () => import("../views/events/EventListView.vue"),
+  },
+  {
+    path: "/events/:id",
+    name: "EventDetail",
+    component: () => import("../views/events/EventDetailView.vue"),
+  },
+  {
+    path: "/notifications",
+    name: "NotificationCenter",
+    component: () => import("../views/NotificationCenter.vue"),
+    meta: { requiresAuth: true },
+  },
+
+
   // ===== 公開頁面 =====
   {
     path: "/",
