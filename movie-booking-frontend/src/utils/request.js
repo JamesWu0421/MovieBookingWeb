@@ -30,7 +30,9 @@ request.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.warn("收到 401 錯誤:", error.config.url);
-
+      const authStore = useAuthStore();
+      authStore.clearAuth();
+      router.push("/login");
       // 如果是 logout 請求本身失敗
       if (
         error.config.url.includes("/logout") ||
@@ -39,7 +41,6 @@ request.interceptors.response.use(
         console.log("Logout 請求失敗，直接清理本地狀態");
         if (!isLoggingOut) {
           isLoggingOut = true;
-          const authStore = useAuthStore();
           authStore.clearAuth();
           router.push("/login");
           setTimeout(() => {

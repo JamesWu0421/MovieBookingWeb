@@ -119,6 +119,11 @@ const routes = [
     component: TicketSelectionView,
     meta: { requiresAuth: true },
   },
+  {
+    path: "/auth/callback",
+    name: "AuthCallback",
+    component: () => import("../views/Login/Callback.vue"),
+  },
 ];
 
 const router = createRouter({
