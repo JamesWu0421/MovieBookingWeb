@@ -318,10 +318,10 @@ const loading = ref(false)
 const saving = ref(false)
 
 // 圖片上傳相關
-const uploadUrl = computed(() => 'http://localhost:8080/api/upload/image')
+const uploadUrl = computed(() => `${import.meta.env.VITE_UPLOAD_URL}/image`)
 const uploadHeaders = computed(() => ({
   // 如果需要認證，可以加上 token
-  // 'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+  'Authorization': `Bearer ${localStorage.getItem('admin_token') || ''}`
 }))
 
 const form = ref({
