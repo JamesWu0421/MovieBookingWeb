@@ -69,17 +69,23 @@ export const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await request({
-    url: "/upload/avatar",
-    method: "post",
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return response.data;
+  try {
+    const response = await request({
+      url: "/upload/avatar",
+      method: "post",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("uploadAvatar response:", response);
+    return response;
+  } catch (error) {
+    console.error("uploadAvatar error:", error);
+    throw error; // 讓呼叫端知道有錯誤
+  }
 };
+
 // 重設密碼
 export const resetPassword = (token, newPassword) => {
   return request({

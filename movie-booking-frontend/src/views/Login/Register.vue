@@ -244,25 +244,20 @@ const handleAvatarUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    errorMessage.value = "請選擇圖片檔案";
-    return;
-  }
-
-  if (file.size > 10 * 1024 * 1024) {
-    errorMessage.value = "圖片大小不能超過 10MB";
-    return;
-  }
-
   uploading.value = true;
-  errorMessage.value = "";
 
   try {
     const result = await uploadAvatar(file);
-    uploadedAvatarUrl.value = result.url || result;
-    event.target.value = "";
+    console.log("uploadAvatar 回傳:", result);
+    if (result && result.url) {
+      uploadedAvatarUrl.value = result.url;
+    } else {
+      errorMessage.value = "上傳成功，但沒有取得圖片 URL";
+      uploadedAvatarUrl.value = "";
+    }
   } catch (error) {
     errorMessage.value = error.message || "頭像上傳失敗";
+    uploadedAvatarUrl.value = "";
   } finally {
     uploading.value = false;
   }
