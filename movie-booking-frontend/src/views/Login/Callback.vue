@@ -22,7 +22,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useLoginStore } from "../../stores/login";
+import { useAuthStore } from "../../stores/login";
 import * as authApi from "../../services/api";
 
 const loading = ref(true);

@@ -34,7 +34,10 @@ const router = useRouter();
 
 const handleLogout = async () => {
   await authStore.logout();
+<<<<<<< HEAD
   ElMessage.success("已登出");
+=======
+>>>>>>> merge-test
   router.push("/");
 };
 </script>
