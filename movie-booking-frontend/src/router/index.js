@@ -19,6 +19,29 @@ import VerifySuccess from "../views/Login/VerifySuccess.vue";
 import VerifyFailed from "../views/Login/VerifyFailed.vue";
 
 const routes = [
+<<<<<<< HEAD
+=======
+
+ // ===== 活動和通知 ======
+{
+    path: "/events",
+    name: "EventList",
+    component: () => import("../views/events/EventListView.vue"),
+  },
+  {
+    path: "/events/:id",
+    name: "EventDetail",
+    component: () => import("../views/events/EventDetailView.vue"),
+  },
+  {
+    path: "/notifications",
+    name: "NotificationCenter",
+    component: () => import("../views/NotificationCenter.vue"),
+    meta: { requiresAuth: true },
+  },
+
+
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
   // ===== 公開頁面 =====
   {
     path: "/",
@@ -119,6 +142,7 @@ const routes = [
     component: TicketSelectionView,
     meta: { requiresAuth: true },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   },
   {
@@ -126,6 +150,8 @@ const routes = [
     name: "AuthCallback",
     component: () => import("../views/Login/Callback.vue"),
 >>>>>>> merge-test
+=======
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
   },
 ];
 

@@ -3,9 +3,12 @@
     <div class="logo" @click="$router.push('/')">
       <img class="icon" src="/images/theater6.png" alt="" />
     </div>
+
     <nav class="nav-links">
+
       <router-link to="/movies">現正熱映</router-link>
       <router-link to="#">即將上映</router-link>
+<<<<<<< HEAD
 
       <!-- 快速訂票 - 始終顯示,未登入點擊會被路由守衛導向 login -->
       <router-link to="/booking/QuickBooking"> 快速訂票 </router-link>
@@ -19,6 +22,19 @@
       <router-link v-if="!authStore.isAuthenticated" to="/login">
         會員登入
       </router-link>
+=======
+      <router-link to="/events">最新活動</router-link>
+      <router-link to="/booking/QuickBooking">快速訂票</router-link>
+
+      <!-- 個人資料（登入後） -->
+      <router-link v-if="authStore.isAuthenticated" to="/profile">個人資料</router-link>
+
+      <!-- 🔔 登入後才顯示 -->
+      <NotificationBell v-if="authStore.isAuthenticated" />
+
+      <!-- 會員登入 / 登出 -->
+      <router-link v-if="!authStore.isAuthenticated" to="/login">會員登入</router-link>
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
       <button v-else @click="handleLogout" class="logout-btn">登出</button>
     </nav>
   </header>
@@ -28,6 +44,10 @@
 import { useAuthStore } from "../../stores/login";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
+<<<<<<< HEAD
+=======
+import NotificationBell from "../notifications/NotificationBell.vue";
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -35,14 +55,19 @@ const router = useRouter();
 const handleLogout = async () => {
   await authStore.logout();
 <<<<<<< HEAD
+<<<<<<< HEAD
   ElMessage.success("已登出");
 =======
 >>>>>>> merge-test
+=======
+  ElMessage.success("已登出");
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
   router.push("/");
 };
 </script>
 
 <style scoped>
+/* 原本的 CSS 完整保留 */
 .app-header {
   position: fixed;
   top: 0;
@@ -66,6 +91,7 @@ const handleLogout = async () => {
 .nav-links {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .nav-links a,

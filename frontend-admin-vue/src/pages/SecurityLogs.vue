@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div class="logs-page">
     <el-row class="toolbar" style="margin-bottom: 12px">
       <el-col :span="8">
@@ -343,6 +344,15 @@ function formatDateTime(dateTime) {
 }
 
 onMounted(fetchList);
+=======
+  <el-card>
+    <h3>安全日誌</h3>
+    <p>此頁面為功能佔位，之後可依需求串接 API 與加入表格/表單。</p>
+  </el-card>
+</template>
+
+<script setup>
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
 </script>
 
 <style scoped>

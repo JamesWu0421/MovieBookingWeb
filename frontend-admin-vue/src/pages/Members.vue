@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div class="users-page">
     <el-row class="toolbar" align="middle">
       <el-col :span="12">
@@ -245,6 +246,15 @@ async function toggleStatus(row) {
 }
 
 onMounted(loadData);
+=======
+  <el-card>
+    <h3>會員管理</h3>
+    <p>此頁面為功能佔位，之後可依需求串接 API 與加入表格/表單。</p>
+  </el-card>
+</template>
+
+<script setup>
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
 </script>
 
 <style scoped>

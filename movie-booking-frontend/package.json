@@ -10,9 +10,13 @@
   },
   "dependencies": {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "axios": "^1.13.2",
 =======
 >>>>>>> merge-test
+=======
+    "axios": "^1.13.2",
+>>>>>>> 2eeb41fca6023512bb0be263c6f19e7e5ff7905e
     "element-plus": "^2.11.8",
     "pinia": "^3.0.4",
     "vue": "^3.5.22",
