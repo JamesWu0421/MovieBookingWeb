@@ -78,7 +78,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { fetchEventById } from "../../services/api";
+import { fetchEventDetail } from "../../services/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -86,7 +86,7 @@ const event = ref(null);
 
 const loadDetail = async () => {
   const id = route.params.id;
-  const res = await fetchEventById(id);
+  const res = await fetchEventDetail(id);
   event.value = res;
 };
 

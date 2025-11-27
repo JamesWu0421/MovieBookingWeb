@@ -104,22 +104,7 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 快捷操作 -->
-    <div class="section-title">
-      <el-icon><Operation /></el-icon>
-      <span>快捷操作</span>
-    </div>
-    <el-row :gutter="20" class="shortcut-row">
-      <el-col :xs="12" :sm="8" :md="6" :lg="4" v-for="shortcut in shortcuts" :key="shortcut.title">
-        <div class="shortcut-card" @click="handleShortcut(shortcut.path)">
-          <div class="shortcut-icon" :style="{ background: shortcut.color }">
-            <el-icon><component :is="shortcut.icon" /></el-icon>
-          </div>
-          <div class="shortcut-title">{{ shortcut.title }}</div>
-        </div>
-      </el-col>
-    </el-row>
+    
   </div>
 </template>
 
@@ -568,6 +553,7 @@ const handleShortcut = (path) => {
   cursor: pointer;
   transition: all 0.3s;
   height: 100%;
+  min-width: fit-content; /* 👈 新增：讓卡片根據內容自動調整 */
 }
 
 .kpi-card:hover {
@@ -589,7 +575,7 @@ const handleShortcut = (path) => {
 
 .kpi-content {
   flex: 1;
-  min-width: 0;
+  min-width: 120px; /* 👈 改成固定最小寬度，避免太窄 */
 }
 
 .kpi-title {
@@ -598,16 +584,15 @@ const handleShortcut = (path) => {
   margin-bottom: 8px;
 }
 
+
 .kpi-value {
   font-size: 26px;
   font-weight: 700;
   color: #303133;
   margin-bottom: 4px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* 移除 overflow 和 text-overflow */
 }
-
 .kpi-desc {
   font-size: 12px;
   color: #909399;

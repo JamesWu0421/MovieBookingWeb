@@ -66,7 +66,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("*"));
 
         // 🔧 修正：開發階段可以關閉憑證
-        configuration.setAllowCredentials(false); // 必須是 false
+        configuration.setAllowCredentials(true); // 允許攜帶憑證(Cookie/Token)
 
         // 預檢請求的有效期
         configuration.setMaxAge(3600L);

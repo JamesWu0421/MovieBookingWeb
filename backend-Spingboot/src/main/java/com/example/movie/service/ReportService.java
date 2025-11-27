@@ -339,63 +339,62 @@ public class ReportService {
         });
     }
 
-/**
- * 獲取趨勢數據（每日營收和票數）
- */
-private List<Map<String, Object>> getTrendData(LocalDate startDate, LocalDate endDate,
-        List<Integer> movieIds, List<Integer> screenIds,
-        List<String> ticketTypes) {
+    /**
+     * 獲取趨勢數據(每日營收和票數)
+     */
+    private List<Map<String, Object>> getTrendData(LocalDate startDate, LocalDate endDate,
+            List<Integer> movieIds, List<Integer> screenIds,
+            List<String> ticketTypes) {
 
-    StringBuilder sql = new StringBuilder();
-    sql.append("SELECT ");
-    sql.append("  CONVERT(VARCHAR(10), o.order_time, 23) AS date, ");
-    sql.append("  SUM(o.total_amount) AS revenue, ");
-    sql.append("  COUNT(t.id) AS tickets ");
-    sql.append("FROM orders o ");
-    sql.append("LEFT JOIN tickets t ON o.id = t.order_id ");
-    sql.append("LEFT JOIN shows s ON o.show_id = s.id "); // 保留 movie & screen 篩選
-    sql.append("WHERE o.order_status = 'completed' ");
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+        sql.append("  CONVERT(VARCHAR(10), s.show_date, 23) AS date, ");
+        sql.append("  ISNULL(SUM(o.total_amount), 0) AS revenue, ");
+        sql.append("  ISNULL(COUNT(od.id), 0) AS tickets ");
+        sql.append("FROM shows s ");
+        sql.append("LEFT JOIN orders o ON s.id = o.show_id AND o.order_status = 'completed' ");
+        sql.append("LEFT JOIN order_details od ON o.id = od.order_id ");
+        sql.append("WHERE 1=1 ");
 
-    List<Object> params = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
 
-    // 日期範圍（使用 order_time）
-    if (startDate != null) {
-        sql.append(" AND o.order_time >= ? ");
-        params.add(java.sql.Timestamp.valueOf(startDate.atStartOfDay()));
+        // 日期範圍
+        if (startDate != null) {
+            sql.append(" AND s.show_date >= ? ");
+            params.add(startDate);
+        }
+        if (endDate != null) {
+            sql.append(" AND s.show_date <= ? ");
+            params.add(endDate);
+        }
+
+        // 電影篩選
+        if (movieIds != null && !movieIds.isEmpty()) {
+            sql.append(" AND s.movie_id IN (")
+                    .append(movieIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
+                    .append(") ");
+        }
+
+        // 影廳篩選
+        if (screenIds != null && !screenIds.isEmpty()) {
+            sql.append(" AND s.screen_id IN (")
+                    .append(screenIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
+                    .append(") ");
+        }
+
+        // 票種篩選
+        if (ticketTypes != null && !ticketTypes.isEmpty()) {
+            sql.append(" AND od.ticket_type IN (");
+            sql.append(ticketTypes.stream().map(t -> "?").collect(Collectors.joining(",")));
+            sql.append(") ");
+            params.addAll(ticketTypes);
+        }
+
+        sql.append("GROUP BY CONVERT(VARCHAR(10), s.show_date, 23) ");
+        sql.append("ORDER BY date");
+
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
     }
-    if (endDate != null) {
-        sql.append(" AND o.order_time < ? "); 
-        params.add(java.sql.Timestamp.valueOf(endDate.plusDays(1).atStartOfDay()));
-    }
-
-    // 電影篩選
-    if (movieIds != null && !movieIds.isEmpty()) {
-        sql.append(" AND s.movie_id IN (")
-                .append(movieIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
-                .append(") ");
-    }
-
-    // 影廳篩選
-    if (screenIds != null && !screenIds.isEmpty()) {
-        sql.append(" AND s.screen_id IN (")
-                .append(screenIds.stream().map(String::valueOf).collect(Collectors.joining(",")))
-                .append(") ");
-    }
-
-    // 票種篩選
-    if (ticketTypes != null && !ticketTypes.isEmpty()) {
-        sql.append(" AND t.ticket_type IN (")
-                .append(ticketTypes.stream().map(t -> "?").collect(Collectors.joining(",")))
-                .append(") ");
-        params.addAll(ticketTypes);
-    }
-
-    sql.append("GROUP BY CONVERT(VARCHAR(10), o.order_time, 23) ");
-    sql.append("ORDER BY date");
-
-    return jdbcTemplate.queryForList(sql.toString(), params.toArray());
-}
-
 
     /**
      * 獲取影廳類型分布

@@ -51,7 +51,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { fetchAllEvents } from "../../services/api";
+import { fetchHomeEvents } from "../../services/api";  
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -93,13 +93,17 @@ const goDetail = (id) => {
 
 // 載入活動列表（含排序：進行中在前，已結束在後）
 const loadEvents = async () => {
-  const params = {};
-  if (activeTab.value !== "all") params.category = activeTab.value;
+  // ✅ 直接呼叫 fetchHomeEvents，不需要參數
+  const res = await fetchHomeEvents();  
 
-  const res = await fetchAllEvents(params);
+  // ✅ 前端根據 activeTab 篩選
+  let filteredEvents = res;
+  if (activeTab.value !== "all") {
+    filteredEvents = res.filter(item => item.category === activeTab.value);
+  }
 
   const now = new Date();
-  events.value = [...res].sort((a, b) => {
+  events.value = [...filteredEvents].sort((a, b) => {
     const aEnd = a.endDate ? new Date(a.endDate) : null;
     const bEnd = b.endDate ? new Date(b.endDate) : null;
 

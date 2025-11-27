@@ -9,21 +9,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/api/public/events") // 公共活動相關的API
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class EventPublicController {
 
     private final EventPublicService eventPublicService;
 
     // 列表
-    @GetMapping("/home")
+    @GetMapping("/home") // GET /api/public/events/home
     public List<EventHomeDTO> getHomeEvents() {
         return eventPublicService.getHomeEvents();
     }
 
     // 詳細
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") // GET /api/public/events/1
     public EventDetailDTO getEventDetail(@PathVariable Integer id) {
         return eventPublicService.getEventDetail(id);
     }

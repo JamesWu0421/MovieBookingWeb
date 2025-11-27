@@ -1,21 +1,21 @@
-import request from "../utils/request"; 
+import request from "../utils/request";
 
 // =============================
 // 🔥 前台活動 API（新增，不覆蓋舊的）
 // =============================
 
-// 活動列表（用後端 EventPublicController 的 /events/home）
+// 活動列表
 export const fetchHomeEvents = () => {
   return request({
-    url: "/events/home",
+    url: "/public/events/home",  // ✅ 加上 /public/
     method: "get",
   });
 };
 
-// 活動詳細（後台活動詳細你已經有 fetchEventById，我保留並新增 fetchEventDetail）
+// 活動詳
 export const fetchEventDetail = (id) => {
   return request({
-    url: `/events/${id}`,
+    url: `/public/events/${id}`,  // ✅ 加上 /public/
     method: "get",
   });
 };

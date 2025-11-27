@@ -37,7 +37,7 @@ export const getUnreadCount = () => {
   if (!userId) return Promise.resolve({ unreadCount: 0 });
 
   return request({
-    url: `/notifications/count-unread/${userId}`,
+    url: `/notifications/user/${userId}/unread-count`,
     method: "get",
   });
 };
@@ -48,7 +48,7 @@ export const markOneRead = (notificationId) => {
   if (!userId) return Promise.resolve();
 
   return request({
-    url: `/notifications/read-one/${notificationId}`,
+    url: `/notifications/user/${userId}/notification/${notificationId}/read`,
     method: "put",
   });
 };
@@ -58,10 +58,14 @@ export const markAllRead = () => {
   const userId = getUserId();
   if (!userId) return Promise.resolve();
 
-  return request({
-    url: `/notifications/read-all/${userId}`,
-    method: "put",
-  });
+  // ⚠️ 注意：後端目前沒有提供「全部已讀」的 API
+  // 臨時方案：在前端循環標記已讀
+  return getUserNotifications({ unreadOnly: true })
+    .then(response => {
+      const notifications = response.content || response.notifications || [];
+      const promises = notifications.map(n => markOneRead(n.notificationId || n.id));
+      return Promise.all(promises);
+    });
 };
 
 export default {
