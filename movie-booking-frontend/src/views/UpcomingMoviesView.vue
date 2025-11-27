@@ -7,7 +7,7 @@
     <p v-if="loading">載入中...</p>
     <p v-else-if="error">{{ error }}</p>
 
-    <MovieList
+    <MovieList class="movielist"
       v-else
       :movies="upcomingMovies"
       @select-movie="goToMovieDetail"

@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="div1">
-      <div class="div2">現正熱映</div>
+      <div class="div2">快速訂票</div>
     </div>
 
     <p v-if="loading">載入中...</p>
@@ -31,11 +31,7 @@ onMounted(() => {
 });
 
 const goToMovieDetail = (movieId) => {
-  // 可以先在這邊把 selectedMovie 存進 booking store（可選）
-  // const bookingStore = useBookingStore();
-  // bookingStore.setMovie(moviesStore.getMovieById(movieId));
 
-  // 跳轉到 TicketBooking 頁面（不是 movies 詳細頁）
   window.location.href = `/booking/TicketBooking/${movieId}`;
 };
 </script>

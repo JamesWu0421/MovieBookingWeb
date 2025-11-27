@@ -35,7 +35,7 @@
       <div class="cinema-selection">
         <div v-if="cinemasLoading" class="loading-text">載入影城中...</div>
 
-        <!-- ✅ 只顯示一個固定的「台北館」按鈕 -->
+        <!-- 只顯示一個固定的「台北館」按鈕 -->
         <div v-else class="cinema-grid">
           <button
             :class="['cinema-btn', { active: selectedCinema === TAIPEI_CINEMA_ID }]"
@@ -183,7 +183,7 @@ const router = useRouter()
 const moviesStore = useMoviesStore()
 const showStore = useShowStore()
 
-// ✅ 固定一個台北館的設定（cinemaId 請改成你後端實際的 id）
+// 固定一個台北館的設定（cinemaId 請改成你後端實際的 id）
 const TAIPEI_CINEMA_ID = 1
 const TAIPEI_CINEMA_NAME = '台北館'
 

@@ -19,7 +19,8 @@
         <!-- 下方確認區 -->
         <div class="confirm-bar">
           <div>
-            已選座位：
+            已選座位
+            <span v-if="maxSeats > 0">（最多 {{ maxSeats }} 席）</span>：
             <span v-if="!selectedSeats.length">尚未選取</span>
             <span v-else>
               {{ selectedSeatsText }}
@@ -40,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '../stores/booking';
 import SeatMap from '../components/booking/SeatMap.vue';
@@ -62,6 +63,34 @@ const selectedSeats = computed(() => bookingStore.selectedSeats || []);
 
 const selectedSeatsText = computed(() =>
   selectedSeats.value.map(s => `${s.rowLabel}${s.seatNumber}`).join('、')
+);
+
+// 新增：本次最多可選幾個座位（從前一頁 query 帶過來）
+const maxSeats = computed(() => {
+  const v = Number(route.query.ticketCount);
+  return isNaN(v) ? 0 : v; // 0 代表不限制（防呆）
+});
+
+// 監看 selectedSeats，一旦超過 maxSeats 就砍掉多出來的並跳 Swal
+watch(
+  selectedSeats,
+  async (newVal) => {
+    if (!maxSeats.value) return; // 沒設定上限就不管
+    if (newVal.length <= maxSeats.value) return;
+
+    // 把前 maxSeats 個保留，其餘視為超過
+    const trimmed = newVal.slice(0, maxSeats.value);
+    const exceeded = newVal.slice(maxSeats.value);
+
+    bookingStore.selectedSeats = trimmed;
+
+    await Swal.fire(
+      '提醒',
+      `本次最多只能選擇 ${maxSeats.value} 個座位。\n若要更換，請先取消其他座位。`,
+      'warning'
+    );
+  },
+  { deep: true }
 );
 
 // 撈場次資料，取得 screenId
@@ -93,6 +122,15 @@ const confirmSeats = async () => {
     return;
   }
 
+  if (maxSeats.value > 0 && selectedSeats.value.length < maxSeats.value) {
+    await Swal.fire(
+      '提醒',
+      `本次購買為 ${maxSeats.value} 張票，請選滿 ${maxSeats.value} 個座位後再確認。`,
+      'warning'
+    )
+    return;
+  }
+
   locking.value = true;
   error.value = '';
 
@@ -100,14 +138,13 @@ const confirmSeats = async () => {
     const payload = {
       showId: Number(showtimeId),
       seatIds: selectedSeats.value.map(s => s.seatId),
-      userId: 1,        // 先寫死，之後換成登入會員 ID
-      lockSeconds: 600, // 暫鎖 10 分鐘
+      userId: 1,
+      lockSeconds: 600,
     };
 
     const res = await seatLockApi.lockSeats(payload);
-    const { lockedSeatIds, failedSeatIds } = res.data || {};
+    const { failedSeatIds } = res.data || {};
 
-    // 有鎖失敗的 → 表示被別人搶先了
     if (failedSeatIds && failedSeatIds.length) {
       bookingStore.selectedSeats = bookingStore.selectedSeats
         .filter(s => !failedSeatIds.includes(s.seatId));
@@ -139,6 +176,7 @@ const confirmSeats = async () => {
 
 onMounted(loadShow);
 </script>
+
 
 <style scoped>
 .seat-selection-view {

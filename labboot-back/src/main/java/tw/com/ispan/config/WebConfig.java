@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // 允許所有路徑
                 .allowedOrigins(
-                    "http://localhost:5173",  // Vite 開發伺服器
+                    "http://localhost:5174",  // Vite 開發伺服器
                     "http://localhost:3000",  // Vue CLI 開發伺服器
                     "http://localhost:8080"   // 本機測試
                 )

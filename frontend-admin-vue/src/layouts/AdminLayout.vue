@@ -26,6 +26,11 @@
         <el-menu-item index="/ticket-package">票種管理</el-menu-item>
         <el-menu-item index="/showtimes-price">場次票種管理</el-menu-item>
         </el-sub-menu>
+       <el-sub-menu index="/batch">
+          <template #title>批次管理</template>
+          <el-menu-item index="/batch-operations">批次列表</el-menu-item>
+        </el-sub-menu>
+
         <el-menu-item index="/orders">訂單管理</el-menu-item>
         <el-sub-menu index="/activities">
           <template #title>活動管理</template>

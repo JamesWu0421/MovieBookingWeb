@@ -327,20 +327,25 @@ const detailSummaryText = computed(() => {
 const showTicketInfo = (ticket) => {
   alert(ticket.description)
 }
+
 const goToSeatSelection = () => {
   if (totalAmount.value === 0) {
     alert('請選擇至少一種票種')
     return
   }
+
   router.push({
-    name: 'SeatSelection',
+    name: 'seat-selection',
+    params: {
+      showtimeId: showId
+    },
     query: {
       movieId: movieId,
-      showId: showId,
       date: showtimeInfo.value.date,
       startTime: showtimeInfo.value.startTime,
       endTime: showtimeInfo.value.endTime,
-      hall: showtimeInfo.value.hall
+      hall: showtimeInfo.value.hall,
+      ticketCount: totalTickets.value
     }
   })
 }

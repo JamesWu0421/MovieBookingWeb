@@ -7,7 +7,7 @@
     <p v-if="loading">載入中...</p>
     <p v-else-if="error">{{ error }}</p>
 
-    <MovieList
+    <MovieList class="movielist"
       v-else
       :movies="nowPlayingMovies"
       @select-movie="goToMovieDetail"
@@ -56,6 +56,7 @@ onMounted(() => {
 const goToMovieDetail = (movieId) => {
   window.location.href = `/movies/${movieId}`;
 };
+
 </script>
 
 <style scoped>

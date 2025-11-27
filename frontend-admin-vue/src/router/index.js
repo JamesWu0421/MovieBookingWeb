@@ -93,6 +93,22 @@ const routes = [
         path: '/screens/:screenId/seat-map',
         component: () => import("../pages/SeatMapView.vue"),
       },
+      
+ {
+        path: "/batch-operations",
+        name: "BatchOperationList",
+        component: () => import("../pages/BatchOperationList.vue"),
+      },
+      {
+        path: "/batch-operations/:batchId/sessions",
+        name: "BatchSessionTemp",
+        component: () => import("../pages/BatchSessionTemp.vue"),
+      },
+      {
+        path: "/batch-operations/:batchId/tickets",
+        name: "BatchTicketTemp",
+        component: () => import("../pages/BatchTicketTemp.vue"),
+      },
     ],
   },
 ];

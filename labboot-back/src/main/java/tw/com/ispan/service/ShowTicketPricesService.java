@@ -10,6 +10,7 @@ import tw.com.ispan.domain.TicketPackageBean;
 import tw.com.ispan.domain.ShowBean;
 import tw.com.ispan.domain.MovieBean;
 import tw.com.ispan.domain.ScreenBean;
+import tw.com.ispan.domain.BatchTicketsTempBean;
 import tw.com.ispan.dto.ShowTicketPricesRequestDTO;
 import tw.com.ispan.dto.ShowTicketPricesResponseDTO;
 import tw.com.ispan.mapper.ShowTicketPricesMapper;
@@ -113,7 +114,7 @@ public class ShowTicketPricesService {
 
         // 7. 存進 DB
         ShowTicketPricesBean saved = repository.save(bean);
-        
+
         // 8. 轉換為 ResponseDTO 返回
         return ShowTicketPricesMapper.toResponseDTO(saved);
     }
@@ -183,6 +184,28 @@ public class ShowTicketPricesService {
             throw new EntityNotFoundException("刪除失敗,找不到 ID 為 " + id + " 的票價資料");
         }
         repository.deleteById(id);
+    }
+
+    // ========= 批次用 helper =========
+
+    /**
+     * 批次匯入使用：由 BatchTicketsTempBean 轉成正式 ShowTicketPrices
+     * 會重用 createFromRequest(...) 的全部邏輯（含 calculator）
+     */
+    @Transactional
+    public void createPriceFromBatchTicketTemp(BatchTicketsTempBean temp, Integer showId) {
+
+        if (temp.getTicketPackagesId() == null) {
+            throw new IllegalArgumentException("ticketPackagesId 不可為 null");
+        }
+
+        ShowTicketPricesRequestDTO dto = new ShowTicketPricesRequestDTO();
+        dto.setShowId(showId);
+        dto.setTicketPackageId(temp.getTicketPackagesId().longValue());
+        dto.setIsAvailable(Boolean.TRUE);
+
+        // 直接重用單筆建立票價的完整流程
+        this.createFromRequest(dto);
     }
 
     // ========= 保留舊方法 (向後兼容) =========
@@ -295,4 +318,5 @@ public class ShowTicketPricesService {
     public List<ShowTicketPricesBean> findByTimeRange(LocalTime startTime, LocalTime endTime) {
         return repository.findByStartTimeBetween(startTime, endTime);
     }
+
 }
