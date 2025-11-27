@@ -1,12 +1,19 @@
 <template>
   <el-container style="height: 100vh">
-   <el-aside width="200px" class="sidebar">
-    <div class="logo" @click="$router.push('/')">
-      <img class="icon" src="../assets/images/theater6.png" alt="" />
-    </div>
-    
-      <el-menu router :default-active="$route.path" background-color="#2b3a4b" text-color="#fff" class="menu">
+    <el-aside width="200px" class="sidebar">
+      <div class="logo" @click="$router.push('/')">
+        <img class="icon" src="../assets/images/theater6.png" alt="" />
+      </div>
+
+      <el-menu
+        router
+        :default-active="$route.path"
+        background-color="#2b3a4b"
+        text-color="#fff"
+        class="menu"
+      >
         <el-menu-item index="/dashboard">儀表板</el-menu-item>
+        <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
         <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
         <el-menu-item index="/showtimes">場次/票價管理</el-menu-item>
@@ -72,7 +79,7 @@ async function logout() {
   display: flex;
   align-items: center;
   height: 80px;
-  padding-left: 35px;   /* 👈 與 menu 的 padding 一樣 */
+  padding-left: 35px; /* 👈 與 menu 的 padding 一樣 */
   cursor: pointer;
 }
 
@@ -82,27 +89,24 @@ async function logout() {
   height: 45px;
 }
 
-
 /* Menu 文字：向右縮，使其與 Logo 左側對齊 */
 .menu >>> .el-menu-item,
 .menu >>> .el-sub-menu__title {
-  padding-left: 35px !important;   /* 👈 與 Logo 相同 */
+  padding-left: 35px !important; /* 👈 與 Logo 相同 */
   color: #fff;
 }
-
 
 .header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#f6f7fb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f6f7fb;
   font-weight: bold;
   padding: 12px 20px;
-  border-bottom:1px solid #e6e9ee;
+  border-bottom: 1px solid #e6e9ee;
 }
-.menu >>> .el-menu-item, .menu >>> .el-sub-menu__title {
+.menu >>> .el-menu-item,
+.menu >>> .el-sub-menu__title {
   color: #fff;
 }
-
-
 </style>

@@ -17,8 +17,8 @@
 
     <el-table :data="list" style="width: 100%" v-loading="loading">
       <el-table-column type="index" label="#" width="80" />
-      <el-table-column prop="empName" label="姓名" width="140" />
-      <el-table-column prop="empEmail" label="Email" width="220" />
+      <el-table-column prop="empName" label="姓名" />
+      <el-table-column prop="empEmail" label="Email" />
       <el-table-column prop="empPhone" label="手機號碼" />
 
       <el-table-column label="角色">
@@ -30,7 +30,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="狀態" width="100">
+      <el-table-column label="狀態">
         <template #default="{ row }">
           <el-tag v-if="row.status === 1" type="success">啟用</el-tag>
           <el-tag v-else-if="row.status === 0" type="info">停用</el-tag>
