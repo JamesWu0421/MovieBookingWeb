@@ -2,7 +2,7 @@
   <el-container style="height: 100vh">
    <el-aside width="200px" class="sidebar">
     <div class="logo" @click="$router.push('/')">
-      <img class="icon" src="@/assets/images/theater6.png" alt="" />
+      <img class="icon" src="../assets/images/theater6.png" alt="" />
     </div>
     
       <el-menu router :default-active="$route.path" background-color="#2b3a4b" text-color="#fff" class="menu">
