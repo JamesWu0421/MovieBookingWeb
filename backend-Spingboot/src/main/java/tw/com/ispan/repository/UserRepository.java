@@ -35,7 +35,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
             String username, String email, String phoneNumber);
 
     // ⭐ 添加這個方法（只查詢 ID，不查詢所有欄位）
-    @Query("SELECT CAST(u.id AS integer) FROM User u")
+    @Query("SELECT CAST(u.id AS integer) FROM UserEntity u")
     List<Integer> findAllIds();
 
 }
