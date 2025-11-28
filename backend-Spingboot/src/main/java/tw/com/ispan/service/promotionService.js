@@ -1,80 +1,64 @@
-import api from './api'
+import request from "../utils/request";
 
 const promotionService = {
   /**
-   * 獲取促銷活動列表（包含公告）
-   * @param {Object} params - 查詢參數
-   * @param {string} params.category - 類型篩選: 'promotion' | 'announcement' | 'all'
-   * @param {number} params.page - 頁碼
-   * @param {number} params.size - 每頁數量
-   * @param {string} params.q - 搜尋關鍵字
+   * 取得活動列表（優惠/公告）
    */
   list(params) {
-    return api.get('/events', { params })
+    return request.get("/events", { params });
   },
 
   /**
-   * 獲取單一活動詳情
+   * 取得單一活動
    */
   get(id) {
-    return api.get(`/events/${id}`)
+    return request.get(`/events/${id}`);
   },
 
   /**
-   * 創建促銷活動
+   * 新增活動
    */
   create(data) {
-    return api.post('/events', data)
+    return request.post("/events", data);
   },
 
   /**
-   * 更新促銷活動
+   * 更新活動
    */
   update(id, data) {
-    return api.put(`/events/${id}`, data)
+    return request.put(`/events/${id}`, data);
   },
 
   /**
-   * 刪除促銷活動
+   * 刪除活動
    */
   delete(id) {
-    return api.delete(`/events/${id}`)
+    return request.delete(`/events/${id}`);
   },
 
   /**
-   * 獲取進行中的促銷活動（給用戶前台使用）
+   * 後台不會用到（但保留也沒關係）
    */
   getActivePromotions() {
-    return api.get('/events/active', {
-      params: { category: 'promotion' }
-    })
+    return request.get("/events/active", {
+      params: { category: "promotion" },
+    });
   },
 
-  /**
-   * 驗證優惠碼
-   * @param {string} couponCode - 優惠碼
-   * @param {number} orderAmount - 訂單金額（用於檢查是否達到最低消費）
-   */
   validateCoupon(couponCode, orderAmount = 0) {
-    return api.post('/events/validate-coupon', {
+    return request.post("/events/validate-coupon", {
       couponCode,
-      orderAmount
-    })
+      orderAmount,
+    });
   },
 
-  /**
-   * 增加活動瀏覽次數
-   */
   incrementViewCount(id) {
-    return api.post(`/events/${id}/view`)
+    return request.post(`/events/${id}/view`);
   },
 
-  /**
-   * 記錄優惠碼使用
-   */
   useCoupon(eventId, userId) {
-    return api.post(`/events/${eventId}/use-coupon`, { userId })
-  }
-}
+    return request.post(`/events/${eventId}/use-coupon`, { userId });
+  },
+};
 
-export default promotionService
+export default promotionService;
