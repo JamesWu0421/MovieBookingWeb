@@ -41,6 +41,7 @@
 </template>
 
 <script setup>
+import axios from "axios";
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useBookingStore } from '../stores/booking';
@@ -159,7 +160,18 @@ const confirmSeats = async () => {
         '成功！',
         `座位 ${selectedSeatsText.value} 已暫時鎖定！請於 10 分鐘內完成購票!`,
         'success'
-      );
+      ).then(async () => {
+
+        // ⭐ 立即建立訂單 (呼叫 from-seatlock)
+        const res = await axios.post("http://localhost:8080/api/orders/from-seatlock", null, {
+          params: { userId: 1, showId: Number(showtimeId) }
+        });
+
+        const orderId = res.data.id;
+
+        // ⭐ 跳至訂單確認頁並帶 orderId
+        router.push(`/checkout/${orderId}`);
+      });
     }
 
   } catch (err) {

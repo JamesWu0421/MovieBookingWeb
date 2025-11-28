@@ -11,9 +11,11 @@ const routes = [
       { path: "/dashboard", component: Dashboard },
       { path: "/members", component: () => import("../pages/Members.vue") },
       { path: "/employees", component: () => import("../pages/Employees.vue") },
-      { path: "/movies",
+      {
+        path: "/movies",
         name: 'movies',
-        component: () => import("../pages/Movies.vue") },
+        component: () => import("../pages/Movies.vue")
+      },
       { path: "/orders", component: () => import("../pages/Orders.vue") },
       // 票種與場次管理
       {
@@ -93,8 +95,8 @@ const routes = [
         path: '/screens/:screenId/seat-map',
         component: () => import("../pages/SeatMapView.vue"),
       },
-      
- {
+
+      {
         path: "/batch-operations",
         name: "BatchOperationList",
         component: () => import("../pages/BatchOperationList.vue"),
@@ -108,6 +110,24 @@ const routes = [
         path: "/batch-operations/:batchId/tickets",
         name: "BatchTicketTemp",
         component: () => import("../pages/BatchTicketTemp.vue"),
+      },
+      {
+        path: "/security",
+        component: () => import("../pages/SecurityLogs.vue"),
+      },
+      //問題回報單
+      {
+        path: "/issues",
+        component: () => import("../pages/AdminTickets.vue"),
+      },
+      {
+        path: "/tickets/:id",
+        component: () => import("../pages/FormDetail.vue")
+      },
+      //訂單id
+      {
+        path: "/orders/:id",
+        component: () => import("../pages/OrderDetail.vue")
       },
     ],
   },
