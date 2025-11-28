@@ -1,19 +1,18 @@
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/admin';
+// notificationService.js
+import request from "./api";
 
 const notificationService = {
   /**
    * 獲取通知列表
    */
-  async getNotifications(page = 1, size = 10, query = '', type = '') {
+  async getNotifications(page = 1, size = 10, query = "", type = "") {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications`, {
-        params: { page, size, query, type }
+      const data = await request.get("/notifications", {
+        params: { page, size, query, type },
       });
-      return response.data;
+      return data;
     } catch (error) {
-      console.error('獲取通知列表失敗:', error);
+      console.error("獲取通知列表失敗:", error);
       throw error;
     }
   },
@@ -23,10 +22,10 @@ const notificationService = {
    */
   async getNotificationById(id) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/${id}`);
-      return response.data;
+      const data = await request.get(`/notifications/${id}`);
+      return data;
     } catch (error) {
-      console.error('獲取通知詳情失敗:', error);
+      console.error("獲取通知詳情失敗:", error);
       throw error;
     }
   },
@@ -36,10 +35,10 @@ const notificationService = {
    */
   async createNotification(data) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/notifications`, data);
-      return response.data;
+      const res = await request.post("/notifications", data);
+      return res;
     } catch (error) {
-      console.error('創建通知失敗:', error);
+      console.error("創建通知失敗:", error);
       throw error;
     }
   },
@@ -49,10 +48,10 @@ const notificationService = {
    */
   async updateNotification(id, data) {
     try {
-      const response = await axios.put(`${API_BASE_URL}/notifications/${id}`, data);
-      return response.data;
+      const res = await request.put(`/notifications/${id}`, data);
+      return res;
     } catch (error) {
-      console.error('更新通知失敗:', error);
+      console.error("更新通知失敗:", error);
       throw error;
     }
   },
@@ -62,10 +61,10 @@ const notificationService = {
    */
   async deleteNotification(id) {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/notifications/${id}`);
-      return response.data;
+      const res = await request.delete(`/notifications/${id}`);
+      return res;
     } catch (error) {
-      console.error('刪除通知失敗:', error);
+      console.error("刪除通知失敗:", error);
       throw error;
     }
   },
@@ -75,10 +74,13 @@ const notificationService = {
    */
   async sendNotification(data) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/notifications/${data.notificationId}/send`, data);
-      return response.data;
+      const res = await request.post(
+        `/notifications/${data.notificationId}/send`,
+        data
+      );
+      return res;
     } catch (error) {
-      console.error('推送通知失敗:', error);
+      console.error("推送通知失敗:", error);
       throw error;
     }
   },
@@ -88,14 +90,15 @@ const notificationService = {
    */
   async quickCreate(data) {
     try {
-      const endpoint = data.sourceType === 'EVENT'
-        ? `${API_BASE_URL}/notifications/quick/event`
-        : `${API_BASE_URL}/notifications/quick/movie`;
+      const endpoint =
+        data.sourceType === "EVENT"
+          ? "/notifications/quick/event"
+          : "/notifications/quick/movie";
 
-      const response = await axios.post(endpoint, data);
-      return response.data;
+      const res = await request.post(endpoint, data);
+      return res;
     } catch (error) {
-      console.error('快速創建失敗:', error);
+      console.error("快速創建失敗:", error);
       throw error;
     }
   },
@@ -103,14 +106,14 @@ const notificationService = {
   /**
    * 【新功能】獲取活動列表
    */
-  async getEventSources(category = '') {
+  async getEventSources(category = "") {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/sources/events`, {
-        params: { category }
+      const data = await request.get("/notifications/sources/events", {
+        params: { category },
       });
-      return response.data;
+      return data;
     } catch (error) {
-      console.error('獲取活動列表失敗:', error);
+      console.error("獲取活動列表失敗:", error);
       throw error;
     }
   },
@@ -120,12 +123,12 @@ const notificationService = {
    */
   async getMovieSources(published = true) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/sources/movies`, {
-        params: { published }
+      const data = await request.get("/notifications/sources/movies", {
+        params: { published },
       });
-      return response.data;
+      return data;
     } catch (error) {
-      console.error('獲取電影列表失敗:', error);
+      console.error("獲取電影列表失敗:", error);
       throw error;
     }
   },
@@ -135,12 +138,12 @@ const notificationService = {
    */
   async getUserNotifications(userId, page = 1, size = 10, unreadOnly = false) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/user/${userId}`, {
-        params: { page, size, unreadOnly }
+      const data = await request.get(`/notifications/user/${userId}`, {
+        params: { page, size, unreadOnly },
       });
-      return response.data;
+      return data;
     } catch (error) {
-      console.error('獲取用戶通知失敗:', error);
+      console.error("獲取用戶通知失敗:", error);
       throw error;
     }
   },
@@ -150,12 +153,12 @@ const notificationService = {
    */
   async markAsRead(userId, notificationId) {
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/notifications/user/${userId}/notification/${notificationId}/read`
+      const data = await request.put(
+        `/notifications/user/${userId}/notification/${notificationId}/read`
       );
-      return response.data;
+      return data;
     } catch (error) {
-      console.error('標記已讀失敗:', error);
+      console.error("標記已讀失敗:", error);
       throw error;
     }
   },
@@ -165,13 +168,15 @@ const notificationService = {
    */
   async getUnreadCount(userId) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/user/${userId}/unread-count`);
-      return response.data;
+      const data = await request.get(
+        `/notifications/user/${userId}/unread-count`
+      );
+      return data;
     } catch (error) {
-      console.error('獲取未讀數量失敗:', error);
+      console.error("獲取未讀數量失敗:", error);
       throw error;
     }
-  }
+  },
 };
 
 export default notificationService;

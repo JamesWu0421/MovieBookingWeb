@@ -231,7 +231,7 @@ async function save() {
           empEmail: form.value.empEmail,
           empPhone: form.value.empPhone,
           status: form.value.status,
-          empPasswordHash: plainPassword.value || "123456",
+          plainPassword: plainPassword.value || "123456", // 重點：改成 plainPassword
         },
         form.value.roleId
       );
