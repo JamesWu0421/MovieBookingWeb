@@ -60,15 +60,12 @@ public class SecurityConfig implements WebMvcConfigurer {
         // return
         // org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
         // }
+
         @Bean
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
                                 .csrf(csrf -> csrf.disable())
-
-                                // OAuth2 流程需要 session 支援，完成後仍可用 JWT 作為業務驗證
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .authorizeHttpRequests(auth -> auth
                                                 // 1) 先放行 CORS 預檢，避免 preflight 被攔截
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

@@ -2,6 +2,7 @@ package tw.com.ispan.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import tw.com.ispan.dto.EventDTO;
@@ -13,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/events")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/admin/events")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER','SUPPORT_SERVICE')")
+
 public class EventController {
 
     @Autowired

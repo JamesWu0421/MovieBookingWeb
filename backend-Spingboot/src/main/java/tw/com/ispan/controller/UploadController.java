@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
-@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174" })
+
 public class UploadController {
 
     // 圖片儲存路徑（可以在 application.properties 設定）

@@ -1,44 +1,195 @@
 package tw.com.ispan.controller;
 
 import lombok.RequiredArgsConstructor;
+import tw.com.ispan.dto.*;
+import tw.com.ispan.model.Event;
+import tw.com.ispan.model.Movie;
+import tw.com.ispan.model.Notification;
+import tw.com.ispan.repository.EventRepository;
+import tw.com.ispan.repository.MovieRepository;
+import tw.com.ispan.service.NotificationService;
 import tw.com.ispan.service.PaymentService;
 import tw.com.ispan.service.SystemNotificationService;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * 管理員通知測試控制器
+ * 管理員通知控制器 - 整合所有後台通知管理功能
  * 
- * 這個控制器提供了測試各種自動通知功能的端點
- * 在實際生產環境中，這些功能應該整合到對應的業務邏輯中
- * 
- * 用途：方便測試和演示自動通知功能
+ * 功能包括:
+ * 1. 通知的 CRUD 操作
+ * 2. 通知推送功能
+ * 3. 快速創建通知
+ * 4. 支付通知測試
+ * 5. 系統通知發送
  */
 @RestController
 @RequestMapping("/api/admin/notifications")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER','SUPPORT_SERVICE','ENTRYSTAFF')")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class AdminNotificationController {
 
     private final PaymentService paymentService;
     private final SystemNotificationService systemNotificationService;
+    private final NotificationService notificationService;
+    private final EventRepository eventRepository;
+    private final MovieRepository movieRepository;
+
+    // ==================== 通知 CRUD 操作 ====================
+
+    /**
+     * 獲取通知列表
+     * GET /api/admin/notifications
+     */
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getNotifications(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String type) {
+
+        Page<Notification> notificationPage = notificationService.getNotifications(page, size, query, type);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("notifications", notificationPage.getContent());
+        response.put("currentPage", notificationPage.getNumber() + 1);
+        response.put("totalItems", notificationPage.getTotalElements());
+        response.put("totalPages", notificationPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 根據 ID 獲取通知
+     * GET /api/admin/notifications/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Notification> getNotification(@PathVariable Long id) {
+        return ResponseEntity.ok(notificationService.getNotificationById(id));
+    }
+
+    /**
+     * 創建通知
+     * POST /api/admin/notifications
+     */
+    @PostMapping
+    public ResponseEntity<Notification> createNotification(@RequestBody NotificationRequest request) {
+        return ResponseEntity.ok(notificationService.createNotification(request));
+    }
+
+    /**
+     * 更新通知
+     * PUT /api/admin/notifications/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Notification> updateNotification(
+            @PathVariable Long id,
+            @RequestBody NotificationRequest request) {
+        return ResponseEntity.ok(notificationService.updateNotification(id, request));
+    }
+
+    /**
+     * 刪除通知
+     * DELETE /api/admin/notifications/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "通知刪除成功");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 推送通知
+     * POST /api/admin/notifications/{id}/send
+     */
+    @PostMapping("/{id}/send")
+    public ResponseEntity<Map<String, String>> sendNotification(@RequestBody SendNotificationRequest request) {
+        notificationService.sendNotification(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "通知推送成功");
+        return ResponseEntity.ok(response);
+    }
+
+    // ==================== 快速創建通知 ====================
+
+    /**
+     * 從活動快速創建並推送通知
+     * POST /api/admin/notifications/quick/event
+     */
+    @PostMapping("/quick/event")
+    public ResponseEntity<Map<String, Object>> quickCreateFromEvent(@RequestBody QuickNotificationRequest request) {
+        Notification notification = notificationService.createNotificationFromEvent(
+                request.getSourceId(),
+                request.getPushType(),
+                request.getUserIds());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "通知創建並推送成功");
+        response.put("notification", notification);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 從電影快速創建並推送通知
+     * POST /api/admin/notifications/quick/movie
+     */
+    @PostMapping("/quick/movie")
+    public ResponseEntity<Map<String, Object>> quickCreateFromMovie(@RequestBody QuickNotificationRequest request) {
+        Notification notification = notificationService.createNotificationFromMovie(
+                request.getSourceId(),
+                request.getPushType(),
+                request.getUserIds());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "通知創建並推送成功");
+        response.put("notification", notification);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 獲取活動列表（用於快速創建）
+     * GET /api/admin/notifications/sources/events
+     */
+    @GetMapping("/sources/events")
+    public ResponseEntity<List<Event>> getEventSources(@RequestParam(required = false) String category) {
+        List<Event> events;
+        if (category != null && !category.trim().isEmpty() && !"all".equals(category)) {
+            events = eventRepository.findByCategoryAndIsActiveTrue(category);
+        } else {
+            events = eventRepository.findByIsActiveTrue();
+        }
+        return ResponseEntity.ok(events);
+    }
+
+    /**
+     * 獲取電影列表（用於快速創建）
+     * GET /api/admin/notifications/sources/movies
+     */
+    @GetMapping("/sources/movies")
+    public ResponseEntity<List<Movie>> getMovieSources(@RequestParam(defaultValue = "true") Boolean published) {
+        List<Movie> movies;
+        if (published) {
+            movies = movieRepository.findByIsPublishedTrue();
+        } else {
+            movies = movieRepository.findAll();
+        }
+        return ResponseEntity.ok(movies);
+    }
 
     // ==================== 支付通知測試端點 ====================
 
     /**
      * 測試：發送支付成功通知
-     * 
      * POST /api/admin/notifications/test/payment-success
-     * Body: {
-     * "paymentId": 1,
-     * "userId": 1,
-     * "orderId": 1,
-     * "amount": 350.00
-     * }
      */
     @PostMapping("/test/payment-success")
     public ResponseEntity<Map<String, String>> testPaymentSuccess(@RequestBody Map<String, Object> request) {
@@ -58,14 +209,7 @@ public class AdminNotificationController {
 
     /**
      * 測試：發送支付失敗通知
-     * 
      * POST /api/admin/notifications/test/payment-failure
-     * Body: {
-     * "paymentId": 1,
-     * "userId": 1,
-     * "orderId": 1,
-     * "reason": "餘額不足"
-     * }
      */
     @PostMapping("/test/payment-failure")
     public ResponseEntity<Map<String, String>> testPaymentFailure(@RequestBody Map<String, Object> request) {
@@ -85,14 +229,7 @@ public class AdminNotificationController {
 
     /**
      * 測試：發送退款成功通知
-     * 
      * POST /api/admin/notifications/test/refund-success
-     * Body: {
-     * "paymentId": 1,
-     * "userId": 1,
-     * "orderId": 1,
-     * "refundAmount": 350.00
-     * }
      */
     @PostMapping("/test/refund-success")
     public ResponseEntity<Map<String, String>> testRefundSuccess(@RequestBody Map<String, Object> request) {
@@ -112,13 +249,7 @@ public class AdminNotificationController {
 
     /**
      * 測試：發送支付超時通知
-     * 
      * POST /api/admin/notifications/test/payment-timeout
-     * Body: {
-     * "paymentId": 1,
-     * "userId": 1,
-     * "orderId": 1
-     * }
      */
     @PostMapping("/test/payment-timeout")
     public ResponseEntity<Map<String, String>> testPaymentTimeout(@RequestBody Map<String, Object> request) {
@@ -139,13 +270,7 @@ public class AdminNotificationController {
 
     /**
      * 發送系統維護通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/maintenance
-     * Body: {
-     * "startTime": "2024-11-30 02:00",
-     * "endTime": "2024-11-30 06:00",
-     * "reason": "系統升級和數據庫優化"
-     * }
      */
     @PostMapping("/system/maintenance")
     public ResponseEntity<Map<String, String>> notifyMaintenance(@RequestBody Map<String, String> request) {
@@ -164,12 +289,7 @@ public class AdminNotificationController {
 
     /**
      * 發送緊急系統通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/emergency
-     * Body: {
-     * "title": "支付系統異常",
-     * "content": "目前支付系統出現異常，工程師正在緊急處理中..."
-     * }
      */
     @PostMapping("/system/emergency")
     public ResponseEntity<Map<String, String>> notifyEmergency(@RequestBody Map<String, String> request) {
@@ -187,12 +307,7 @@ public class AdminNotificationController {
 
     /**
      * 發送系統升級完成通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/upgrade
-     * Body: {
-     * "version": "2.0.0",
-     * "features": "1. 新增會員積分系統\n2. 優化訂票流程\n3. 支持多種支付方式"
-     * }
      */
     @PostMapping("/system/upgrade")
     public ResponseEntity<Map<String, String>> notifyUpgrade(@RequestBody Map<String, String> request) {
@@ -210,7 +325,6 @@ public class AdminNotificationController {
 
     /**
      * 發送服務恢復通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/service-restored
      */
     @PostMapping("/system/service-restored")
@@ -226,12 +340,7 @@ public class AdminNotificationController {
 
     /**
      * 發送節假日營業時間調整通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/holiday-schedule
-     * Body: {
-     * "holiday": "春節",
-     * "adjustedHours": "1/28-1/30：10:00-22:00\n1/31-2/2：休息"
-     * }
      */
     @PostMapping("/system/holiday-schedule")
     public ResponseEntity<Map<String, String>> notifyHolidaySchedule(@RequestBody Map<String, String> request) {
@@ -249,12 +358,7 @@ public class AdminNotificationController {
 
     /**
      * 發送安全提醒通知（推送給所有用戶）
-     * 
      * POST /api/admin/notifications/system/security-alert
-     * Body: {
-     * "title": "密碼安全提醒",
-     * "content": "近期發現部分用戶賬號遭遇暴力破解，請立即更新您的密碼..."
-     * }
      */
     @PostMapping("/system/security-alert")
     public ResponseEntity<Map<String, String>> notifySecurityAlert(@RequestBody Map<String, String> request) {
@@ -274,10 +378,10 @@ public class AdminNotificationController {
 
     /**
      * 獲取所有可用的測試端點列表
-     * 
      * GET /api/admin/notifications/test/endpoints
      */
     @GetMapping("/test/endpoints")
+
     public ResponseEntity<Map<String, Object>> getTestEndpoints() {
         Map<String, Object> endpoints = new HashMap<>();
 
@@ -302,63 +406,3 @@ public class AdminNotificationController {
         return ResponseEntity.ok(endpoints);
     }
 }
-
-/*
- * ===========================================
- * 使用說明：
- * ===========================================
- * 
- * 1. 這個控制器提供了測試各種自動通知的端點
- * 2. 可以用 Postman 或前端頁面來測試這些功能
- * 3. 在實際環境中：
- * - 支付通知應該在支付回調或支付處理邏輯中自動觸發
- * - 訂單通知應該在 OrderService 中自動觸發
- * - 系統通知可以在管理後台手動觸發，或通過定時任務觸發
- * 
- * ===========================================
- * Postman 測試示例：
- * ===========================================
- * 
- * 測試支付成功通知：
- * POST http://localhost:8080/api/admin/notifications/test/payment-success
- * Content-Type: application/json
- * 
- * {
- * "paymentId": 1,
- * "userId": 1,
- * "orderId": 1,
- * "amount": 350.00
- * }
- * 
- * ---
- * 
- * 測試系統維護通知：
- * POST http://localhost:8080/api/admin/notifications/system/maintenance
- * Content-Type: application/json
- * 
- * {
- * "startTime": "2024-11-30 02:00",
- * "endTime": "2024-11-30 06:00",
- * "reason": "系統升級和數據庫優化"
- * }
- * 
- * ===========================================
- * 安全提醒：
- * ===========================================
- * 
- * 在生產環境中，這些測試端點應該：
- * 1. 加上認證檢查（只有管理員可以訪問）
- * 2. 加上日誌記錄（記錄誰發送了什麼通知）
- * 3. 加上權限控制（不同管理員有不同權限）
- * 
- * 示例：
- * 
- * @PreAuthorize("hasRole('ADMIN')")
- * 
- * @PostMapping("/system/emergency")
- * public ResponseEntity<?> notifyEmergency(...) {
- * // 記錄操作日誌
- * logger.info("管理員 {} 發送緊急通知", getCurrentUser());
- * // ...
- * }
- */

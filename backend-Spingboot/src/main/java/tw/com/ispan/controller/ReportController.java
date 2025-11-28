@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import tw.com.ispan.dto.ReportMovieRankingDTO;
@@ -30,8 +31,8 @@ import java.util.Map;
  * 提供各種營運報表 API
  */
 @RestController
-@RequestMapping("/api/reports")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/admin/reports")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
 public class ReportController {
 
     @Autowired

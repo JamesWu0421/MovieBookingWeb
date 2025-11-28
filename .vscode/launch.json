@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MovieApplication<movie-backend>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "tw.com.ispan.MovieApplication",
+            "projectName": "movie-backend",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
