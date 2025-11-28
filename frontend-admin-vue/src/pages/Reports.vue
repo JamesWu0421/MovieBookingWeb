@@ -4,11 +4,19 @@
       <div class="header-title">
         <h2>📊 營收報表</h2>
         <el-button-group>
-          <el-button type="primary" @click="exportReport('csv')" :loading="exporting">
+          <el-button
+            type="primary"
+            @click="exportReport('csv')"
+            :loading="exporting"
+          >
             <el-icon><Download /></el-icon>
             匯出 CSV
           </el-button>
-          <el-button type="success" @click="exportReport('excel')" :loading="exporting">
+          <el-button
+            type="success"
+            @click="exportReport('excel')"
+            :loading="exporting"
+          >
             <el-icon><Document /></el-icon>
             匯出 Excel
           </el-button>
@@ -23,16 +31,28 @@
           <!-- 日期快速選擇按鈕 -->
           <el-col :span="24" class="quick-date-buttons">
             <el-button-group>
-              <el-button @click="setQuickDate('today')" :type="quickDateType === 'today' ? 'primary' : 'default'">
+              <el-button
+                @click="setQuickDate('today')"
+                :type="quickDateType === 'today' ? 'primary' : 'default'"
+              >
                 今天
               </el-button>
-              <el-button @click="setQuickDate('month')" :type="quickDateType === 'month' ? 'primary' : 'default'">
+              <el-button
+                @click="setQuickDate('month')"
+                :type="quickDateType === 'month' ? 'primary' : 'default'"
+              >
                 本月
               </el-button>
-              <el-button @click="setQuickDate('quarter')" :type="quickDateType === 'quarter' ? 'primary' : 'default'">
+              <el-button
+                @click="setQuickDate('quarter')"
+                :type="quickDateType === 'quarter' ? 'primary' : 'default'"
+              >
                 本季
               </el-button>
-              <el-button @click="setQuickDate('year')" :type="quickDateType === 'year' ? 'primary' : 'default'">
+              <el-button
+                @click="setQuickDate('year')"
+                :type="quickDateType === 'year' ? 'primary' : 'default'"
+              >
                 本年
               </el-button>
             </el-button-group>
@@ -136,60 +156,95 @@
     <el-row :gutter="20" class="kpi-cards" v-if="reportData.overview">
       <el-col :span="24" :sm="12" :lg="4">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+          <div
+            class="kpi-icon"
+            style="
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            "
+          >
             <el-icon><Money /></el-icon>
           </div>
           <div class="kpi-content">
             <div class="kpi-title">總營收</div>
-            <div class="kpi-value">$ {{ formatNumber(reportData.overview.totalRevenue) }}</div>
+            <div class="kpi-value">
+              $ {{ formatNumber(reportData.overview.totalRevenue) }}
+            </div>
           </div>
         </div>
       </el-col>
 
       <el-col :span="24" :sm="12" :lg="4">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+          <div
+            class="kpi-icon"
+            style="
+              background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            "
+          >
             <el-icon><Tickets /></el-icon>
           </div>
           <div class="kpi-content">
             <div class="kpi-title">售出票數</div>
-            <div class="kpi-value">{{ formatNumber(reportData.overview.totalTickets) }}</div>
+            <div class="kpi-value">
+              {{ formatNumber(reportData.overview.totalTickets) }}
+            </div>
           </div>
         </div>
       </el-col>
 
       <el-col :span="24" :sm="12" :lg="4">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+          <div
+            class="kpi-icon"
+            style="
+              background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            "
+          >
             <el-icon><Film /></el-icon>
           </div>
           <div class="kpi-content">
             <div class="kpi-title">場次數量</div>
-            <div class="kpi-value">{{ formatNumber(reportData.overview.showtimesCount) }}</div>
+            <div class="kpi-value">
+              {{ formatNumber(reportData.overview.showtimesCount) }}
+            </div>
           </div>
         </div>
       </el-col>
 
       <el-col :span="24" :sm="12" :lg="6">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
+          <div
+            class="kpi-icon"
+            style="
+              background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            "
+          >
             <el-icon><PriceTag /></el-icon>
           </div>
           <div class="kpi-content">
             <div class="kpi-title">平均票價</div>
-            <div class="kpi-value">$ {{ formatNumber(reportData.overview.averageTicketPrice) }}</div>
+            <div class="kpi-value">
+              $ {{ formatNumber(reportData.overview.averageTicketPrice) }}
+            </div>
           </div>
         </div>
       </el-col>
 
       <el-col :span="24" :sm="12" :lg="6">
         <div class="kpi-card">
-          <div class="kpi-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+          <div
+            class="kpi-icon"
+            style="
+              background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            "
+          >
             <el-icon><TrendCharts /></el-icon>
           </div>
           <div class="kpi-content">
             <div class="kpi-title">每日平均營收</div>
-            <div class="kpi-value">$ {{ formatNumber(reportData.overview.dailyAvgRevenue) }}</div>
+            <div class="kpi-value">
+              $ {{ formatNumber(reportData.overview.dailyAvgRevenue) }}
+            </div>
           </div>
         </div>
       </el-col>
@@ -256,19 +311,35 @@
       <el-table :data="reportData.topMovies" style="width: 100%" stripe>
         <el-table-column prop="rank" label="排名" width="80" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.rank === 1" type="danger" effect="dark">🥇 {{ row.rank }}</el-tag>
-            <el-tag v-else-if="row.rank === 2" type="warning" effect="dark">🥈 {{ row.rank }}</el-tag>
-            <el-tag v-else-if="row.rank === 3" type="success" effect="dark">🥉 {{ row.rank }}</el-tag>
+            <el-tag v-if="row.rank === 1" type="danger" effect="dark"
+              >🥇 {{ row.rank }}</el-tag
+            >
+            <el-tag v-else-if="row.rank === 2" type="warning" effect="dark"
+              >🥈 {{ row.rank }}</el-tag
+            >
+            <el-tag v-else-if="row.rank === 3" type="success" effect="dark"
+              >🥉 {{ row.rank }}</el-tag
+            >
             <span v-else>{{ row.rank }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="movieTitle" label="電影" min-width="200" />
-        <el-table-column prop="totalRevenue" label="總營收" width="150" align="right">
+        <el-table-column
+          prop="totalRevenue"
+          label="總營收"
+          width="150"
+          align="right"
+        >
           <template #default="{ row }">
             $ {{ formatNumber(row.totalRevenue) }}
           </template>
         </el-table-column>
-        <el-table-column prop="ticketsSold" label="售票數" width="120" align="right">
+        <el-table-column
+          prop="ticketsSold"
+          label="售票數"
+          width="120"
+          align="right"
+        >
           <template #default="{ row }">
             {{ formatNumber(row.ticketsSold) }}
           </template>
@@ -279,23 +350,33 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue';
-import { ElMessage } from 'element-plus';
-import { Download, Search, Refresh, Money, Tickets, Film, PriceTag, TrendCharts, Document } from '@element-plus/icons-vue';
-import * as echarts from 'echarts';
-import reportService from '../services/reportService';
-import api from '../services/api';
+import { ref, reactive, onMounted, nextTick } from "vue";
+import { ElMessage } from "element-plus";
+import {
+  Download,
+  Search,
+  Refresh,
+  Money,
+  Tickets,
+  Film,
+  PriceTag,
+  TrendCharts,
+  Document,
+} from "@element-plus/icons-vue";
+import * as echarts from "echarts";
+import reportService from "../services/reportService";
+import api from "../services/api";
 
 // 數據
 const loading = ref(false);
 const exporting = ref(false);
 const dateRange = ref([]);
-const quickDateType = ref('today'); // 🆕 預設為「今天」
+const quickDateType = ref("today"); // 🆕 預設為「今天」
 
 const filters = reactive({
   movieIds: [],
   screenIds: [],
-  ticketTypes: []
+  ticketTypes: [],
 });
 
 const reportData = reactive({
@@ -304,7 +385,7 @@ const reportData = reactive({
   screenTypeDistribution: [],
   ticketTypeDistribution: [],
   movieDistribution: [],
-  topMovies: []
+  topMovies: [],
 });
 
 const movieOptions = ref([]);
@@ -332,7 +413,7 @@ const getTodayDateRange = () => {
 onMounted(async () => {
   // 🆕 預設日期為當天 00:00 到 23:59
   dateRange.value = getTodayDateRange();
-  
+
   // 暫時註解掉電影和影廳選項載入（因為後端沒有這兩個 API）
   // loadMovieOptions().catch(() => {
   //   console.log('電影選項載入失敗，將只顯示全部電影');
@@ -340,7 +421,7 @@ onMounted(async () => {
   // loadScreenOptions().catch(() => {
   //   console.log('影廳選項載入失敗，將只顯示全部影廳');
   // });
-  
+
   // 不自動載入報表，等用戶點擊「查詢」
 });
 
@@ -350,74 +431,71 @@ const setQuickDate = (type) => {
   const now = new Date();
   let startDate, endDate;
 
-  if (type === 'today') {
+  if (type === "today") {
     // 🆕 今天
     startDate = now;
     endDate = now;
-  } else if (type === 'month') {
+  } else if (type === "month") {
     // 本月
     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     endDate = now;
-  } else if (type === 'quarter') {
+  } else if (type === "quarter") {
     // 本季
     const quarter = Math.floor(now.getMonth() / 3);
     startDate = new Date(now.getFullYear(), quarter * 3, 1);
     endDate = now;
-  } else if (type === 'year') {
+  } else if (type === "year") {
     // 本年
     startDate = new Date(now.getFullYear(), 0, 1);
     endDate = now;
   }
 
-  dateRange.value = [
-    formatDate(startDate),
-    formatDate(endDate)
-  ];
+  dateRange.value = [formatDate(startDate), formatDate(endDate)];
 };
 
 // 日期變更時清除快速選擇
 const onDateChange = () => {
-  quickDateType.value = '';
+  quickDateType.value = "";
 };
 
 // 格式化日期
 const formatDate = (date) => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
 // 格式化數字
 const formatNumber = (value) => {
-  if (!value) return '0';
-  return Number(value).toLocaleString('zh-TW', { maximumFractionDigits: 2 });
+  if (!value) return "0";
+  return Number(value).toLocaleString("zh-TW", { maximumFractionDigits: 2 });
 };
 
 // 載入電影選項
 const loadMovieOptions = async () => {
   try {
-    const response = await api.get('/movies');
+    const response = await api.get("/movies");
     movieOptions.value = response.data;
   } catch (error) {
-    console.error('載入電影選項失敗:', error);
+    console.error("載入電影選項失敗:", error);
   }
 };
 
 // 載入影廳選項
 const loadScreenOptions = async () => {
   try {
-    const response = await api.get('/screens');
+    const response = await api.get("/screens");
     screenOptions.value = response.data;
   } catch (error) {
-    console.error('載入影廳選項失敗:', error);
+    console.error("載入影廳選項失敗:", error);
   }
 };
 
 // 查詢報表
 const fetchReport = async () => {
   if (!dateRange.value || dateRange.value.length !== 2) {
-    ElMessage.warning('請選擇日期區間');
+    ElMessage.warning("請選擇日期區間");
     return;
   }
 
@@ -428,22 +506,23 @@ const fetchReport = async () => {
       endDate: dateRange.value[1],
       movieIds: filters.movieIds.length > 0 ? filters.movieIds : undefined,
       screenIds: filters.screenIds.length > 0 ? filters.screenIds : undefined,
-      ticketTypes: filters.ticketTypes.length > 0 ? filters.ticketTypes : undefined
+      ticketTypes:
+        filters.ticketTypes.length > 0 ? filters.ticketTypes : undefined,
     };
 
     const response = await reportService.getComprehensiveReport(params);
-    
+
     // 更新數據
-    Object.assign(reportData, response.data);
+    Object.assign(reportData, response);
 
     // 等待 DOM 更新後繪製圖表
     await nextTick();
     renderCharts();
 
-    ElMessage.success('報表載入成功');
+    ElMessage.success("報表載入成功");
   } catch (error) {
-    console.error('載入報表失敗:', error);
-    ElMessage.error('載入報表失敗');
+    console.error("載入報表失敗:", error);
+    ElMessage.error("載入報表失敗");
   } finally {
     loading.value = false;
   }
@@ -454,7 +533,7 @@ const resetFilters = () => {
   filters.movieIds = [];
   filters.screenIds = [];
   filters.ticketTypes = [];
-  setQuickDate('today'); // 🆕 重置為今天
+  setQuickDate("today"); // 🆕 重置為今天
 };
 
 // 繪製所有圖表
@@ -473,71 +552,71 @@ const renderTrendChart = () => {
     trendChartInstance = echarts.init(trendChart.value);
   }
 
-  const dates = reportData.trendData.map(item => item.date);
-  const revenues = reportData.trendData.map(item => item.revenue);
-  const tickets = reportData.trendData.map(item => item.tickets);
+  const dates = reportData.trendData.map((item) => item.date);
+  const revenues = reportData.trendData.map((item) => item.revenue);
+  const tickets = reportData.trendData.map((item) => item.tickets);
 
   const option = {
     tooltip: {
-      trigger: 'axis',
+      trigger: "axis",
       axisPointer: {
-        type: 'cross'
-      }
+        type: "cross",
+      },
     },
     legend: {
-      data: ['營收', '售票數']
+      data: ["營收", "售票數"],
     },
     grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true
+      left: "3%",
+      right: "4%",
+      bottom: "3%",
+      containLabel: true,
     },
     xAxis: {
-      type: 'category',
+      type: "category",
       boundaryGap: false,
-      data: dates
+      data: dates,
     },
     yAxis: [
       {
-        type: 'value',
-        name: '營收 ($)',
-        position: 'left'
+        type: "value",
+        name: "營收 ($)",
+        position: "left",
       },
       {
-        type: 'value',
-        name: '售票數',
-        position: 'right'
-      }
+        type: "value",
+        name: "售票數",
+        position: "right",
+      },
     ],
     series: [
       {
-        name: '營收',
-        type: 'line',
+        name: "營收",
+        type: "line",
         smooth: true,
         data: revenues,
         yAxisIndex: 0,
         itemStyle: {
-          color: '#667eea'
+          color: "#667eea",
         },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(102, 126, 234, 0.3)' },
-            { offset: 1, color: 'rgba(102, 126, 234, 0)' }
-          ])
-        }
+            { offset: 0, color: "rgba(102, 126, 234, 0.3)" },
+            { offset: 1, color: "rgba(102, 126, 234, 0)" },
+          ]),
+        },
       },
       {
-        name: '售票數',
-        type: 'line',
+        name: "售票數",
+        type: "line",
         smooth: true,
         data: tickets,
         yAxisIndex: 1,
         itemStyle: {
-          color: '#f5576c'
-        }
-      }
-    ]
+          color: "#f5576c",
+        },
+      },
+    ],
   };
 
   trendChartInstance.setOption(option);
@@ -551,35 +630,35 @@ const renderScreenTypeChart = () => {
     screenTypeChartInstance = echarts.init(screenTypeChart.value);
   }
 
-  const data = reportData.screenTypeDistribution.map(item => ({
+  const data = reportData.screenTypeDistribution.map((item) => ({
     name: item.name,
-    value: item.value
+    value: item.value,
   }));
 
   const option = {
     tooltip: {
-      trigger: 'item',
-      formatter: '{b}: ${c} ({d}%)'
+      trigger: "item",
+      formatter: "{b}: ${c} ({d}%)",
     },
     legend: {
-      orient: 'vertical',
-      left: 'left'
+      orient: "vertical",
+      left: "left",
     },
     series: [
       {
-        name: '影廳類型',
-        type: 'pie',
-        radius: '70%',
+        name: "影廳類型",
+        type: "pie",
+        radius: "70%",
         data: data,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+          },
+        },
+      },
+    ],
   };
 
   screenTypeChartInstance.setOption(option);
@@ -593,35 +672,35 @@ const renderTicketTypeChart = () => {
     ticketTypeChartInstance = echarts.init(ticketTypeChart.value);
   }
 
-  const data = reportData.ticketTypeDistribution.map(item => ({
+  const data = reportData.ticketTypeDistribution.map((item) => ({
     name: item.name,
-    value: item.value
+    value: item.value,
   }));
 
   const option = {
     tooltip: {
-      trigger: 'item',
-      formatter: '{b}: {c} 張 ({d}%)'
+      trigger: "item",
+      formatter: "{b}: {c} 張 ({d}%)",
     },
     legend: {
-      orient: 'vertical',
-      left: 'left'
+      orient: "vertical",
+      left: "left",
     },
     series: [
       {
-        name: '票種',
-        type: 'pie',
-        radius: '70%',
+        name: "票種",
+        type: "pie",
+        radius: "70%",
         data: data,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+          },
+        },
+      },
+    ],
   };
 
   ticketTypeChartInstance.setOption(option);
@@ -635,45 +714,45 @@ const renderMovieDistChart = () => {
     movieDistChartInstance = echarts.init(movieDistChart.value);
   }
 
-  const data = reportData.movieDistribution.map(item => ({
+  const data = reportData.movieDistribution.map((item) => ({
     name: item.name,
-    value: item.value
+    value: item.value,
   }));
 
   const option = {
     tooltip: {
-      trigger: 'item',
-      formatter: '{b}: ${c} ({d}%)'
+      trigger: "item",
+      formatter: "{b}: ${c} ({d}%)",
     },
     legend: {
-      orient: 'vertical',
-      left: 'left',
-      type: 'scroll'
+      orient: "vertical",
+      left: "left",
+      type: "scroll",
     },
     series: [
       {
-        name: '電影營收',
-        type: 'pie',
-        radius: '70%',
+        name: "電影營收",
+        type: "pie",
+        radius: "70%",
         data: data,
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
             shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
+            shadowColor: "rgba(0, 0, 0, 0.5)",
+          },
+        },
+      },
+    ],
   };
 
   movieDistChartInstance.setOption(option);
 };
 
 // 匯出報表 - 支援多種格式
-const exportReport = async (format = 'csv') => {
+const exportReport = async (format = "csv") => {
   if (!dateRange.value || dateRange.value.length !== 2) {
-    ElMessage.warning('請選擇日期區間');
+    ElMessage.warning("請選擇日期區間");
     return;
   }
 
@@ -683,23 +762,28 @@ const exportReport = async (format = 'csv') => {
       format: format, // 'csv' 或 'excel'
       startDate: dateRange.value[0],
       endDate: dateRange.value[1],
-      movieIds: filters.movieIds.length > 0 ? filters.movieIds.join(',') : undefined,
-      screenIds: filters.screenIds.length > 0 ? filters.screenIds.join(',') : undefined,
-      ticketTypes: filters.ticketTypes.length > 0 ? filters.ticketTypes.join(',') : undefined
+      movieIds:
+        filters.movieIds.length > 0 ? filters.movieIds.join(",") : undefined,
+      screenIds:
+        filters.screenIds.length > 0 ? filters.screenIds.join(",") : undefined,
+      ticketTypes:
+        filters.ticketTypes.length > 0
+          ? filters.ticketTypes.join(",")
+          : undefined,
     };
 
     // 🆕 使用新的增強 API
     const response = await reportService.exportComprehensiveReport(params);
 
     // 決定檔案副檔名
-    const extension = format === 'excel' ? 'xlsx' : 'csv';
+    const extension = format === "excel" ? "xlsx" : "csv";
     const fileName = `營收報表_${dateRange.value[0]}_${dateRange.value[1]}.${extension}`;
 
     // 建立下載連結
     const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', fileName);
+    link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -707,8 +791,8 @@ const exportReport = async (format = 'csv') => {
 
     ElMessage.success(`報表已匯出為 ${format.toUpperCase()} 格式`);
   } catch (error) {
-    console.error('匯出報表失敗:', error);
-    ElMessage.error('匯出報表失敗');
+    console.error("匯出報表失敗:", error);
+    ElMessage.error("匯出報表失敗");
   } finally {
     exporting.value = false;
   }
