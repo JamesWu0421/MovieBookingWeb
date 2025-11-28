@@ -89,7 +89,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 ).permitAll()
 
                                                 // 3) 讓 /api/user/** 由你的 Interceptor 驗證，不由 Spring Security 攔截
-                                                .requestMatchers("/api/user/**").permitAll()
+                                                .requestMatchers("/api/user/**","/api/notifications/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證

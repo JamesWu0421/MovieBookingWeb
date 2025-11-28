@@ -7,7 +7,7 @@ import request from "../utils/request";
 // 活動列表
 export const fetchHomeEvents = () => {
   return request({
-    url: "/public/events/home",  // ✅ 加上 /public/
+    url: "/public/events/home", // ✅ 加上 /public/
     method: "get",
   });
 };
@@ -15,7 +15,7 @@ export const fetchHomeEvents = () => {
 // 活動詳
 export const fetchEventDetail = (id) => {
   return request({
-    url: `/public/events/${id}`,  // ✅ 加上 /public/
+    url: `/public/events/${id}`, // ✅ 加上 /public/
     method: "get",
   });
 };
@@ -93,7 +93,7 @@ export const uploadAvatar = async (file) => {
     },
   });
 
-  return response.data;
+  return response;
 };
 
 // 重設密碼
@@ -122,7 +122,7 @@ export const fetchAllEvents = (params) => {
   return request({
     url: "/events",
     method: "get",
-    params // 分頁、分類、搜尋
+    params, // 分頁、分類、搜尋
   });
 };
 
@@ -146,4 +146,8 @@ export default {
   getProfile,
   uploadAvatar,
   updateProfile,
+  fetchAllEvents,
+  fetchEventById,
+  fetchHomeEvents,
+  fetchEventDetail,
 };
