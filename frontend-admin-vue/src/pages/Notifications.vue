@@ -247,7 +247,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Search, Promotion, MagicStick } from '@element-plus/icons-vue';
-import notificationService from '@/services/notificationService';
+import notificationService from '../services/notificationService';
 
 // 列表數據
 const notifications = ref([]);
