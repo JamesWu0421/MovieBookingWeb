@@ -39,7 +39,7 @@ public class LoggingAspect {
     private EmpRepository empRepository; // 新增:用來查詢員工資料
 
     // 定義切入點:排除登入 Controller 和所有 @GetMapping 的方法
-    @Pointcut("execution(* tw.com.ispan.controller.emp..*(..)) " +
+    @Pointcut("execution(* tw.com.ispan.controller..*(..)) " +
               "&& !execution(* tw.com.ispan.controller.emp.AdminAuthController.*(..)) " +
               "&& !@annotation(org.springframework.web.bind.annotation.GetMapping)")
     public void controllerMethods() {}
