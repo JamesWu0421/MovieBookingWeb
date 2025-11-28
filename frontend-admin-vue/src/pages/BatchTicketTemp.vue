@@ -1,6 +1,6 @@
 <template>
   <div class="batch-tickets-page">
-    <!-- 页面标题 + 返回按钮 -->
+    <!-- 頁面標題 + 返回按鈕 -->
     <div class="page-header">
       <div class="header-left">
         <button @click="goBack" class="btn-back">
@@ -13,9 +13,6 @@
         <button @click="showBatchAddDialog = true" class="btn-primary-large">
           ⚡ 批量新增票券
         </button>
-        <button @click="showAddDialog = true" class="btn-primary">
-          + 单笔新增
-        </button>
       </div>
     </div>
 
@@ -23,20 +20,20 @@
     <div class="toolbar">
       <div class="toolbar-left">
         <button @click="goToSessions" class="btn-navigate">
-          📋 返回场次管理
+          📋 返回場次管理
         </button>
         <select
           v-model="filterSessionId"
           @change="loadTickets"
           class="filter-select"
         >
-          <option value="">全部场次</option>
+          <option value="">全部場次</option>
           <option
             v-for="session in sessions"
             :key="session.id"
             :value="session.id"
           >
-            场次 #{{ session.id }} - {{ getMovieName(session.movieId) }} ({{ formatDateTime(session.showDate, session.showTime) }})
+            場次 #{{ session.id }} - {{ getMovieName(session.movieId) }} ({{ formatDateTime(session.showDate, session.showTime) }})
           </option>
         </select>
         <select
@@ -44,11 +41,11 @@
           @change="loadTickets"
           class="filter-select"
         >
-          <option value="">全部状态</option>
-          <option value="pending">待处理</option>
-          <option value="processing">处理中</option>
+          <option value="">全部狀態</option>
+          <option value="pending">待處理</option>
+          <option value="processing">處理中</option>
           <option value="success">成功</option>
-          <option value="failed">失败</option>
+          <option value="failed">失敗</option>
         </select>
       </div>
       <div class="toolbar-right">
@@ -58,13 +55,13 @@
       </div>
     </div>
 
-    <!-- 载入中 / 错误 / 空状态 -->
-    <div v-if="loading" class="loading">⏳ 载入票券中...</div>
+    <!-- 載入中 / 錯誤 / 空狀態 -->
+    <div v-if="loading" class="loading">⏳ 載入票券中...</div>
     <div v-else-if="error" class="error-box">❌ {{ error }}</div>
     <div v-else-if="tickets.length === 0" class="empty-state">
       <p>🔭 此批次尚未新增票券</p>
       <button @click="showBatchAddDialog = true" class="btn-secondary">
-        开始批量新增票券
+        開始批量新增票券
       </button>
     </div>
 
@@ -74,13 +71,13 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>场次 ID</th>
-            <th>电影</th>
-            <th>场次时间</th>
+            <th>場次 ID</th>
+            <th>電影</th>
+            <th>場次時間</th>
             <th>套票包 ID</th>
-            <th>状态</th>
-            <th>错误讯息</th>
-            <th>建立时间</th>
+            <th>狀態</th>
+            <th>錯誤訊息</th>
+            <th>建立時間</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -116,14 +113,14 @@
               <button
                 @click="editTicket(ticket)"
                 class="btn-icon btn-edit"
-                title="编辑"
+                title="編輯"
               >
                 ✏️
               </button>
               <button
                 @click="deleteTicket(ticket)"
                 class="btn-icon btn-delete"
-                title="删除"
+                title="刪除"
               >
                 🗑️
               </button>
@@ -132,18 +129,18 @@
         </tbody>
       </table>
 
-      <!-- 统计资讯 -->
+      <!-- 統計資訊 -->
       <div class="summary">
         <div class="stat-item">
-          <span class="stat-label">总票券数：</span>
+          <span class="stat-label">總票券數：</span>
           <strong class="stat-value">{{ tickets.length }}</strong>
         </div>
         <div class="stat-item">
-          <span class="stat-label">待处理：</span>
+          <span class="stat-label">待處理：</span>
           <strong class="stat-value pending">{{ statusCount.pending }}</strong>
         </div>
         <div class="stat-item">
-          <span class="stat-label">处理中：</span>
+          <span class="stat-label">處理中：</span>
           <strong class="stat-value processing">{{ statusCount.processing }}</strong>
         </div>
         <div class="stat-item">
@@ -151,13 +148,13 @@
           <strong class="stat-value success">{{ statusCount.success }}</strong>
         </div>
         <div class="stat-item">
-          <span class="stat-label">失败：</span>
+          <span class="stat-label">失敗：</span>
           <strong class="stat-value error">{{ statusCount.failed }}</strong>
         </div>
       </div>
     </div>
 
-    <!-- 批量新增票券对话框 -->
+    <!-- 批量新增票券對話框 -->
     <div
       v-if="showBatchAddDialog"
       class="modal-overlay"
@@ -169,20 +166,20 @@
           <button @click="closeDialogs" class="btn-close">×</button>
         </div>
         <div class="modal-body">
-          <!-- 步骤 1: 选择电影 -->
+          <!-- 步驟 1: 選擇電影 -->
           <div class="step-section">
             <div class="step-header">
               <span class="step-number">1</span>
-              <h3>选择电影</h3>
+              <h3>選擇電影</h3>
             </div>
             <div class="form-group">
-              <label>电影 <span class="required">*</span></label>
+              <label>電影 <span class="required">*</span></label>
               <select 
                 v-model="batchFormData.selectedMovieId" 
                 @change="onMovieChange"
                 class="form-input"
               >
-                <option value="">请选择电影</option>
+                <option value="">請選擇電影</option>
                 <option
                   v-for="movie in movies"
                   :key="movie.id"
@@ -194,15 +191,15 @@
             </div>
           </div>
 
-          <!-- 步骤 2: 选择场次 -->
+          <!-- 步驟 2: 選擇場次 -->
           <div class="step-section" v-if="batchFormData.selectedMovieId">
             <div class="step-header">
               <span class="step-number">2</span>
-              <h3>选择场次</h3>
-              <span class="help-text">（可多选）</span>
+              <h3>選擇場次</h3>
+              <span class="help-text">（可多選）</span>
             </div>
             <div v-if="filteredSessions.length === 0" class="empty-hint">
-              <p>⚠️ 该电影在此批次中没有可用场次</p>
+              <p>⚠️ 該電影在此批次中沒有可用場次</p>
             </div>
             <div v-else class="sessions-grid">
               <div class="select-all-row">
@@ -212,7 +209,7 @@
                     :checked="isAllSessionsSelected"
                     @change="toggleAllSessions"
                   />
-                  <span>全选 ({{ filteredSessions.length }} 场)</span>
+                  <span>全選 ({{ filteredSessions.length }} 場)</span>
                 </label>
               </div>
               <label
@@ -238,12 +235,12 @@
             </div>
           </div>
 
-          <!-- 步骤 3: 选择票种 -->
+          <!-- 步驟 3: 選擇票種 -->
           <div class="step-section" v-if="batchFormData.selectedSessionIds.length > 0">
             <div class="step-header">
               <span class="step-number">3</span>
-              <h3>选择票种</h3>
-              <span class="help-text">（可多选）</span>
+              <h3>選擇票種</h3>
+              <span class="help-text">（可多選）</span>
             </div>
             <div class="ticket-types-grid">
               <div class="select-all-row">
@@ -253,7 +250,7 @@
                     :checked="isAllTicketTypesSelected"
                     @change="toggleAllTicketTypes"
                   />
-                  <span>全选 ({{ ticketPackages.length }} 种)</span>
+                  <span>全選 ({{ ticketPackages.length }} 種)</span>
                 </label>
               </div>
               <label
@@ -280,32 +277,32 @@
             </div>
           </div>
 
-          <!-- 预览统计 -->
+          <!-- 預覽統計 -->
           <div 
             class="preview-section" 
             v-if="batchFormData.selectedSessionIds.length > 0 && batchFormData.selectedTicketPackageIds.length > 0"
           >
             <div class="preview-header">
-              <h3>📊 预览</h3>
+              <h3>📊 預覽</h3>
             </div>
             <div class="preview-stats">
               <div class="preview-stat">
-                <span class="preview-label">选择场次：</span>
+                <span class="preview-label">選擇場次：</span>
                 <strong class="preview-value">{{ batchFormData.selectedSessionIds.length }}</strong>
               </div>
               <div class="preview-stat">
-                <span class="preview-label">选择票种：</span>
+                <span class="preview-label">選擇票種：</span>
                 <strong class="preview-value">{{ batchFormData.selectedTicketPackageIds.length }}</strong>
               </div>
               <div class="preview-stat highlight">
-                <span class="preview-label">将建立票券：</span>
+                <span class="preview-label">將建立票券：</span>
                 <strong class="preview-value-large">{{ totalTicketsToCreate }}</strong>
-                <span class="preview-unit">张</span>
+                <span class="preview-unit">張</span>
               </div>
             </div>
             <div class="preview-detail">
               <p class="preview-formula">
-                = {{ batchFormData.selectedSessionIds.length }} 场次 × {{ batchFormData.selectedTicketPackageIds.length }} 票种
+                = {{ batchFormData.selectedSessionIds.length }} 場次 × {{ batchFormData.selectedTicketPackageIds.length }} 票種
               </p>
             </div>
           </div>
@@ -319,34 +316,34 @@
             :disabled="!isBatchFormValid || submitting"
           >
             <span v-if="submitting">⏳ 建立中...</span>
-            <span v-else>✅ 确认批量新增 ({{ totalTicketsToCreate }} 张)</span>
+            <span v-else>✅ 確認批量新增 ({{ totalTicketsToCreate }} 張)</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 单笔新增/编辑票券对话框 -->
+    <!-- 編輯票券對話框 -->
     <div
-      v-if="showAddDialog || showEditDialog"
+      v-if="showEditDialog"
       class="modal-overlay"
       @click.self="closeDialogs"
     >
       <div class="modal">
         <div class="modal-header">
-          <h2>{{ showEditDialog ? '编辑票券' : '新增票券' }}</h2>
+          <h2>編輯票券</h2>
           <button @click="closeDialogs" class="btn-close">×</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>场次 <span class="required">*</span></label>
+            <label>場次 <span class="required">*</span></label>
             <select v-model="formData.batchSessionId" class="form-input">
-              <option value="">请选择场次</option>
+              <option value="">請選擇場次</option>
               <option
                 v-for="session in sessions"
                 :key="session.id"
                 :value="session.id"
               >
-                场次 #{{ session.id }} - {{ getMovieName(session.movieId) }} - 
+                場次 #{{ session.id }} - {{ getMovieName(session.movieId) }} - 
                 {{ formatSessionDateTime(session.showDate, session.showTime) }}
               </option>
             </select>
@@ -354,7 +351,7 @@
           <div class="form-group">
             <label>套票包 ID</label>
             <select v-model.number="formData.ticketPackagesId" class="form-input">
-              <option :value="null">请选择套票包</option>
+              <option :value="null">請選擇套票包</option>
               <option
                 v-for="pkg in ticketPackages"
                 :key="pkg.id"
@@ -365,19 +362,19 @@
             </select>
           </div>
           <div class="form-group">
-            <label>状态</label>
+            <label>狀態</label>
             <select v-model="formData.status" class="form-input">
-              <option value="pending">待处理</option>
-              <option value="processing">处理中</option>
+              <option value="pending">待處理</option>
+              <option value="processing">處理中</option>
               <option value="success">成功</option>
-              <option value="failed">失败</option>
+              <option value="failed">失敗</option>
             </select>
           </div>
           <div class="form-group">
-            <label>错误讯息（选填）</label>
+            <label>錯誤訊息（選填）</label>
             <textarea
               v-model="formData.errorMessage"
-              placeholder="如果有错误，请输入错误讯息"
+              placeholder="如果有錯誤,請輸入錯誤訊息"
               class="form-textarea"
               rows="3"
             ></textarea>
@@ -386,11 +383,11 @@
         <div class="modal-footer">
           <button @click="closeDialogs" class="btn-secondary">取消</button>
           <button
-            @click="showEditDialog ? updateTicket() : addTicket()"
+            @click="updateTicket()"
             class="btn-primary"
             :disabled="!isFormValid"
           >
-            {{ showEditDialog ? '更新' : '新增' }}
+            更新
           </button>
         </div>
       </div>
@@ -422,12 +419,11 @@ const filterSessionId = ref('')
 const filterStatus = ref('')
 const submitting = ref(false)
 
-const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const showBatchAddDialog = ref(false)
 const editingTicket = ref(null)
 
-// 单笔新增表单
+// 編輯表單
 const formData = ref({
   batchSessionId: null,
   ticketPackagesId: null,
@@ -435,7 +431,7 @@ const formData = ref({
   errorMessage: '',
 })
 
-// 批量新增表单
+// 批量新增表單
 const batchFormData = ref({
   selectedMovieId: '',
   selectedSessionIds: [],
@@ -446,7 +442,7 @@ const isFormValid = computed(
   () => !!formData.value.batchSessionId
 )
 
-// 批量表单验证
+// 批量表單驗證
 const isBatchFormValid = computed(() => {
   return (
     batchFormData.value.selectedSessionIds.length > 0 &&
@@ -454,7 +450,7 @@ const isBatchFormValid = computed(() => {
   )
 })
 
-// 根据选择的电影过滤场次
+// 根據選擇的電影過濾場次
 const filteredSessions = computed(() => {
   if (!batchFormData.value.selectedMovieId) return []
   return sessions.value.filter(
@@ -462,25 +458,25 @@ const filteredSessions = computed(() => {
   )
 })
 
-// 总共将建立的票券数量
+// 總共將建立的票券數量
 const totalTicketsToCreate = computed(() => {
   return batchFormData.value.selectedSessionIds.length * 
          batchFormData.value.selectedTicketPackageIds.length
 })
 
-// 是否全选场次
+// 是否全選場次
 const isAllSessionsSelected = computed(() => {
   return filteredSessions.value.length > 0 &&
          batchFormData.value.selectedSessionIds.length === filteredSessions.value.length
 })
 
-// 是否全选票种
+// 是否全選票種
 const isAllTicketTypesSelected = computed(() => {
   return ticketPackages.value.length > 0 &&
          batchFormData.value.selectedTicketPackageIds.length === ticketPackages.value.length
 })
 
-// 切换全选场次
+// 切換全選場次
 const toggleAllSessions = (event) => {
   if (event.target.checked) {
     batchFormData.value.selectedSessionIds = filteredSessions.value.map(s => s.id)
@@ -489,7 +485,7 @@ const toggleAllSessions = (event) => {
   }
 }
 
-// 切换全选票种
+// 切換全選票種
 const toggleAllTicketTypes = (event) => {
   if (event.target.checked) {
     batchFormData.value.selectedTicketPackageIds = ticketPackages.value.map(p => p.id)
@@ -498,12 +494,12 @@ const toggleAllTicketTypes = (event) => {
   }
 }
 
-// 电影改变时清空场次选择
+// 電影改變時清空場次選擇
 const onMovieChange = () => {
   batchFormData.value.selectedSessionIds = []
 }
 
-// 计算各状态票券数量
+// 計算各狀態票券數量
 const statusCount = computed(() => {
   if (!Array.isArray(tickets.value)) {
     return { pending: 0, processing: 0, success: 0, failed: 0 }
@@ -516,53 +512,52 @@ const statusCount = computed(() => {
   }
 })
 
-// 取得电影名称
+// 取得電影名稱
 const getMovieName = (movieId) => {
   const movie = movies.value.find(m => m.id === movieId)
-  return movie ? movie.title : `未知电影(${movieId})`
+  return movie ? movie.title : `未知電影(${movieId})`
 }
 
-// 取得影厅名称
+// 取得影廳名稱
 const getScreenName = (screenId) => {
-  // 需要从 session 中取得 screen 资讯
-  return `影厅 ${screenId}`
+  return `影廳 ${screenId}`
 }
 
-// 取得场次的电影名称
+// 取得場次的電影名稱
 const getSessionMovieName = (sessionId) => {
   const session = sessions.value.find(s => s.id === sessionId)
   return session ? getMovieName(session.movieId) : '-'
 }
 
-// 取得场次时间
+// 取得場次時間
 const getSessionTime = (sessionId) => {
   const session = sessions.value.find(s => s.id === sessionId)
   return session ? formatSessionDateTime(session.showDate, session.showTime) : '-'
 }
 
-// 格式化场次日期时间
+// 格式化場次日期時間
 const formatSessionDateTime = (date, time) => {
   if (!date || !time) return '-'
   return `${date} ${time}`
 }
 
-// 取得状态文字
+// 取得狀態文字
 const getStatusText = (status) => {
   const statusMap = {
-    pending: '⏳ 待处理',
-    processing: '🔄 处理中',
+    pending: '⏳ 待處理',
+    processing: '🔄 處理中',
     success: '✅ 成功',
-    failed: '❌ 失败',
+    failed: '❌ 失敗',
   }
   return statusMap[status] || status || '-'
 }
 
-// 取得状态徽章样式
+// 取得狀態徽章樣式
 const getStatusBadgeClass = (status) => {
   return `badge-${status || 'default'}`
 }
 
-// 取得表格行样式
+// 取得表格行樣式
 const getRowClass = (ticket) => {
   if (ticket.status === 'failed' || ticket.errorMessage) {
     return 'has-error'
@@ -573,7 +568,6 @@ const getRowClass = (ticket) => {
   return ''
 }
 
-
 // 載入電影、票種資料
 const loadMoviesAndTicketPackages = async () => {
   try {
@@ -582,7 +576,6 @@ const loadMoviesAndTicketPackages = async () => {
       ticketPackageService.list(),
     ])
     
-    // 處理電影資料
     if (moviesRes && moviesRes.data) {
       movies.value = moviesRes.data
       console.log('✅ 電影資料載入成功:', movies.value.length)
@@ -590,9 +583,7 @@ const loadMoviesAndTicketPackages = async () => {
       movies.value = []
     }
     
-    // ✅ 處理票種資料 - 參考 ShowtimesPrice.vue 的實作方式
     if (packagesRes && packagesRes.data) {
-      // 只取得啟用的票種 (isActive 或 is_active 為 true)
       ticketPackages.value = packagesRes.data.filter(
         ticket => ticket.isActive || ticket.is_active
       )
@@ -602,17 +593,6 @@ const loadMoviesAndTicketPackages = async () => {
       console.warn('⚠️ 票種資料格式異常')
     }
     
-    console.log('📊 最終載入結果:', {
-      電影數量: movies.value.length,
-      票種數量: ticketPackages.value.length,
-      票種列表: ticketPackages.value.map(t => ({
-        id: t.id,
-        名稱: t.packageName,
-        代碼: t.packageCode,
-        啟用: t.isActive || t.is_active
-      }))
-    })
-    
   } catch (err) {
     console.error('❌ 載入電影或票種資料失敗:', err)
     Swal.fire({
@@ -620,13 +600,12 @@ const loadMoviesAndTicketPackages = async () => {
       title: '載入失敗',
       text: '無法載入電影或票種資料',
     })
-    // 設定空陣列避免後續錯誤
     movies.value = []
     ticketPackages.value = []
   }
 }
 
-// 载入场次列表
+// 載入場次列表
 const loadSessions = async () => {
   if (!batchId.value) return
   try {
@@ -639,18 +618,18 @@ const loadSessions = async () => {
       } else if (Array.isArray(list.content)) {
         list = list.content
       } else {
-        console.warn('sessions 回传不是阵列，实际资料为：', list)
+        console.warn('sessions 回傳不是陣列，實際資料為：', list)
         list = []
       }
     }
 
     sessions.value = list
   } catch (err) {
-    console.error('载入场次失败:', err)
+    console.error('載入場次失敗:', err)
   }
 }
 
-// 载入票券列表
+// 載入票券列表
 const loadTickets = async () => {
   if (!batchId.value) return
 
@@ -676,13 +655,13 @@ const loadTickets = async () => {
       } else if (Array.isArray(list.content)) {
         list = list.content
       } else {
-        console.warn('tickets 回传格式异常，实际资料为：', list)
+        console.warn('tickets 回傳格式異常，實際資料為：', list)
         list = []
       }
     }
 
     if (!Array.isArray(list)) {
-      console.warn('tickets 最终不是阵列，设为空阵列')
+      console.warn('tickets 最終不是陣列，設為空陣列')
       list = []
     }
 
@@ -700,27 +679,26 @@ const batchAddTickets = async () => {
   if (!isBatchFormValid.value) {
     Swal.fire({
       icon: 'warning',
-      title: '资料不完整',
-      text: '请选择场次和票种',
+      title: '資料不完整',
+      text: '請選擇場次和票種',
     })
     return
   }
 
-  // 确认对话框
   const result = await Swal.fire({
     icon: 'question',
-    title: '确认批量新增',
+    title: '確認批量新增',
     html: `
       <div style="text-align: left; padding: 10px;">
-        <p><strong>电影：</strong>${getMovieName(batchFormData.value.selectedMovieId)}</p>
-        <p><strong>场次数量：</strong>${batchFormData.value.selectedSessionIds.length} 场</p>
-        <p><strong>票种数量：</strong>${batchFormData.value.selectedTicketPackageIds.length} 种</p>
+        <p><strong>電影：</strong>${getMovieName(batchFormData.value.selectedMovieId)}</p>
+        <p><strong>場次數量：</strong>${batchFormData.value.selectedSessionIds.length} 場</p>
+        <p><strong>票種數量：</strong>${batchFormData.value.selectedTicketPackageIds.length} 種</p>
         <hr>
-        <p style="color: #2563eb; font-size: 18px;"><strong>总共将建立：${totalTicketsToCreate.value} 张票券</strong></p>
+        <p style="color: #2563eb; font-size: 18px;"><strong>總共將建立：${totalTicketsToCreate.value} 張票券</strong></p>
       </div>
     `,
     showCancelButton: true,
-    confirmButtonText: '确定新增',
+    confirmButtonText: '確定新增',
     cancelButtonText: '取消',
     confirmButtonColor: '#2563eb',
   })
@@ -734,9 +712,7 @@ const batchAddTickets = async () => {
     let failCount = 0
     const errors = []
 
-    // 遍历所有场次
     for (const sessionId of batchFormData.value.selectedSessionIds) {
-      // 遍历所有票种
       for (const packageId of batchFormData.value.selectedTicketPackageIds) {
         try {
           const response = await batchTicketTempService.create({
@@ -751,33 +727,32 @@ const batchAddTickets = async () => {
             successCount++
           } else {
             failCount++
-            errors.push(`场次 #${sessionId} - 票种 #${packageId}: ${response.data.message}`)
+            errors.push(`場次 #${sessionId} - 票種 #${packageId}: ${response.data.message}`)
           }
         } catch (err) {
           failCount++
-          errors.push(`场次 #${sessionId} - 票种 #${packageId}: ${err.message}`)
+          errors.push(`場次 #${sessionId} - 票種 #${packageId}: ${err.message}`)
         }
       }
     }
 
-    // 显示结果
     if (failCount === 0) {
       await Swal.fire({
         icon: 'success',
         title: '批量新增成功',
-        html: `成功建立 <strong>${successCount}</strong> 张票券`,
+        html: `成功建立 <strong>${successCount}</strong> 張票券`,
       })
     } else {
       await Swal.fire({
         icon: 'warning',
-        title: '部分新增失败',
+        title: '部分新增失敗',
         html: `
-          <p>成功：${successCount} 张</p>
-          <p>失败：${failCount} 张</p>
+          <p>成功：${successCount} 張</p>
+          <p>失敗：${failCount} 張</p>
           ${errors.length > 0 ? `<div style="text-align: left; max-height: 200px; overflow-y: auto; margin-top: 10px; padding: 10px; background: #fee; border-radius: 4px;">
-            <strong>错误详情：</strong><br>
+            <strong>錯誤詳情：</strong><br>
             ${errors.slice(0, 5).map(e => `• ${e}`).join('<br>')}
-            ${errors.length > 5 ? `<br>...还有 ${errors.length - 5} 个错误` : ''}
+            ${errors.length > 5 ? `<br>...還有 ${errors.length - 5} 個錯誤` : ''}
           </div>` : ''}
         `,
       })
@@ -790,7 +765,7 @@ const batchAddTickets = async () => {
     console.error(err)
     Swal.fire({
       icon: 'error',
-      title: '批量新增失败',
+      title: '批量新增失敗',
       text: err.message,
     })
   } finally {
@@ -798,34 +773,7 @@ const batchAddTickets = async () => {
   }
 }
 
-// 单笔新增票券
-const addTicket = async () => {
-  try {
-    const payload = {
-      batchId: parseInt(batchId.value, 10),
-      batchSessionId: formData.value.batchSessionId,
-      ticketPackagesId: formData.value.ticketPackagesId || null,
-      status: formData.value.status || 'pending',
-      errorMessage: formData.value.errorMessage || null,
-    }
-
-    await batchTicketTempService.create(payload)
-
-    closeDialogs()
-    await loadTickets()
-
-    Swal.fire({ icon: 'success', title: '新增成功' })
-  } catch (err) {
-    console.error(err)
-    Swal.fire({
-      icon: 'error',
-      title: '新增失败',
-      text: err.response?.data?.message || err.message,
-    })
-  }
-}
-
-// 编辑票券
+// 編輯票券
 const editTicket = (ticket) => {
   editingTicket.value = ticket
   formData.value = {
@@ -858,20 +806,20 @@ const updateTicket = async () => {
     console.error(err)
     Swal.fire({
       icon: 'error',
-      title: '更新失败',
+      title: '更新失敗',
       text: err.response?.data?.message || err.message,
     })
   }
 }
 
-// 删除票券
+// 刪除票券
 const deleteTicket = async (ticket) => {
   const result = await Swal.fire({
     icon: 'warning',
-    title: `确定删除票券 #${ticket.id}？`,
-    text: `场次: ${ticket.batchSessionId || 'N/A'}, 套票包: ${ticket.ticketPackagesId || 'N/A'}`,
+    title: `確定刪除票券 #${ticket.id}？`,
+    text: `場次: ${ticket.batchSessionId || 'N/A'}, 套票包: ${ticket.ticketPackagesId || 'N/A'}`,
     showCancelButton: true,
-    confirmButtonText: '删除',
+    confirmButtonText: '刪除',
     cancelButtonText: '取消',
     confirmButtonColor: '#dc2626',
   })
@@ -880,18 +828,18 @@ const deleteTicket = async (ticket) => {
   try {
     await batchTicketTempService.remove(ticket.id)
     await loadTickets()
-    Swal.fire({ icon: 'success', title: '删除成功' })
+    Swal.fire({ icon: 'success', title: '刪除成功' })
   } catch (err) {
     console.error(err)
     Swal.fire({
       icon: 'error',
-      title: '删除失败',
+      title: '刪除失敗',
       text: err.response?.data?.message || err.message,
     })
   }
 }
 
-// 导向场次管理页
+// 導向場次管理頁
 const goToSessions = () => {
   router.push({
     name: 'BatchSessionTemp',
@@ -904,9 +852,8 @@ const goBack = () => {
   router.push({ name: 'BatchOperationList' })
 }
 
-// 关闭对话框
+// 關閉對話框
 const closeDialogs = () => {
-  showAddDialog.value = false
   showEditDialog.value = false
   showBatchAddDialog.value = false
   editingTicket.value = null
@@ -925,7 +872,7 @@ const closeDialogs = () => {
   }
 }
 
-// 时间格式工具
+// 時間格式工具
 const formatDateTime = (datetime) => {
   if (!datetime) return '-'
   return new Date(datetime).toLocaleString('zh-TW', {
@@ -958,7 +905,6 @@ onMounted(async () => {
   padding: 24px;
 }
 
-/* 页面标题 */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -1009,7 +955,6 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* 工具列 */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -1067,7 +1012,6 @@ onMounted(async () => {
   background: #f8fafc;
 }
 
-/* 按钮 */
 .btn-primary {
   background: #2563eb;
   color: white;
@@ -1129,7 +1073,6 @@ onMounted(async () => {
   background: #f8fafc;
 }
 
-/* 表格 */
 .tickets-table-container {
   background: white;
   border: 1px solid #e2e8f0;
@@ -1276,7 +1219,6 @@ onMounted(async () => {
   background: #fee2e2;
 }
 
-/* 统计 */
 .summary {
   display: flex;
   justify-content: center;
@@ -1318,7 +1260,6 @@ onMounted(async () => {
   color: #ef4444;
 }
 
-/* 状态显示 */
 .loading, .empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -1338,7 +1279,6 @@ onMounted(async () => {
   border-left: 4px solid #dc2626;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1406,7 +1346,6 @@ onMounted(async () => {
   flex: 1;
 }
 
-/* 步骤区段 */
 .step-section {
   margin-bottom: 32px;
   padding: 20px;
@@ -1459,7 +1398,6 @@ onMounted(async () => {
   font-size: 15px;
 }
 
-/* 场次网格 */
 .sessions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1541,7 +1479,6 @@ onMounted(async () => {
   font-size: 13px;
 }
 
-/* 票种网格 */
 .ticket-types-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1562,8 +1499,10 @@ onMounted(async () => {
 }
 
 .ticket-type-checkbox:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .ticket-type-checkbox input[type="checkbox"] {
@@ -1572,7 +1511,6 @@ onMounted(async () => {
   cursor: pointer;
 }
 
-/* 票種資訊容器 */
 .ticket-type-info {
   flex: 1;
   display: flex;
@@ -1580,7 +1518,6 @@ onMounted(async () => {
   gap: 4px;
 }
 
-/* 票種名稱樣式 */
 .ticket-type-name {
   font-weight: 700;
   color: #1e293b;
@@ -1588,7 +1525,6 @@ onMounted(async () => {
   font-size: 15px;
 }
 
-/* ✅ 新增：票種代碼樣式 */
 .ticket-type-code {
   color: #6b7280;
   font-size: 12px;
@@ -1601,7 +1537,6 @@ onMounted(async () => {
   width: fit-content;
 }
 
-/* 票種價格樣式 */
 .ticket-type-price {
   color: #059669;
   font-weight: 700;
@@ -1609,15 +1544,6 @@ onMounted(async () => {
   margin-top: 6px;
 }
 
-/* ✅ 優化：票種選擇框懸停效果 */
-.ticket-type-checkbox:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
-
-/* ✅ 新增：已選中的票種樣式 */
 .ticket-type-checkbox:has(input:checked) {
   border-color: #667eea;
   background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
@@ -1627,7 +1553,6 @@ onMounted(async () => {
   color: #667eea;
 }
 
-/* 预览区段 */
 .preview-section {
   margin-top: 32px;
   padding: 24px;

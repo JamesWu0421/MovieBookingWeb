@@ -98,6 +98,9 @@
               <span style="margin-left: 10px;">日期: {{ formatDate(selectedShowInfo.showDate) }}</span>
               <span style="margin-left: 10px;">時間: {{ formatTime(selectedShowInfo.showTime) }} - {{ formatTime(selectedShowInfo.endTime) }}</span>
               <span style="margin-left: 10px;">影廳: {{ selectedShowInfo.screenId }}</span>
+              <span style="margin-left: 10px; color: #E6A23C; font-weight: 600;">
+                影廳基準價: {{ currentBasePrice }} 元
+              </span>
             </div>
           </template>
         </el-alert>
@@ -143,7 +146,7 @@
             <div style="font-size: 14px;">
               <strong>價格計算明細:</strong>
               <div style="margin-top: 8px; line-height: 1.8;">
-                <div>基準價: {{ basePrice }} 元</div>
+                <div>影廳基準價: {{ currentBasePrice }} 元</div>
                 <div>票種調整: {{ selectedTicketInfo.priceAdjustment >= 0 ? '+' : '' }}{{ selectedTicketInfo.priceAdjustment }} 元</div>
                 <div v-if="selectedTicketInfo.enableEarlyBird">
                   早場調整: {{ selectedTicketInfo.earlyBirdAdjustment >= 0 ? '+' : '' }}{{ selectedTicketInfo.earlyBirdAdjustment }} 元
@@ -353,7 +356,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ticketPackageService from '../services/ticketPackageService'
 import showTicketPriceService from '../services/showTicketPriceService'
-import { showApi, movieApi } from '../services/api'
+import { showApi, movieApi, screenApi } from '../services/api'
 
 // 場次價格表單
 const showPriceForm = ref({
@@ -372,9 +375,30 @@ const ticketList = ref([])
 const movies = ref([])
 const allShowList = ref([])
 const showPricesList = ref([])
+const screenList = ref([]) // ✅ 新增：影廳列表
 
-// 基準價格
-const basePrice = ref(300)
+// ✅ 修改：動態基準價格，根據選擇的場次取得對應影廳的價格
+const currentBasePrice = computed(() => {
+  if (!showPriceForm.value.selectedShowId) {
+    return 0
+  }
+  
+  // 找到選擇的場次
+  const show = allShowList.value.find(s => s.id === showPriceForm.value.selectedShowId)
+  if (!show) {
+    return 0
+  }
+  
+  // 根據場次的 screenId 找到對應的影廳
+  const screen = screenList.value.find(s => s.id === show.screenId)
+  if (!screen) {
+    console.warn(`找不到影廳 ID: ${show.screenId}`)
+    return 0
+  }
+  
+  // 返回影廳的基準價格 (後端欄位名稱是 price)
+  return screen.price || 0
+})
 
 // 根據選擇的電影 ID 過濾場次
 const filteredShowList = computed(() => {
@@ -450,23 +474,21 @@ const selectedTicketInfo = computed(() => {
   }
 })
 
-// 🔧 修正後的豐富場次價格列表
-// ✅ 使用 ticketList 依 ticket_package_id 找回票種名稱
+// 豐富場次價格列表
 const enrichedShowPricesList = computed(() => {
   console.log('🔍 開始處理場次價格列表')
   console.log('原始列表數量:', showPricesList.value.length)
   console.log('票種列表:', ticketList.value)
 
   return showPricesList.value.map((sp, index) => {
-    // 把 proxy 攤平成一般物件印出，比較好看
     const plainSp = JSON.parse(JSON.stringify(sp))
     console.log(`\n處理第 ${index + 1} 項:`, plainSp)
 
-    // 1️⃣ 場次資訊（拿電影名稱、日期、影廳）
+    // 場次資訊
     const showId = plainSp.showId ?? plainSp.show_id
     const show = allShowList.value.find(s => s.id === showId)
 
-    // 2️⃣ 票種 id（看後端實際欄位，DB 是 ticket_package_id，所以這裡優先用它）
+    // 票種 id
     const ticketPackageId =
       plainSp.ticketPackageId ??
       plainSp.ticket_package_id ??
@@ -474,18 +496,17 @@ const enrichedShowPricesList = computed(() => {
 
     console.log('  ticketPackageId =', ticketPackageId)
 
-    // 3️⃣ 用 ticketList 找對應的票種（用 == 讓 27 和 "27" 也能 match）
+    // 用 ticketList 找對應的票種
     const ticket = ticketList.value.find(t => t.id == ticketPackageId)
 
     console.log('  匹配到的票種 =', ticket)
 
-    // 4️⃣ 組成前端要用的物件
+    // 組成前端要用的物件
     const enriched = {
       ...plainSp,
       movieTitle: show?.movieTitle || plainSp.movieTitle || '未知電影',
       showDate: show?.showDate || plainSp.showDate || null,
       screenId: plainSp.screenId || show?.screenId || 'N/A',
-      // ⭐ 關鍵：只用 ticketList 的資料，不再看 sp.ticketPackageName
       ticketPackageName: ticket?.packageName || '未知票種',
       ticketPackageCode: ticket?.packageCode || 'N/A'
     }
@@ -496,7 +517,7 @@ const enrichedShowPricesList = computed(() => {
   })
 })
 
-// 計算最終價格
+// ✅ 修改：使用動態基準價格計算最終價格
 const calculatedPrice = computed(() => {
   if (!showPriceForm.value.selectedShowId || !showPriceForm.value.selectedTicketId) {
     return 0
@@ -504,7 +525,8 @@ const calculatedPrice = computed(() => {
   
   const ticketInfo = selectedTicketInfo.value
   
-  let total = basePrice.value
+  // 使用動態取得的影廳基準價格
+  let total = currentBasePrice.value
   total += ticketInfo.priceAdjustment
   
   if (ticketInfo.enableEarlyBird) {
@@ -531,6 +553,21 @@ watch(() => showPriceForm.value.selectedMovieId, (newMovieId, oldMovieId) => {
     showPriceForm.value.selectedShowId = ''
   }
 })
+
+// ✅ 新增：載入影廳列表
+async function fetchScreenList() {
+  try {
+    const res = await screenApi.getAll()
+    if (res && res.data) {
+      screenList.value = res.data
+      console.log('✅ 影廳資料載入成功:', screenList.value.length)
+      console.log('影廳資料:', screenList.value)
+    }
+  } catch (error) {
+    console.error('❌ 載入影廳列表失敗:', error)
+    ElMessage.error('載入影廳列表失敗')
+  }
+}
 
 // 載入票種列表
 async function fetchTicketList() {
@@ -612,6 +649,9 @@ async function loadShowPricesList() {
     if (allShowList.value.length === 0) {
       await fetchAllShows()
     }
+    if (screenList.value.length === 0) {
+      await fetchScreenList()
+    }
     
     ElMessage.success(`成功載入 ${showPricesList.value.length} 筆場次價格`)
   } catch (error) {
@@ -638,7 +678,10 @@ function onMovieSelected(movieId) {
 function onShowSelected(showId) {
   const show = allShowList.value.find(s => s.id === showId)
   if (show) {
-    ElMessage.success(`已選擇場次: ${formatDate(show.showDate)} ${formatTime(show.showTime)}`)
+    // ✅ 修改：顯示影廳基準價格 (後端欄位是 price)
+    const screen = screenList.value.find(sc => sc.id === show.screenId)
+    const basePriceInfo = screen ? `基準價: ${screen.price} 元` : ''
+    ElMessage.success(`已選擇場次: ${formatDate(show.showDate)} ${formatTime(show.showTime)} ${basePriceInfo}`)
   }
 }
 
@@ -797,11 +840,12 @@ function formatDateTime(datetime) {
 onMounted(async () => {
   console.log('🚀 組件掛載，開始載入資料...')
   
-  // 依序載入基礎資料
+  // ✅ 修改：依序載入基礎資料，包含影廳列表
   await Promise.all([
     fetchTicketList(),
     fetchMovies(),
-    fetchAllShows()
+    fetchAllShows(),
+    fetchScreenList() // 新增
   ])
   
   // 載入場次價格列表

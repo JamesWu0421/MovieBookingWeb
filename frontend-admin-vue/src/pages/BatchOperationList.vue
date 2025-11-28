@@ -74,9 +74,9 @@
             <div class="stats">
               <span class="stat success">✓ {{ batch.successCount || 0 }}</span>
               <span class="stat fail">✗ {{ batch.failCount || 0 }}</span>
-              <span class="stat total">總 {{ batch.totalItems || 0 }}</span>
+              <span class="stat total">總 {{ getTotalCount(batch) }}</span>
             </div>
-            <div v-if="batch.totalItems > 0" class="progress-bar">
+            <div v-if="getTotalCount(batch) > 0" class="progress-bar">
               <div
                 class="progress-fill"
                 :style="{ width: getProgress(batch) + '%' }"
@@ -140,21 +140,13 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>操作者 <span class="required">*</span></label>
-            <input
-              v-model="newBatch.operator"
-              placeholder="請輸入操作者名稱（目前先不存入資料庫）"
-              class="form-input"
-              @keyup.enter="createBatch"
-            />
-          </div>
-          <div class="form-group">
-            <label>說明</label>
+            <label>說明 <span class="required">*</span></label>
             <textarea
               v-model="newBatch.description"
-              placeholder="批次說明（選填）"
+              placeholder="請輸入批次說明"
               class="form-textarea"
               rows="3"
+              @keyup.enter="createBatch"
             ></textarea>
           </div>
         </div>
@@ -165,7 +157,7 @@
           <button
             @click="createBatch"
             class="btn-primary"
-            :disabled="!newBatch.operator"
+            :disabled="!newBatch.description || !newBatch.description.trim()"
           >
             建立並前往場次管理
           </button>
@@ -190,7 +182,6 @@ const filterStatus = ref('')
 
 const showCreateDialog = ref(false)
 const newBatch = ref({
-  operator: '',
   description: '',
 })
 
@@ -223,10 +214,10 @@ onMounted(loadBatchList)
 
 // 建立批次
 const createBatch = async () => {
-  if (!newBatch.value.operator.trim()) {
+  if (!newBatch.value.description.trim()) {
     Swal.fire({
       icon: 'warning',
-      title: '請輸入操作者名稱',
+      title: '請輸入批次說明',
     })
     return
   }
@@ -237,7 +228,7 @@ const createBatch = async () => {
       operatorId: 1,
       operationType: 'IMPORT',
       status: 'PENDING',
-      description: newBatch.value.description || null,
+      description: newBatch.value.description,
     })
 
     // 後端回傳 { success, message, data: { batchId, ... } }
@@ -275,7 +266,9 @@ const startBatch = async (batch) => {
   if (!result.isConfirmed) return
 
   try {
-    await batchOperationService.start(batch.batchId, batch.totalItems || 0)
+    // 修正：使用實際的總數
+    const actualTotal = getTotalCount(batch)
+    await batchOperationService.start(batch.batchId, actualTotal)
     await loadBatchList()
     Swal.fire({ icon: 'success', title: '批次已開始執行' })
   } catch (err) {
@@ -394,7 +387,7 @@ const goToTickets = (batchId) => {
 // UI 小工具
 const closeCreateDialog = () => {
   showCreateDialog.value = false
-  newBatch.value = { operator: '', description: '' }
+  newBatch.value = { description: '' }
 }
 
 const getStatusText = (status) => {
@@ -407,10 +400,20 @@ const getStatusText = (status) => {
   return map[status] || status
 }
 
+// 修正：計算實際的總數
+const getTotalCount = (batch) => {
+  // 優先使用 successCount + failCount 的總和
+  const actualCount = (batch.successCount || 0) + (batch.failCount || 0)
+  
+  // 如果有實際計數，使用實際計數；否則使用 totalItems
+  return actualCount > 0 ? actualCount : (batch.totalItems || 0)
+}
+
 const getProgress = (batch) => {
-  if (!batch.totalItems) return 0
+  const total = getTotalCount(batch)
+  if (!total) return 0
   const done = (batch.successCount || 0) + (batch.failCount || 0)
-  return Math.round((done / batch.totalItems) * 100)
+  return Math.round((done / total) * 100)
 }
 
 const formatDate = (date) => {
@@ -419,17 +422,12 @@ const formatDate = (date) => {
 }
 </script>
 
-
-<!-- 你的原本 <style> 可以直接貼在這裡，或保持不變 -->
-
-
 <style scoped>
 .batch-operations-page {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
 }
-
 
 .page-header {
   display: flex;
@@ -444,7 +442,6 @@ const formatDate = (date) => {
   color: #1a1a1a;
   margin: 0;
 }
-
 
 .btn-primary {
   background: #2563eb;
@@ -484,7 +481,6 @@ const formatDate = (date) => {
   border-color: #cbd5e1;
 }
 
-
 .filter-section {
   margin-bottom: 24px;
 }
@@ -498,7 +494,6 @@ const formatDate = (date) => {
   cursor: pointer;
   min-width: 150px;
 }
-
 
 .batch-list {
   display: grid;
@@ -534,7 +529,6 @@ const formatDate = (date) => {
 .batch-card.status-failed {
   border-left: 5px solid #ef4444;
 }
-
 
 .card-header {
   display: flex;
@@ -627,7 +621,6 @@ const formatDate = (date) => {
   flex: 1;
 }
 
-/* 進度資訊 */
 .progress-info {
   margin-top: 20px;
   padding-top: 16px;
@@ -670,7 +663,6 @@ const formatDate = (date) => {
   transition: width 0.5s ease;
 }
 
-/* 卡片底部 */
 .card-footer {
   padding: 16px 20px;
   background: #f8fafc;
@@ -757,7 +749,6 @@ const formatDate = (date) => {
   background: #dc2626;
 }
 
-/* 狀態顯示 */
 .loading, .empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -777,7 +768,6 @@ const formatDate = (date) => {
   border-left: 4px solid #dc2626;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -853,7 +843,7 @@ const formatDate = (date) => {
 }
 
 .form-input, .form-textarea {
-  width: 100%;
+  width: 95%;
   padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;

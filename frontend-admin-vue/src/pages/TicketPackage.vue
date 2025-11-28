@@ -48,7 +48,7 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="套餐代碼" required>
-                  <el-input v-model="ticketForm.packageCode" placeholder="輸入套餐代碼"></el-input>
+                  <el-input v-model="ticketForm.packageCode" placeholder="輸入套餐代碼(popcorn)"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -56,7 +56,7 @@
             <el-row :gutter="20">
               <el-col :span="12">
                 <el-form-item label="套餐名稱" required>
-                  <el-input v-model="ticketForm.packageName" placeholder="輸入套餐名稱"></el-input>
+                  <el-input v-model="ticketForm.packageName" placeholder="輸入套餐名稱(爆米花套票)"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
@@ -69,7 +69,7 @@
             <el-row :gutter="20">
               <el-col :span="24">
                 <el-form-item label="圖片網址">
-                  <el-input v-model="ticketForm.imageUrl" placeholder="輸入圖片URL"></el-input>
+                  <el-input v-model="ticketForm.imageUrl" placeholder="輸入圖片URL(http://localhost:8080/images/HO00000030.jpg)"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
