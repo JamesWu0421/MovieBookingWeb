@@ -41,7 +41,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { adminLogin } from "../api/auth"; // 路徑依你的實際放置調整
+import { adminLogin } from "../api/auth";
 
 const router = useRouter();
 const email = ref("");
@@ -59,11 +59,26 @@ const handleSubmit = async () => {
   errorMessage.value = "";
 
   try {
-    const token = await adminLogin(email.value, password.value);
-    localStorage.setItem("adminToken", token);
+    console.log('1. 開始登入...');
+    const response = await adminLogin(email.value, password.value);
+    console.log('2. 登入回應:', response);
+    
+    const token = response.token || response;
+    console.log('3. 取得 token:', token);
+    
+    localStorage.setItem("admin_token", token);
+    console.log('4. Token 已儲存');
+    
+    const saved = localStorage.getItem("admin_token");
+    console.log('5. 驗證儲存結果:', saved);
+    
+    console.log('6. 準備跳轉到 /dashboard');
     router.push("/dashboard");
+    
   } catch (err) {
-    if (err.response && err.response.status === 401) {
+    console.error('❌ 登入錯誤:', err);
+    
+    if (err.response?.status === 401) {
       errorMessage.value = "帳號或密碼錯誤";
     } else {
       errorMessage.value = "登入失敗，請稍後再試";

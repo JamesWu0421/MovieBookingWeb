@@ -14,7 +14,7 @@ export async function adminLogin(email, password) {
     email,
     password,
   });
-  return res.data.token;
+  return res.data;
 }
 
 // ===== 員工管理 API (改用 request) =====

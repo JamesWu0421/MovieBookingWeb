@@ -26,7 +26,7 @@ const reportService = {
    * @param {Array<string>} params.ticketTypes - 票種列表 (可選)
    */
   exportComprehensiveReport(params) {
-    return api.get('/reports/export/comprehensive', {
+    return api.get('/admin/reports/export/comprehensive', {
       params,
       responseType: 'blob'
     });
@@ -37,7 +37,7 @@ const reportService = {
    * 保留向下相容性
    */
   exportSalesReport(params) {
-    return api.get('/reports/export/sales', {
+    return api.get('/admin/reports/export/sales', {
       params,
       responseType: 'blob'
     });

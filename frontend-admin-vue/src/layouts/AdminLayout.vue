@@ -55,8 +55,10 @@ async function logout() {
       type: "warning",
     });
 
-    // 清除 token (改成 adminToken)
-    localStorage.removeItem("adminToken");
+    // ✅ 改成 admin_token (與其他地方統一)
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_name");    // 可選
+    localStorage.removeItem("admin_email");   // 可選
 
     ElMessage.success("已登出");
     router.push("/login");

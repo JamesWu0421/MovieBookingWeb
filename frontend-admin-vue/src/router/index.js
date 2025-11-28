@@ -46,7 +46,7 @@ const router = createRouter({
 
 // 全域前置守衛 - 所有路由都檢查 token
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem("adminToken");
+  const token = localStorage.getItem("admin_token");
 
   // 如果沒有 token 且不是要去登入頁
   if (!token && to.path !== "/login") {
