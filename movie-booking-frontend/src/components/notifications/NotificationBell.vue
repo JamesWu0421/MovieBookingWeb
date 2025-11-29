@@ -95,27 +95,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ← 你原本的 CSS 我完全保留，不貼這裡 */
-</style>
-
-
-<style scoped>
-/* 🔔 小鈴鐺動畫 */
-.shake {
-  animation: shake 0.3s infinite;
-}
-
-@keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
-  100% { transform: rotate(0deg); }
-}
-
+/* 整體位置 */
 .notification-bell {
   position: relative;
 }
 
+/* 鈴鐺按鈕 */
 .bell-button {
   background: none;
   border: none;
@@ -127,29 +112,172 @@ onMounted(() => {
   font-size: 22px;
 }
 
-/* 徽章 */
+/* 未讀徽章 */
 .badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  background: #e53e3e;
+  top: -4px;
+  right: -6px;
+  background: #ef4444;
   color: white;
-  font-size: 10px;
-  padding: 1px 4px;
+  font-size: 11px;
+  padding: 2px 5px;
   border-radius: 999px;
+  font-weight: bold;
 }
 
-/* 下拉框 UI */
+/* 下拉框主體 */
 .dropdown {
   position: absolute;
   right: 0;
-  top: 35px;
-  width: 360px;
+  top: 38px;
+  width: 380px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 6px 30px rgba(0,0,0,0.2);
+  border-radius: 14px;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.18);
+  padding: 16px 0;
   overflow: hidden;
   z-index: 999;
+}
+
+/* 標題列 */
+.dropdown-header {
+  padding: 0 20px 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dropdown-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.mark-all {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.mark-all:hover {
+  text-decoration: underline;
+}
+
+/* loading */
+.dropdown-loading {
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 通知列表 */
+.notification-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+/* 單一通知卡片 */
+.notification-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: 0.18s;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+}
+
+.notification-item.unread {
+  background: #eff6ff;
+}
+
+.notification-item.unread:hover {
+  background: #e0edff;
+}
+
+/* 左側 icon */
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* 內容文字 */
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  margin-bottom: 4px;
+}
+
+.notification-message {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 兩行後省略 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* 空狀態 */
+.dropdown-empty {
+  text-align: center;
+  padding: 30px;
+  color: #9ca3af;
+}
+
+/* 下拉動畫 */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.dropdown-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 </style>

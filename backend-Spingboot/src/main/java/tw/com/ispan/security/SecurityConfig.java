@@ -89,6 +89,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/uploads/**", // 靜態資源
                                                                 "/css/**",
                                                                 "/api/public/**", // 公開資料
+                                                                "/api/public/events/**",
                                                                 "/js/**",
                                                                 "/api/admin/auth/login", // 管理員
                                                                 "/images/**",
@@ -98,7 +99,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 ).permitAll()
 
                                                 // 3) 讓 /api/user/** 由你的 Interceptor 驗證，不由 Spring Security 攔截
-                                                .requestMatchers("/api/user/**","/api/notifications/**").permitAll()
+                                                .requestMatchers("/api/user/**", "/api/notifications/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證
@@ -110,7 +111,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 // OAuth2 登入成功邏輯（在 success handler 產出 JWT 並重定向回前端）
                                 .oauth2Login(oauth2 -> oauth2
                                                 .successHandler(oAuth2LoginSuccessHandler)
-                                                .failureUrl(frontendUrl+"/login?error=oauth2_failed"))
+                                                .failureUrl(frontendUrl + "/login?error=oauth2_failed"))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -149,18 +150,6 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 .excludePathPatterns("/api/user/logout"); // logout 端點可視需求放行
         }
 
-        // CORS 設定（讓 Spring Security 統一處理，不要在 Interceptor 裡手動設 header）
-        @Override
-        public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                                .allowedOrigins(frontendUrl, adminUrl)
-                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-                                .allowedHeaders("*")
-                                .exposedHeaders("Authorization")
-                                .allowCredentials(true)
-                                .maxAge(3600);
-        }
-
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 File uploadDir = new File(uploadPath);
@@ -180,21 +169,20 @@ public class SecurityConfig implements WebMvcConfigurer {
                 CorsConfiguration configuration = new CorsConfiguration();
 
                 // 🔧 修正：指定具體的前端地址
-                configuration.setAllowedOrigins(Arrays.asList(
-                                "http://localhost:5173", // Vue 開發伺服器
-                                "http://localhost:5174", // 如果有第二個前端
+                configuration.setAllowedOriginPatterns(Arrays.asList(
+                                "http://localhost:5173",
+                                "http://localhost:5174",
                                 "http://127.0.0.1:5173",
                                 "http://127.0.0.1:5174",
                                 frontendUrl,
-                                adminUrl
-                                        ));
-                                
+                                adminUrl));
 
                 // 允許的 HTTP 方法
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
                 // 允許的 Headers
                 configuration.setAllowedHeaders(Arrays.asList("*"));
+
 
                 // 🔧 修正：開發階段可以關閉憑證
                 configuration.setAllowCredentials(true); // 允許攜帶憑證(Cookie/Token)

@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/public/events") // 公共活動相關的API
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class EventPublicController {
 
     private final EventPublicService eventPublicService;
