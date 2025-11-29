@@ -128,7 +128,7 @@
           <!-- 生日 -->
           <div class="form-group">
             <label>生日 <span class="required">*</span></label>
-            <input type="date" v-model="form.birthday" required />
+            <input type="date" v-model="form.birthday" :max="today" required />
           </div>
 
           <!-- 密碼 -->
@@ -190,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { register, uploadAvatar } from "../../services/api";
 
@@ -198,6 +198,16 @@ const router = useRouter();
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+const today = ref("");
+
+onMounted(() => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  today.value = `${yyyy}-${mm}-${dd}`;
+});
 
 const form = ref({
   username: "",

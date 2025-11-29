@@ -14,6 +14,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value; 
+
 
 import jakarta.transaction.Transactional;
 import tw.com.ispan.dto.request.UserUpdateRequest;
@@ -30,6 +32,12 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Value("${backend.url}")
+    private String backendUrl;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 //註冊
      public UserEntity registerUser(String username, String rawPassword, String email,String phoneNumber, String nickname, String gender, LocalDate birthday, String avatarUrl) {
         
@@ -78,7 +86,7 @@ public class UserService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("請驗證您的帳號");
-        String activateUrl = "http://localhost:8080/api/auth/verify?code=" + verificationCode;
+        String activateUrl = backendUrl+"/api/auth/verify?code=" + verificationCode;
         message.setText("請點擊以下連結以啟用帳號:\n" + activateUrl);
         mailSender.send(message);
     }
@@ -120,7 +128,7 @@ public void sendResetPasswordEmail(String email) {
     userRepository.save(user);
 
     // 建立重置連結
-    String resetLink = "http://localhost:5173/reset_password?token=" + resetToken;
+    String resetLink = frontendUrl+"/reset_password?token=" + resetToken;
 
     // 寄信內容
     SimpleMailMessage message = new SimpleMailMessage();

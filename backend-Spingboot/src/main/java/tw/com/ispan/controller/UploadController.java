@@ -25,7 +25,7 @@ public class UploadController {
     private String uploadPath;
 
     // 圖片訪問的基礎 URL
-    @Value("${upload.base-url:http://localhost:8080}")
+    @Value("${upload.base-url}")
     private String baseUrl;
 
     /**

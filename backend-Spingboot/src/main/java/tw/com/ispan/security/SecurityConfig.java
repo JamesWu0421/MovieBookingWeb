@@ -44,6 +44,15 @@ public class SecurityConfig implements WebMvcConfigurer {
         @Autowired
         private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+        @Value("${frontend.url}")
+        private String frontendUrl;
+
+        @Value("${admin.url}")
+        private String adminUrl;
+
+        @Value("${backend.url}")
+        private String backendUrl;
+
         @Bean
         public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
                 return configuration.getAuthenticationManager();
@@ -101,7 +110,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 // OAuth2 登入成功邏輯（在 success handler 產出 JWT 並重定向回前端）
                                 .oauth2Login(oauth2 -> oauth2
                                                 .successHandler(oAuth2LoginSuccessHandler)
-                                                .failureUrl("http://localhost:5173/login?error=oauth2_failed"))
+                                                .failureUrl(frontendUrl+"/login?error=oauth2_failed"))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
@@ -144,7 +153,7 @@ public class SecurityConfig implements WebMvcConfigurer {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                                .allowedOrigins("http://localhost:5173", "http://localhost:5174")
+                                .allowedOrigins(frontendUrl, adminUrl)
                                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                                 .allowedHeaders("*")
                                 .exposedHeaders("Authorization")
@@ -175,7 +184,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "http://localhost:5173", // Vue 開發伺服器
                                 "http://localhost:5174", // 如果有第二個前端
                                 "http://127.0.0.1:5173",
-                                "http://127.0.0.1:5174"));
+                                "http://127.0.0.1:5174",
+                                frontendUrl,
+                                adminUrl
+                                        ));
+                                
 
                 // 允許的 HTTP 方法
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

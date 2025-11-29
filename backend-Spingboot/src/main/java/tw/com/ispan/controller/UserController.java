@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,17 @@ public class UserController {
     private UserService userService;
     @Autowired
     private JsonWebTokenUtility jwtUtility;
+
+     @Value("${frontend.url}")
+    private String frontendUrl;
+
+    @Value("${admin.url}")
+    private String adminUrl;
+
+    @Value("${backend.url}")
+    private String backendUrl;
+
+
     //註冊
     @PostMapping("/auth/register")
 public ResponseEntity<String> register(@RequestBody UserRegisterRequest req) {
@@ -110,14 +122,14 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody UserLoginRequest r
 public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
     Optional<UserEntity> optUser = userService.findByVerificationCode(code);
     if(optUser.isEmpty()) {
-        response.sendRedirect("http://localhost:5173/verify-failed");
+        response.sendRedirect(frontendUrl+"/verify-failed");
         return ResponseEntity.badRequest().build();
     }
     UserEntity user = optUser.get();
     user.setStatus((byte)1);
     user.setVerificationCode(null);
     userService.save(user);
-    response.sendRedirect("http://localhost:5173/verify-success");
+    response.sendRedirect(frontendUrl+"/verify-success");
     return ResponseEntity.ok().build();
 }
 
