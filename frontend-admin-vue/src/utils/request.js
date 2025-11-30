@@ -32,7 +32,7 @@ request.interceptors.response.use(
       // 401 未授權 - token 過期
       if (status === 401) {
         ElMessage.error("登入已過期，請重新登入");
-        localStorage.removeItem("adminToken");
+        localStorage.removeItem("admin_token");
         router.push("/login"); // 改成 /login
       }
       // 403 權限不足
