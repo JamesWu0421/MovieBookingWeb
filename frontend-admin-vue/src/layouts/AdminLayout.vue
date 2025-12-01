@@ -15,9 +15,27 @@
         <el-menu-item index="/dashboard">儀表板</el-menu-item>
         <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
-        <el-menu-item index="/movies">電影/影廳管理</el-menu-item>
-        <el-menu-item index="/showtimes">場次/票價管理</el-menu-item>
-        <el-menu-item index="/orders">訂單管理</el-menu-item>
+        <el-sub-menu index="/activities">
+        <template #title>電影/影廳管理</template>
+          <el-menu-item index="/movies">電影管理</el-menu-item>
+          <el-menu-item index="/screens">影廳管理</el-menu-item>
+          <el-menu-item index="/shows">場次管理</el-menu-item>
+          </el-sub-menu>
+        <el-sub-menu index="/activities">
+        <template #title>票種管理</template>
+        <el-menu-item index="/ticket-package">票種管理</el-menu-item>
+        <el-menu-item index="/showtimes-price">場次票種管理</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="/batch">
+          <template #title>批次管理</template>
+          <el-menu-item index="/batch-operations">批次列表</el-menu-item>
+        </el-sub-menu>
+
+        <el-sub-menu index="/orders">
+          <template #title>訂單管理</template>
+          <el-menu-item index="/orders">查看訂單</el-menu-item>
+          <el-menu-item index="/issues">查看問題回報</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu index="/activities">
           <template #title>活動管理</template>
           <el-menu-item index="/promotions">優惠活動</el-menu-item>

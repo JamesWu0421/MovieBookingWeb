@@ -96,12 +96,22 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/favicon.ico",
                                                                 "/oauth2/**", // OAuth2 授權端點
                                                                 "/login/oauth2/**", // OAuth2 回調端點
-                                                                "/api/movies/**"
+                                                                "/api/movies/**",
+                                                                "/api/screens/**","/api/shows/**","/api/ticket-packages/**",
+                                                                "/api/show-ticket-prices/all/**",
+                                                                "/api/batch-operations/**"
 
                                                 ).permitAll()
 
                                                 // 3) 讓 /api/user/** 由你的 Interceptor 驗證，不由 Spring Security 攔截
-                                                .requestMatchers("/api/user/**", "/api/notifications/**", "/api/movies/**").permitAll()
+                                                .requestMatchers("/api/user/**",
+                                                "/api/notifications/**",
+                                                "/api/movies/**",
+                                                "/api/screens/**",
+                                                "/api/shows/**",
+                                                "/api/ticket-packages/**",
+                                                "/api/show-ticket-prices/all/**",
+                                                "/api/batch-operations/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證
