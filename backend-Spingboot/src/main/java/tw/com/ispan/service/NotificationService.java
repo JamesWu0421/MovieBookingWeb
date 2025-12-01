@@ -18,6 +18,7 @@ import tw.com.ispan.model.Event;
 import tw.com.ispan.model.Notification;
 import tw.com.ispan.model.NotificationUser;
 import tw.com.ispan.repository.EventRepository;
+import tw.com.ispan.repository.MovieRepository;
 import tw.com.ispan.repository.NotificationRepository;
 import tw.com.ispan.repository.NotificationUserRepository;
 import tw.com.ispan.repository.UserRepository;
@@ -32,7 +33,7 @@ public class NotificationService {
 
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    // private final MovieRepository movieRepository;
+    private final MovieRepository movieRepository;
 
     /**
      * 獲取通知列表（管理員用）
@@ -176,12 +177,11 @@ public class NotificationService {
      */
     @Transactional
     public Notification createNotificationFromMovie(Integer movieId, String pushType, List<Integer> userIds) {
-        // Movie movie = movieRepository.findById(movieId)
-        //         .orElseThrow(() -> new RuntimeException("電影不存在: " + movieId));
+        MovieBean movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("電影不存在: " + movieId));
 
         // 創建通知
         Notification notification = new Notification();
-        MovieBean movie = new MovieBean();
         notification.setType("MOVIE");
         notification.setTitle("新片上映：" + movie.getTitle());
         notification.setContent(String.format("%s 即將上映！%s",
