@@ -1,415 +1,195 @@
+// stores/show.js
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import axios from 'axios'
 
-export const useShowStore = defineStore('show', () => {
-  // 影城列表
-  const cinemas = ref([
-        { id: 2, name: '台北欣欣秀泰' },
-  ])
+const api = axios.create({
+  baseURL: 'http://localhost:8080/api',
+  timeout: 5000
+})
 
-  // 場次資料
-  // 資料結構: { cinemaId, movieId, date, hall, hallType, startTime, endTime, ticketStatus }
-  const showtimes = ref([
-    // 台北欣欣秀泰 - 11/18 的場次
-    {
-      cinemaId: 2,
-      movieId: '1', // 這裡先用字串,之後可以根據實際的 movieId 調整
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '10:00',
-      endTime: '11:53',
-      ticketStatus: '早優'
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館10廳',
-      hallType: '2D 英語',
-      startTime: '10:40',
-      endTime: '12:33',
-      ticketStatus: '早優'
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館6廳LOVE',
-      hallType: '情人英語',
-      startTime: '11:20',
-      endTime: '13:13',
-      ticketStatus: '早優'
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '12:20',
-      endTime: '14:13',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館10廳',
-      hallType: '2D 英語',
-      startTime: '13:00',
-      endTime: '14:53',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館6廳LOVE',
-      hallType: '情人英語',
-      startTime: '13:40',
-      endTime: '15:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '14:40',
-      endTime: '16:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館10廳',
-      hallType: '2D 英語',
-      startTime: '15:20',
-      endTime: '17:13',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館6廳LOVE',
-      hallType: '情人英語',
-      startTime: '16:00',
-      endTime: '17:53',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '17:00',
-      endTime: '18:53',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館10廳',
-      hallType: '2D 英語',
-      startTime: '17:40',
-      endTime: '19:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館6廳LOVE',
-      hallType: '情人英語',
-      startTime: '18:20',
-      endTime: '20:13',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '19:20',
-      endTime: '21:13',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館10廳',
-      hallType: '2D 英語',
-      startTime: '20:00',
-      endTime: '21:53',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館6廳LOVE',
-      hallType: '情人英語',
-      startTime: '20:40',
-      endTime: '22:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-18',
-      hall: '1館9廳',
-      hallType: '2D 英語',
-      startTime: '21:40',
-      endTime: '23:33',
-      ticketStatus: ''
+export const useShowStore = defineStore('show', {
+  state: () => ({
+    shows: [],           // 所有場次資料
+    screens: {},         // screen_id -> screen 物件的對應表
+    loading: false,
+    error: null
+  }),
+  
+  actions: {
+    /**
+     * 取得場次資料（會自動載入 screens 資料）
+     */
+    async fetchShowtimes({ movieId, date }) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        // 同時取得 shows 和 screens
+        const [showsResponse, screensResponse] = await Promise.all([
+          api.get('/shows'),
+          api.get('/screens')
+        ])
+        
+        this.shows = showsResponse.data
+        
+        // 建立 screenId -> screen 的對應表
+        this.screens = {}
+        screensResponse.data.forEach(screen => {
+          this.screens[screen.id] = screen
+        })
+        
+        console.log('場次資料已載入:', this.shows.length)
+        console.log('影廳資料已載入:', Object.keys(this.screens).length)
+        
+      } catch (err) {
+        this.error = err.message || '載入場次失敗'
+        console.error('Error fetching showtimes:', err)
+        throw err
+      } finally {
+        this.loading = false
+      }
     },
     
-    // 台北欣欣秀泰 - 11/16 的場次
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '6廳',
-      hallType: '2D 英語',
-      startTime: '10:30',
-      endTime: '12:23',
-      ticketStatus: '早優'
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '12廳',
-      hallType: '2D 英語',
-      startTime: '11:20',
-      endTime: '13:13',
-      ticketStatus: '早優'
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '6廳',
-      hallType: '2D 英語',
-      startTime: '12:50',
-      endTime: '14:43',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '2廳',
-      hallType: '2D 英語',
-      startTime: '13:40',
-      endTime: '15:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '6廳',
-      hallType: '2D 英語',
-      startTime: '15:10',
-      endTime: '17:03',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '12廳',
-      hallType: '2D 英語',
-      startTime: '16:00',
-      endTime: '17:53',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '6廳',
-      hallType: '2D 英語',
-      startTime: '17:30',
-      endTime: '19:23',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '12廳',
-      hallType: '2D 英語',
-      startTime: '18:20',
-      endTime: '20:13',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '6廳',
-      hallType: '2D 英語',
-      startTime: '19:50',
-      endTime: '21:43',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '12廳',
-      hallType: '2D 英語',
-      startTime: '20:40',
-      endTime: '22:33',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '10廳',
-      hallType: '2D 英語',
-      startTime: '21:10',
-      endTime: '23:03',
-      ticketStatus: ''
-    },
-    {
-      cinemaId: 2,
-      movieId: '1',
-      date: '2025-11-16',
-      hall: '2廳',
-      hallType: '2D 英語',
-      startTime: '21:40',
-      endTime: '23:33',
-      ticketStatus: ''
+    /**
+     * 清空資料
+     */
+    clearShowtimes() {
+      this.shows = []
+      this.screens = {}
+      this.error = null
     }
-  ])
-
-  // 載入狀態
-  const loading = ref(false)
-  const error = ref(null)
-
-  // Getters
-  // 根據影城ID獲取影城資訊
-  const getCinemaById = computed(() => {
-    return (cinemaId) => cinemas.value.find(c => c.id === cinemaId)
-  })
-
-  // 根據條件篩選場次
-  const getShowtimes = computed(() => {
-    return (filters = {}) => {
-      let result = showtimes.value
-
-      if (filters.cinemaId) {
-        result = result.filter(s => s.cinemaId === filters.cinemaId)
-      }
-
-      if (filters.movieId) {
-        result = result.filter(s => s.movieId === filters.movieId)
-      }
-
-      if (filters.date) {
-        result = result.filter(s => s.date === filters.date)
-      }
-
-      if (filters.hallType && filters.hallType !== '所有') {
-        result = result.filter(s => s.hallType === filters.hallType)
-      }
-
-      return result
-    }
-  })
-
-  // 獲取某個影城和日期的所有廳種
-  const getHallTypes = computed(() => {
-    return (cinemaId, movieId, date) => {
+  },
+  
+  getters: {
+    /**
+     * 取得符合條件的場次列表
+     * 注意：已移除 cinemaId 參數，因為只有固定台北館
+     */
+    getShowtimes: (state) => ({ movieId, date, hallType = '所有' }) => {
+      console.log('篩選條件:', { movieId, date, hallType })
+      
+      // 篩選符合條件的場次
+      let filtered = state.shows.filter(show => {
+        // 篩選電影（支援兩種命名方式）
+        const showMovieId = show.movieId || show.movie_id
+        const matchMovie = !movieId || showMovieId == movieId
+        
+        // 篩選日期（支援兩種命名方式）
+        const showDate = show.showDate || show.show_date
+        const matchDate = !date || showDate === date
+        
+        // 取得影廳資訊
+        const screenId = show.screenId || show.screen_id
+        const screen = state.screens[screenId]
+        
+        if (!screen) {
+          console.warn(`找不到 screenId=${screenId} 的影廳資訊`)
+          return false
+        }
+        
+        // 取得影廳類型（支援兩種命名方式）
+        const screenType = screen.screenType || screen.screen_type
+        
+        // 篩選影廳類型
+        const matchHallType = hallType === '所有' || screenType === hallType
+        
+        const matched = matchMovie && matchDate && matchHallType
+        
+        if (!matched) {
+          console.log('不符合條件:', {
+            showMovieId,
+            matchMovie,
+            showDate,
+            matchDate,
+            screenType,
+            matchHallType
+          })
+        }
+        
+        return matched
+      })
+      
+      console.log(`共篩選出 ${filtered.length} 個場次`)
+      
+      // 格式化資料
+      return filtered.map(show => {
+        const screenId = show.screenId || show.screen_id
+        const screen = state.screens[screenId]
+        const screenType = screen?.screenType || screen?.screen_type || 'NORMAL_2D'
+        const screenName = screen?.name || `${screenId}廳`
+        const showDate = show.showDate || show.show_date
+        const showTime = show.showTime || show.show_time
+        const endTime = show.endTime || show.end_time
+        const showMovieId = show.movieId || show.movie_id
+        
+        return {
+          id: show.id,
+          movieId: showMovieId,
+          screenId: screenId,
+          date: showDate,
+          startTime: showTime,
+          endTime: endTime,
+          hall: screenName,
+          hallType: screenType,
+          ticketStatus: null,
+          price: screen?.price || 0
+        }
+      })
+    },
+    
+    /**
+     * 取得可用的影廳類型
+     * 注意：已移除 cinemaId 參數
+     */
+    getHallTypes: (state) => (movieId, date) => {
+      // 篩選符合條件的場次
+      const showtimes = state.shows.filter(show => {
+        const showMovieId = show.movieId || show.movie_id
+        const matchMovie = !movieId || showMovieId == movieId
+        
+        const showDate = show.showDate || show.show_date
+        const matchDate = !date || showDate === date
+        
+        return matchMovie && matchDate
+      })
+      
+      console.log(`該電影在該日期有 ${showtimes.length} 個場次`)
+      
+      // 收集所有不重複的 screen_type
       const types = new Set(['所有'])
       
-      showtimes.value
-        .filter(s => 
-          s.cinemaId === cinemaId && 
-          s.movieId === movieId && 
-          s.date === date
-        )
-        .forEach(s => types.add(s.hallType))
+      showtimes.forEach(show => {
+        const screenId = show.screenId || show.screen_id
+        const screen = state.screens[screenId]
+        const screenType = screen?.screenType || screen?.screen_type
+        
+        if (screenType) {
+          types.add(screenType)
+          console.log(`找到影廳類型: ${screenType}`)
+        }
+      })
       
-      return Array.from(types)
-    }
-  })
-
-  // Actions
-  // 從 API 取得場次資料（未來實作）
-  const fetchShowtimes = async (cinemaId, movieId) => {
-    loading.value = true
-    error.value = null
+      const result = Array.from(types)
+      console.log('可用的影廳類型:', result)
+      
+      return result
+    },
     
-    try {
-      // 這裡之後可以串接真實 API
-      // const response = await fetch(`/api/showtimes?cinema=${cinemaId}&movie=${movieId}`)
-      // const data = await response.json()
-      // showtimes.value = data
+    /**
+     * 根據場次 ID 取得場次詳細資訊
+     */
+    getShowById: (state) => (showId) => {
+      const show = state.shows.find(s => s.id == showId)
+      if (!show) return null
       
-      // 目前使用假資料，所以直接返回
-      return showtimes.value
-    } catch (err) {
-      error.value = err.message
-      console.error('取得場次失敗:', err)
-    } finally {
-      loading.value = false
+      const screenId = show.screenId || show.screen_id
+      const screen = state.screens[screenId]
+      
+      return {
+        ...show,
+        screen: screen,
+        hallType: screen?.screenType || screen?.screen_type || 'NORMAL_2D'
+      }
     }
-  }
-
-  // 新增場次
-  const addShowtime = (showtime) => {
-    showtimes.value.push(showtime)
-  }
-
-  // 更新場次
-  const updateShowtime = (index, newShowtime) => {
-    if (index >= 0 && index < showtimes.value.length) {
-      showtimes.value[index] = { ...showtimes.value[index], ...newShowtime }
-    }
-  }
-
-  // 刪除場次
-  const removeShowtime = (index) => {
-    if (index >= 0 && index < showtimes.value.length) {
-      showtimes.value.splice(index, 1)
-    }
-  }
-
-  // 清空所有場次
-  const clearShowtimes = () => {
-    showtimes.value = []
-  }
-
-  return {
-    // State
-    cinemas,
-    showtimes,
-    loading,
-    error,
-
-    // Getters
-    getCinemaById,
-    getShowtimes,
-    getHallTypes,
-
-    // Actions
-    fetchShowtimes,
-    addShowtime,
-    updateShowtime,
-    removeShowtime,
-    clearShowtimes
   }
 })

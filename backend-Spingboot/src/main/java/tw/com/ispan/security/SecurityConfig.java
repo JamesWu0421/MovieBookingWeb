@@ -99,11 +99,13 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/movies/**",
                                                                 "/api/screens/**",
                                                                 "/api/seats/**",
+                                                                "/api/seat-locks/**",
                                                                 "/api/shows/**",
                                                                 "/api/package-items/**",
                                                                 "/api/ticket-packages/**",
                                                                 "/api/show-ticket-prices/**",
-                                                                "/api/batch-operations/**"
+                                                                "/api/batch-operations/**",
+                                                                "/api/tickets/**"
 
                                                 ).permitAll()
 
@@ -113,11 +115,13 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 "/api/movies/**",
                                                 "/api/screens/**",
                                                 "/api/seats/**",
+                                                "/api/seat-locks/**",
                                                 "/api/shows/**",
                                                 "/api/ticket-packages/**",
                                                 "/api/show-ticket-prices/**",
                                                 "/api/batch-operations/**",
-                                                "/api/package-items/**").permitAll()
+                                                "/api/package-items/**",
+                                                "/api/tickets/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證

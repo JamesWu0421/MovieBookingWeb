@@ -3,6 +3,7 @@ import { useAuthStore } from "../stores/login";
 
 import HomeView from "../views/HomeView.vue";
 import MoviesView from "../views/MoviesView.vue";
+import UpcomingMoviesView from '../views/UpcomingMoviesView.vue';
 import MovieDetailView from "../views/MovieDetailView.vue";
 import SeatSelectionView from "../views/SeatSelectionView.vue";
 import CheckoutView from "../views/CheckoutView.vue";
@@ -51,11 +52,17 @@ const routes = [
     component: MoviesView,
   },
   {
+    path: '/upcomingmovies',
+    name: 'UpcomingMovies',
+    component: UpcomingMoviesView,
+  },
+  {
     path: "/movies/:id",
     name: "movie-detail",
     component: MovieDetailView,
     props: true,
   },
+  
 
   // ===== 登入/註冊相關 (已登入不能訪問) =====
   {

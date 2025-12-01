@@ -1,7 +1,7 @@
 <template>
   <section>
     <div class="div1">
-      <div class="div2">現正熱映</div>
+      <div class="div2">即將上映</div>
     </div>
 
     <p v-if="loading">載入中...</p>
@@ -9,7 +9,7 @@
 
     <MovieList class="movielist"
       v-else
-      :movies="nowPlayingMovies"
+      :movies="upcomingMovies"
       @select-movie="goToMovieDetail"
     />
   </section>
@@ -24,26 +24,21 @@ import MovieList from '../components/movies/MovieList.vue';
 const moviesStore = useMoviesStore();
 const { movies, loading, error } = storeToRefs(moviesStore);
 
-// 今日日期 00:00
+// 取得「今天 00:00」當基準
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-// 只顯示「已上映、已上架」的電影
-const nowPlayingMovies = computed(() =>
-  movies.value.filter(m => {
-    // 後端 return 的欄位名字兼容
-    const release = m.releaseDate || m.release_date;
-    const published = m.isPublished === true || m.is_published === true;
+// 只顯示「上映日期在今天之後」的電影
+const upcomingMovies = computed(() =>
+  movies.value.filter((m) => {
+    const dateStr = m.releaseDate || m.release_date;
+    if (!dateStr) return false;
 
-    if (!release || !published) return false;
-
-    const d = new Date(release);
+    const d = new Date(dateStr); // 後端是 yyyy-MM-dd，這樣轉 ok
     if (Number.isNaN(d.getTime())) return false;
 
     d.setHours(0, 0, 0, 0);
-
-    // 只留上映日期 <= 今天的
-    return d <= today;
+    return d > today;
   })
 );
 
@@ -56,7 +51,6 @@ onMounted(() => {
 const goToMovieDetail = (movieId) => {
   window.location.href = `/movies/${movieId}`;
 };
-
 </script>
 
 <style scoped>

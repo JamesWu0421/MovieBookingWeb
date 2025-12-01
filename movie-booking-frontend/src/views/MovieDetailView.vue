@@ -1,5 +1,4 @@
 <template>
-  <!-- loading / error / 找不到 -->
   <div v-if="loading" class="movie-detail-page">
     載入中…
   </div>
@@ -100,6 +99,9 @@
       </div>
       <div class="div4">
         <div class="div2">線上訂票</div>
+        <button class="booking-btn" @click="goToBooking">
+          前往線上訂票<svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
       </div>
   </div>
 </template>
@@ -141,11 +143,17 @@ const toggleIntro = () => {
   showFullIntro.value = !showFullIntro.value
 }
 
-// 把 watch?v= 轉成 embed/，你現在 trailerUrl 用的是 watch 版
 const trailerUrlEmbed = computed(() => {
   if (!movie.value || !movie.value.trailerUrl) return ''
   return movie.value.trailerUrl.replace('watch?v=', 'embed/')
 })
+
+const goToBooking = () => {
+  if (!movie.value) return
+  const id = movie.value.id
+  window.location.href = `/booking/TicketBooking/${id}`
+}
+
 </script>
 
 <style scoped>
@@ -153,6 +161,7 @@ const trailerUrlEmbed = computed(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 64px 48px;
+  
 }
 
 .div1 {
@@ -186,6 +195,8 @@ const trailerUrlEmbed = computed(() => {
 .div4 {
   width: 100%;
   height: 60px;
+  margin-top: 20px;
+  margin-bottom: 60px;
   border-top: 1px solid rgb(230, 230, 230);
   border-bottom: 1px solid rgb(230, 230, 230);
 }
@@ -279,13 +290,16 @@ const trailerUrlEmbed = computed(() => {
   padding: 4px 14px;
   font-size: 13px;
   border-radius: 4px;
-  border: 1px solid #6b4bb8;
+  border: 1px solid #ad9278;
   background: #fff;
-  color: #6b4bb8;
+  color: #ad9278;
   cursor: pointer;
 }
 
-
+.more-btn:hover {
+  background: #ad9278;
+  color: #fff;
+}
 
 .trailer-frame {
   position: relative;
@@ -300,6 +314,37 @@ const trailerUrlEmbed = computed(() => {
   width: 100%;
   height: 100%;
 }
+
+.booking-btn {
+  background: linear-gradient(135deg, #ad9278, #ccb7a4);
+  border: none;
+  color: white;
+  margin: 30px;
+  margin-left: 60px;
+  padding: 12px 24px;
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 400;
+  transition: all 0.25s ease;
+}
+
+.booking-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+.booking-btn:active {
+  transform: scale(0.98);
+}
+
+.arrow-icon {
+  display: block;               
+  margin-top: 1px;  
+  margin-left: 10px;                
+}
+
 
 /* 響應式：手機就上下排 */
 @media (max-width: 768px) {

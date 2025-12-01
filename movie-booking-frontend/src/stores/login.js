@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import * as authApi from "../services/api";
+import * as authApi from "../services/movieApi";
 
 export const useAuthStore = defineStore("login", () => {
   const user = ref(null);
