@@ -26,7 +26,7 @@ const reportService = {
    * @param {Array<string>} params.ticketTypes - 票種列表 (可選)
    */
   exportComprehensiveReport(params) {
-    return api.get('/admin/reports/export/comprehensive', {
+    return api.get('/reports/export/comprehensive', {
       params,
       responseType: 'blob'
     });

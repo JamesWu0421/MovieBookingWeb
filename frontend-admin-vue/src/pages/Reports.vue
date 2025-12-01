@@ -154,7 +154,7 @@
 
     <!-- KPI 卡片區 -->
     <el-row :gutter="20" class="kpi-cards" v-if="reportData.overview">
-      <el-col :span="24" :sm="12" :lg="4">
+      <el-col :span="24" :sm="12" :lg="5">
         <div class="kpi-card">
           <div
             class="kpi-icon"
@@ -173,7 +173,7 @@
         </div>
       </el-col>
 
-      <el-col :span="24" :sm="12" :lg="4">
+      <el-col :span="24" :sm="12" :lg="5">
         <div class="kpi-card">
           <div
             class="kpi-icon"
@@ -211,7 +211,7 @@
         </div>
       </el-col>
 
-      <el-col :span="24" :sm="12" :lg="6">
+      <el-col :span="24" :sm="12" :lg="5">
         <div class="kpi-card">
           <div
             class="kpi-icon"
@@ -230,7 +230,7 @@
         </div>
       </el-col>
 
-      <el-col :span="24" :sm="12" :lg="6">
+      <el-col :span="24" :sm="12" :lg="5">
         <div class="kpi-card">
           <div
             class="kpi-icon"
