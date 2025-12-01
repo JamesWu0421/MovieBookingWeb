@@ -97,8 +97,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/oauth2/**", // OAuth2 授權端點
                                                                 "/login/oauth2/**", // OAuth2 回調端點
                                                                 "/api/movies/**",
-                                                                "/api/screens/**","/api/shows/**","/api/ticket-packages/**",
-                                                                "/api/show-ticket-prices/all/**",
+                                                                "/api/screens/**",
+                                                                "/api/seats/**",
+                                                                "/api/shows/**",
+                                                                "/api/ticket-packages/**",
+                                                                "/api/show-ticket-prices/**",
                                                                 "/api/batch-operations/**"
 
                                                 ).permitAll()
@@ -108,9 +111,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 "/api/notifications/**",
                                                 "/api/movies/**",
                                                 "/api/screens/**",
+                                                "/api/seats/**",
                                                 "/api/shows/**",
                                                 "/api/ticket-packages/**",
-                                                "/api/show-ticket-prices/all/**",
+                                                "/api/show-ticket-prices/**",
                                                 "/api/batch-operations/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
