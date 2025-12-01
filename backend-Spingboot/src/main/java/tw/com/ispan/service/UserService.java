@@ -3,23 +3,17 @@ package tw.com.ispan.service;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value; 
-
 
 import jakarta.transaction.Transactional;
 import tw.com.ispan.dto.request.UserUpdateRequest;
-import tw.com.ispan.dto.request.admin.AdminUserUpdateRequest;
 import tw.com.ispan.entity.UserEntity;
 import tw.com.ispan.repository.UserRepository;
 @Service
@@ -32,12 +26,6 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
-
-    @Value("${backend.url}")
-    private String backendUrl;
-
-    @Value("${frontend.url}")
-    private String frontendUrl;
 //註冊
      public UserEntity registerUser(String username, String rawPassword, String email,String phoneNumber, String nickname, String gender, LocalDate birthday, String avatarUrl) {
         
@@ -86,7 +74,7 @@ public class UserService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("請驗證您的帳號");
-        String activateUrl = backendUrl+"/api/auth/verify?code=" + verificationCode;
+        String activateUrl = "http://localhost:8080/api/auth/verify?code=" + verificationCode;
         message.setText("請點擊以下連結以啟用帳號:\n" + activateUrl);
         mailSender.send(message);
     }
@@ -128,7 +116,7 @@ public void sendResetPasswordEmail(String email) {
     userRepository.save(user);
 
     // 建立重置連結
-    String resetLink = frontendUrl+"/reset_password?token=" + resetToken;
+    String resetLink = "http://localhost:5173/reset_password?token=" + resetToken;
 
     // 寄信內容
     SimpleMailMessage message = new SimpleMailMessage();
@@ -161,36 +149,38 @@ public void sendResetPasswordEmail(String email) {
 
 
 
- // ✅ 修改參數名稱和查詢方法
-public UserEntity updateUserProfile(String username, UserUpdateRequest req) {
-    // 改用 findByUsername 查詢
-    UserEntity user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("用戶不存在"));
+ public UserEntity updateUserProfile(String email, UserUpdateRequest req) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("用戶不存在"));
 
-    // 更新欄位
-    if (req.getNickname() != null) {
-        user.setNickname(req.getNickname());
-    }
-    if (req.getGender() != null) {
-        user.setGender(req.getGender());
-    }
-    if (req.getBirthday() != null) {
-        user.setBirthday(req.getBirthday());
-    }
-    if (req.getPhoneNumber() != null) {
-        user.setPhoneNumber(req.getPhoneNumber());
-    }
-    if (req.getPassword() != null) {
-        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
-    }
-    if (req.getAvatarUrl() != null) {
-        user.setAvatarUrl(req.getAvatarUrl());
-    }
+        // 根據傳入的資料更新欄位
+        // if (req.getEmail() != null) {
+        //     user.setEmail(req.getEmail());
+        // }
+        if (req.getNickname() != null) {
+            user.setNickname(req.getNickname());
+        }
+        if (req.getGender() != null) {
+            user.setGender(req.getGender());
+        }
+        if (req.getBirthday() != null) {
+            user.setBirthday(req.getBirthday());
+        }
+        if (req.getPhoneNumber() != null) {
+            user.setPhoneNumber(req.getPhoneNumber());
+        }
+        if (req.getPassword() != null) {
+            user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        }
+        if (req.getAvatarUrl() != null) {
+            user.setAvatarUrl(req.getAvatarUrl());
+            
+        }
+        // 可根據需求繼續設定其他欄位
 
-    userRepository.save(user);
-    return user;
-}
-
+        userRepository.save(user);
+        return user;
+    }
 
 public void changePassword(String username, String oldPassword, String newPassword) {
     // 取得用戶資料
@@ -233,69 +223,5 @@ public void changePassword(String username, String oldPassword, String newPasswo
 //         // 3. 驗證通過回傳用戶資料
 //         return user;
 //     }
-
-//==============================================================
-//後台會員管理
-// 1. 查全部會員（後台列表用）
-public Page<UserEntity> adminFindAllUsers(Pageable pageable) {
-    System.out.println("Page number: " + pageable.getPageNumber());
-    System.out.println("Page size: " + pageable.getPageSize());
-    return userRepository.findAll(pageable);
-}
-
-    // 2. 關鍵字搜尋（username / email / phoneNumber 不分大小寫、包含）
-    public List<UserEntity> adminSearchUsers(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return userRepository.findAll();
-        }
-        return userRepository
-                .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(
-                        keyword, keyword, keyword
-                );
-    }
-
-    // 3. 查單筆會員（詳細資料 / 編輯用）
-    public UserEntity adminFindById(Integer id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("會員不存在"));
-    }
-
-    // 4. 更新會員狀態（啟用 / 停權 / 黑名單）
-    @Transactional
-    public UserEntity adminUpdateUserStatus(Integer id, Byte status) {
-        UserEntity user = adminFindById(id);
-        user.setStatus(status);
-        return userRepository.save(user);
-    }
-
-    // 5. 更新會員基本資料（後台改資料用，不含密碼）
-    @Transactional
-    public UserEntity adminUpdateUserBasicInfo(Integer id, AdminUserUpdateRequest req) {
-        UserEntity user = adminFindById(id);
-
-        if (req.getEmail() != null) {
-            user.setEmail(req.getEmail());
-        }
-        if (req.getPhoneNumber() != null) {
-            user.setPhoneNumber(req.getPhoneNumber());
-        }
-        if (req.getNickname() != null) {
-            user.setNickname(req.getNickname());
-        }
-        if (req.getGender() != null) {
-            user.setGender(req.getGender());
-        }
-        if (req.getBirthday() != null) {
-            user.setBirthday(req.getBirthday());
-        }
-        if (req.getAvatarUrl() != null) {
-            user.setAvatarUrl(req.getAvatarUrl());
-        }
-        if (req.getStatus() != null) {
-            user.setStatus(req.getStatus());
-        }
-
-        return userRepository.save(user);
-    }
 
 }

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,17 +34,6 @@ public class UserController {
     private UserService userService;
     @Autowired
     private JsonWebTokenUtility jwtUtility;
-
-     @Value("${frontend.url}")
-    private String frontendUrl;
-
-    @Value("${admin.url}")
-    private String adminUrl;
-
-    @Value("${backend.url}")
-    private String backendUrl;
-
-
     //註冊
     @PostMapping("/auth/register")
 public ResponseEntity<String> register(@RequestBody UserRegisterRequest req) {
@@ -122,14 +110,14 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody UserLoginRequest r
 public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
     Optional<UserEntity> optUser = userService.findByVerificationCode(code);
     if(optUser.isEmpty()) {
-        response.sendRedirect(frontendUrl+"/verify-failed");
+        response.sendRedirect("http://localhost:5173/verify-failed");
         return ResponseEntity.badRequest().build();
     }
     UserEntity user = optUser.get();
     user.setStatus((byte)1);
     user.setVerificationCode(null);
     userService.save(user);
-    response.sendRedirect(frontendUrl+"/verify-success");
+    response.sendRedirect("http://localhost:5173/verify-success");
     return ResponseEntity.ok().build();
 }
 
@@ -183,31 +171,25 @@ public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String autho
 }
 
   //   用戶更新個人資料
-  @PutMapping("/user/profile")
-public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
-                                       @RequestHeader("Authorization") String authorizationHeader) {
-    try {
+    @PutMapping("/user/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
+                                           @RequestHeader("Authorization") String authorizationHeader) {
+        // 取出 token
         String token = authorizationHeader.substring(7);
-        String username = jwtUtility.validateToken(token);
-        
-        if (username == null) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("message", "Token 無效");
-            error.put("status", 401);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
 
-        UserEntity updatedUser = userService.updateUserProfile(username, req);
-        return ResponseEntity.ok(updatedUser);
-        
-    } catch (Exception e) {
-        // ✅ 返回 JSON 格式的錯誤
-        Map<String, Object> error = new HashMap<>();
-        error.put("message", e.getMessage());
-        error.put("status", 400);
-        return ResponseEntity.badRequest().body(error);
+        // 解析 token 得到 username
+        String username = jwtUtility.validateToken(token);
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
+        }
+        // 呼叫 service 根據 username 更新資料（防止用戶改別人資料）
+        try {
+            UserEntity updatedUser = userService.updateUserProfile(username, req);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-}
 
      //用戶更新個人密碼
     @PutMapping("/user/change_password")
@@ -226,5 +208,20 @@ public ResponseEntity<String> changePassword(@RequestBody UserChangePwdRequest r
     }
 }
 
+
+
+//      @PostMapping("/oauth2/login")
+// public ResponseEntity<?> oauth2Login(@RequestBody OAuth2LoginRequest req) {
+//     UserEntity user = userService.loginOrCreateThirdPartyUser(
+//             req.getProviderId(),   // 例如 Google 回傳的用戶ID 
+//             req.getProviderName() // 例如 "google"
+//     );
+
+//     String token = jwtUtility.createToken(user.getUsername());
+//     Map<String, Object> resp = new HashMap<>();
+//     resp.put("token", token);
+//     resp.put("user", user);
+//     return ResponseEntity.ok(resp);
+// }
 
 }

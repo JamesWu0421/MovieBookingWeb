@@ -1,27 +1,28 @@
 package tw.com.ispan.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import tw.com.ispan.model.Movie;
-
 import java.util.List;
 
-@Repository
-public interface MovieRepository extends JpaRepository<Movie, Integer> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-    /**
-     * 查詢已發布的電影
-     */
-    List<Movie> findByIsPublishedTrue();
+import tw.com.ispan.domain.MovieBean;
 
-    /**
-     * 根據標題搜尋電影
-     */
-    List<Movie> findByTitleContaining(String title);
+public interface MovieRepository extends JpaRepository<MovieBean, Integer> {
 
-    /**
-     * 根據類型搜尋電影
-     */
-    List<Movie> findByGenresContaining(String genre);
+    @Query("""
+          SELECT m FROM MovieBean m
+          WHERE (:keyword IS NULL OR
+                LOWER(m.title)       LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                LOWER(m.engTitle)    LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                LOWER(m.keywords)    LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            AND (:genre IS NULL OR
+                LOWER(m.genres) LIKE LOWER(CONCAT('%', :genre, '%')))
+            AND (:published IS NULL OR m.isPublished = :published)
+          """)
+    List<MovieBean> searchMovies(
+            @Param("keyword") String keyword,
+            @Param("genre") String genre,
+            @Param("published") Boolean published);
 }

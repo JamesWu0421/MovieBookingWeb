@@ -33,6 +33,9 @@ public class JsonWebTokenInterceptor implements HandlerInterceptor {
         }
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
         return false;
     }
 }
