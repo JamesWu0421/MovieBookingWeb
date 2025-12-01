@@ -1,9 +1,12 @@
 package tw.com.ispan.service.empandroll;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,9 +30,9 @@ public class EmpService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<EmpEntity> findAll() {
-        return empRepository.findAll();
-    }
+    public Page<EmpEntity> findAllEmployees(Pageable pageable) {
+    return empRepository.findAll(pageable);
+}
 
     public EmpEntity findById(Integer id) {
         return empRepository.findById(id)
@@ -41,7 +44,7 @@ public class EmpService {
         emp.setId(null);
         emp.setCreatedAt(LocalDateTime.now());
         emp.setStatus((byte) 1); // 預設啟用
-
+        
         // 🔹 這裡把原始密碼做 BCrypt
         String encoded = passwordEncoder.encode(plainPassword);
         emp.setEmpPasswordHash(encoded);
@@ -68,22 +71,30 @@ public class EmpService {
 
         RoleEntity role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
-        emp.setRoles(Set.of(role));
-
+        Set<RoleEntity> roles = new HashSet<>();
+        roles.add(role);
+        emp.setRoles(roles);
         return empRepository.save(emp);
     }
 
-    public List<EmpEntity> searchByNameOrEmail(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return empRepository.findAll();
-        }
-        return empRepository
-                .findByEmpNameContainingIgnoreCaseOrEmpEmailContainingIgnoreCase(
-                        keyword, keyword
-                );
-    }
+    public Page<EmpEntity> searchEmployees(String keyword, Pageable pageable) {
+    return empRepository.findByEmpNameContainingOrEmpEmailContaining(
+        keyword, keyword, pageable
+    );
+}
 
     public void delete(Integer id) {
-        empRepository.deleteById(id);
+    EmpEntity target = empRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+    boolean targetIsAdmin = target.getRoles().stream()
+            .anyMatch(r -> "ADMIN".equals(r.getRoleName()));
+
+    if (targetIsAdmin) {
+        throw new AccessDeniedException("Cannot delete ADMIN employee");
     }
+
+    empRepository.delete(target);
+}
+
 }

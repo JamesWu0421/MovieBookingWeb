@@ -63,4 +63,57 @@ public class EmpDetails implements UserDetails {
     public EmpEntity getEmp() {
         return emp;
     }
+
+    // ====== 新增以下兩個方法給 LoggingAspect 使用 ======
+    
+    /**
+     * 取得員工實體 (給 LoggingAspect 用)
+     */
+    public EmpEntity getEmployee() {
+        return emp;
+    }
+    
+    /**
+     * 取得主要角色 (給 LoggingAspect 用)
+     * 如果員工只有一個角色就回傳那個角色
+     * 如果有多個角色,回傳優先級最高的角色
+     */
+    public RoleEntity getRole() {
+        if (emp.getRoles() == null || emp.getRoles().isEmpty()) {
+            return null;
+        }
+        
+        // 如果只有一個角色,直接回傳
+        if (emp.getRoles().size() == 1) {
+            return emp.getRoles().iterator().next();
+        }
+        
+        // 如果有多個角色,依優先級回傳: ADMIN > MANAGER > SUPPORT_SERVICE > ENTRYSTAFF
+        for (RoleEntity role : emp.getRoles()) {
+            if ("ADMIN".equalsIgnoreCase(role.getRoleName())) {
+                return role;
+            }
+        }
+        
+        for (RoleEntity role : emp.getRoles()) {
+            if ("MANAGER".equalsIgnoreCase(role.getRoleName())) {
+                return role;
+            }
+        }
+        
+        for (RoleEntity role : emp.getRoles()) {
+            if ("SUPPORT_SERVICE".equalsIgnoreCase(role.getRoleName())) {
+                return role;
+            }
+        }
+        
+        for (RoleEntity role : emp.getRoles()) {
+            if ("ENTRYSTAFF".equalsIgnoreCase(role.getRoleName())) {
+                return role;
+            }
+        }
+        
+        // 如果都不匹配,回傳第一個
+        return emp.getRoles().iterator().next();
+    }
 }

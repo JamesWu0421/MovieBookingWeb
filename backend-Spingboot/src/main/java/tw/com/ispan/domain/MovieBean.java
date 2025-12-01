@@ -57,7 +57,8 @@ public class MovieBean {
 
     @Override
     public String toString() {
-        return "MovieBean [id=" + id + ", title=" + title + ", engTitle=" + engTitle + ", ratingLevel=" + ratingLevel + ", runtimeMinutes=" + runtimeMinutes + "]";
+        return "MovieBean [id=" + id + ", title=" + title + ", engTitle=" + engTitle +
+            ", ratingLevel=" + ratingLevel + ", runtimeMinutes=" + runtimeMinutes + "]";
     }
 
 
