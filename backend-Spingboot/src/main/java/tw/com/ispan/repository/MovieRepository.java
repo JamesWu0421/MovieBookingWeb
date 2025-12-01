@@ -1,27 +1,46 @@
 package tw.com.ispan.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import tw.com.ispan.model.Movie;
-
 import java.util.List;
 
-@Repository
-public interface MovieRepository extends JpaRepository<Movie, Integer> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import tw.com.ispan.domain.MovieBean;
+
+public interface MovieRepository extends JpaRepository<MovieBean, Integer> {
 
     /**
      * 查詢已發布的電影
      */
-    List<Movie> findByIsPublishedTrue();
+    List<MovieBean> findByIsPublishedTrue();
 
     /**
-     * 根據標題搜尋電影
+     * 根據標題搜尋電影（部分符合）
      */
-    List<Movie> findByTitleContaining(String title);
+    List<MovieBean> findByTitleContaining(String title);
 
     /**
-     * 根據類型搜尋電影
+     * 根據類型搜尋電影（部分符合）
      */
-    List<Movie> findByGenresContaining(String genre);
+    List<MovieBean> findByGenresContaining(String genre);
+
+    /**
+     * 高級搜尋：可同時搜尋關鍵字 / 類型 / 是否上架
+     */
+    @Query("""
+            SELECT m FROM MovieBean m
+            WHERE (:keyword IS NULL OR
+                  LOWER(m.title)       LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                  LOWER(m.engTitle)    LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                  LOWER(m.keywords)    LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+                  LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+              AND (:genre IS NULL OR
+                  LOWER(m.genres) LIKE LOWER(CONCAT('%', :genre, '%')))
+              AND (:published IS NULL OR m.isPublished = :published)
+            """)
+    List<MovieBean> searchMovies(
+            @Param("keyword") String keyword,
+            @Param("genre") String genre,
+            @Param("published") Boolean published);
 }
