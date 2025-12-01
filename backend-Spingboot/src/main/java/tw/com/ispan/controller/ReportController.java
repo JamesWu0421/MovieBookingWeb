@@ -445,7 +445,6 @@ public class ReportController {
     /**
      * 生成 Excel 報表內容
      */
-    @SuppressWarnings("unchecked")
     private byte[] generateExcelReport(Map<String, Object> reportData, LocalDate startDate, LocalDate endDate)
             throws IOException {
         Workbook workbook = new XSSFWorkbook();
