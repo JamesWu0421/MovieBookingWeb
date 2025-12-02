@@ -20,20 +20,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
     /**
      * 配置 CORS - 允許前端訪問後端資源（包括圖片）
      */
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 允許所有路徑
-                .allowedOrigins(
-                        "http://localhost:5173",
-                        "http://localhost:5174", // Vite 開發伺服器
-                        "http://localhost:3000", // Vue CLI 開發伺服器
-                        "http://localhost:8080"  // 本機測試
-                )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
+//     @Override
+//     public void addCorsMappings(CorsRegistry registry) {
+//         registry.addMapping("/**") // 允許所有路徑
+//                 .allowedOrigins(
+//                         "http://localhost:5173",
+//                         "http://localhost:5174", // Vite 開發伺服器
+//                         "http://localhost:3000", // Vue CLI 開發伺服器
+//                         "http://localhost:8080"  // 本機測試
+//                 )
+//                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")
+//                 .allowedHeaders("*")
+//                 .allowCredentials(true)
+//                 .maxAge(3600);
+//     }
 
     /**
      * 配置靜態資源處理器
@@ -58,20 +58,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
     /**
      * 額外的 CORS Filter Bean（更強力的 CORS 支援）
      */
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
+//     @Bean
+//     public CorsFilter corsFilter() {
+//         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("http://localhost:5173");
-        config.addAllowedOriginPattern("http://localhost:5174");
-        config.addAllowedOriginPattern("http://localhost:3000");
-        config.addAllowedOriginPattern("http://localhost:8080");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+//         config.setAllowCredentials(true);
+//         config.addAllowedOriginPattern("http://localhost:5173");
+//         config.addAllowedOriginPattern("http://localhost:5174");
+//         config.addAllowedOriginPattern("http://localhost:3000");
+//         config.addAllowedOriginPattern("http://localhost:8080");
+//         config.addAllowedHeader("*");
+//         config.addAllowedMethod("*");
 
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+//         source.registerCorsConfiguration("/**", config);
+//         return new CorsFilter(source);
+//     }
 }

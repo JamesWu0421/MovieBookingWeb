@@ -11,6 +11,7 @@ import BookingResultView from "../views/BookingResultView.vue";
 import QuickBookingView from "../views/QuickBookingView.vue";
 import TicketBookingView from "../views/TicketBookingView .vue";
 import TicketSelectionView from "../views/TicketSelectionView.vue";
+import CustomerServiceTicket from "../views/CustomerServiceTicket.vue";
 import Login from "../views/Login/Login.vue";
 import Register from "../views/Login/Register.vue";
 import ForgotPasswordView from "../views/Login/ForgotPasswordView.vue";
@@ -18,6 +19,12 @@ import ProfileView from "../views/Profile/Profile.vue";
 import ChangePassword from "../views/Profile/ChangePassword.vue";
 import VerifySuccess from "../views/Login/VerifySuccess.vue";
 import VerifyFailed from "../views/Login/VerifyFailed.vue";
+import ConfirmOrderView from "../views/ConfirmOrderView.vue";
+import PaymentView from "../views/PaymentView.vue";
+import PaymentSuccess from "../views/PaymentSuccess.vue";
+import RefundView from "../views/RefundView.vue";
+import RefundSuccess from "../views/RefundSuccess.vue";
+import Payment from "../views/Payment.vue";
 
 const routes = [
 
@@ -146,6 +153,43 @@ const routes = [
     component: TicketSelectionView,
     meta: { requiresAuth: true },
   },
+  {
+    path: "/issues",
+    name: "CustomerServiceTicket",
+    component: CustomerServiceTicket,
+  },
+  {
+    path: "/booking/confirm-order",
+    name: "ConfirmOrderView",
+    component: ConfirmOrderView,
+    //  meta: { requiresAuth: true }, // 若需要登入才可下單
+  },
+  {
+    path: "/payment/:id",
+    name: "PaymentView",
+    component: PaymentView,
+  },
+
+  {
+    path: "/payment/success/:id",
+    name: "PaymentSuccess",
+    component: PaymentSuccess,
+  },
+  {
+    path: "/refund/:orderId",
+    name: "Refund",
+    component: RefundView
+  },
+  {
+    path: "/refund-success",
+    name: "RefundSuccess",
+    component: RefundSuccess
+  },
+  {
+    path: "/checkout/:orderId",
+    name: "ConfirmOrder",
+    component: () => import("../views/ConfirmOrderView.vue")
+  }
 ];
 
 const router = createRouter({
