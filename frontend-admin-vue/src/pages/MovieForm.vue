@@ -80,10 +80,10 @@
       <textarea v-model="localMovie.description" rows="4" />
     </div>
 
-    <div class="form-row">
+    <!-- <div class="form-row">
       <label>搜尋關鍵字</label>
       <textarea v-model="localMovie.keywords" rows="2" />
-    </div>
+    </div> -->
 
     <div class="form-row">
       <label>
