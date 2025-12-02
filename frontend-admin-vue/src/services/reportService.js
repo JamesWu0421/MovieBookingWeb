@@ -35,9 +35,10 @@ const reportService = {
   /**
    * 【舊版】匯出簡單銷售報表(僅 CSV)
    * 保留向下相容性
+   * ✅ 修復:移除多餘的 /admin 前綴
    */
   exportSalesReport(params) {
-    return api.get('/admin/reports/export/sales', {
+    return api.get('/reports/export/sales', {  // ✅ 修復:原本是 '/admin/reports/export/sales'
       params,
       responseType: 'blob'
     });
