@@ -1,7 +1,6 @@
 package tw.com.ispan.security;
 
 import java.io.File;
-import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -204,36 +202,30 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 .addResourceLocations("file:" + absolutePath);
         }
 
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
+                       @Bean
+                public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                // 🔧 修正：指定具體的前端地址
-                configuration.setAllowedOriginPatterns(Arrays.asList(
-                                "http://localhost:5173",
-                                "http://localhost:5174",
-                                "http://127.0.0.1:5173",
-                                "http://127.0.0.1:5174",
-                                frontendUrl,
-                                adminUrl));
+                // ⭐ 專題用：允許所有前端來源
+                configuration.addAllowedOriginPattern("*");
 
-                // 允許的 HTTP 方法
-                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                // ⭐ 允許所有 HTTP 方法
+                configuration.addAllowedMethod("*");
 
-                // 允許的 Headers
-                configuration.setAllowedHeaders(Arrays.asList("*"));
+                // ⭐ 允許所有 headers
+                configuration.addAllowedHeader("*");
 
+                // ⭐ 如果你真的要 allowCredentials(true)
+                // 搭配 addAllowedOriginPattern("*") 是安全可行的
+                configuration.setAllowCredentials(true);
 
-                // 🔧 修正：開發階段可以關閉憑證
-                configuration.setAllowCredentials(true); // 允許攜帶憑證(Cookie/Token)
-
-                // 預檢請求的有效期
                 configuration.setMaxAge(3600L);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
 
                 return source;
-        }
+                }
+
 
 }
