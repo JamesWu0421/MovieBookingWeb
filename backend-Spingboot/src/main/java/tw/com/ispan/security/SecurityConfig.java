@@ -107,7 +107,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/batch-operations/**",
                                                                 "/api/tickets/**",
                                                                 "/api/orders/**",
-                                                                "/ecpay/**"
+                                                                "/ecpay/**",
+                                                                "/api/batch-operations/**"
                                                                 
 
 
@@ -127,6 +128,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 "/api/package-items/**",
                                                 "/api/tickets/**",
                                                 "/api/orders/**",
+                                                "/api/batch-operations/**",
                                                 "/ecpay/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
