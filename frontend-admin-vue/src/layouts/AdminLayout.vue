@@ -15,13 +15,13 @@
         <el-menu-item index="/dashboard">儀表板</el-menu-item>
         <el-menu-item index="/employees">員工管理</el-menu-item>
         <el-menu-item index="/members">會員管理</el-menu-item>
-        <el-sub-menu index="/activities">
+        <el-sub-menu index="/movies">
         <template #title>電影/影廳管理</template>
           <el-menu-item index="/movies">電影管理</el-menu-item>
           <el-menu-item index="/screens">影廳管理</el-menu-item>
           <el-menu-item index="/shows">場次管理</el-menu-item>
           </el-sub-menu>
-        <el-sub-menu index="/activities">
+        <el-sub-menu index="/ticket-package">
         <template #title>票種管理</template>
         <el-menu-item index="/ticket-package">票種管理</el-menu-item>
         <el-menu-item index="/showtimes-price">場次票種管理</el-menu-item>
