@@ -19,7 +19,7 @@
       <span>今日關鍵指標</span>
     </div>
     <el-row :gutter="20" class="kpi-row">
-      <el-col :xs="24" :sm="12" :md="8" :lg="4" v-for="card in todayStats" :key="card.title">
+      <el-col class="kpi-col" v-for="card in todayStats" :key="card.title">
         <div class="kpi-card" :style="{ borderLeft: `4px solid ${card.color}` }">
           <div class="kpi-icon" :style="{ background: card.color }">
             <component :is="card.icon"></component>
@@ -751,5 +751,46 @@ const handleShortcut = (path) => {
   .chart-container-small {
     height: 260px;
   }
+}
+/* 讓 5 個 KPI 卡片平均分配寬度 */
+.kpi-col {
+  width: 20%; /* 100% ÷ 5 = 20% */
+  flex: 0 0 20%;
+  max-width: 20%;
+  padding: 0 10px; /* gutter的一半 */
+}
+
+/* 響應式：小螢幕改為2列 */
+@media (max-width: 1200px) {
+  .kpi-col {
+    width: 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+    margin-bottom: 12px;
+  }
+}
+
+/* 響應式：手機改為1列 */
+@media (max-width: 768px) {
+  .kpi-col {
+    width: 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 12px;
+  }
+}
+
+.kpi-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  height: 100%;
+  /* 移除 min-width: fit-content */
 }
 </style>
