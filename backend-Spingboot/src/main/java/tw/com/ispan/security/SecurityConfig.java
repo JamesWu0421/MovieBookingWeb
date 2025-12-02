@@ -217,7 +217,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
                 // ⭐ 如果你真的要 allowCredentials(true)
                 // 搭配 addAllowedOriginPattern("*") 是安全可行的
-                configuration.setAllowCredentials(true);
+                configuration.setAllowCredentials(false);
 
                 configuration.setMaxAge(3600L);
 

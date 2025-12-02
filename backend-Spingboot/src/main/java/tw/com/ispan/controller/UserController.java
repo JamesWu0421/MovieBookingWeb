@@ -47,15 +47,26 @@ public class UserController {
 
 
     //註冊
-    @PostMapping("/auth/register")
+@PostMapping("/auth/register")
 public ResponseEntity<String> register(@RequestBody UserRegisterRequest req) {
+    System.out.println("收到資料: " + req);
     try {
-        userService.registerUser(req.getUsername(), req.getPassword(), req.getEmail(), req.getPhoneNumber(), req.getNickname() ,req.getGender(),req.getBirthday() , req.getAvatarUrl());
+        userService.registerUser(
+            req.getUsername(),
+            req.getPassword(),
+            req.getEmail(),
+            req.getPhoneNumber(),
+            req.getNickname(),
+            req.getGender(),
+            req.getBirthday(),
+            req.getAvatarUrl()
+        );
         return ResponseEntity.ok("註冊成功，請至信箱點擊驗證連結啟用帳號");
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 }
+    //登入
 
     
 @PostMapping("/auth/login")
