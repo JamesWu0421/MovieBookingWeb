@@ -108,7 +108,9 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/tickets/**",
                                                                 "/api/orders/**",
                                                                 "/ecpay/**",
-                                                                "/api/batch-operations/**"
+                                                                "/api/batch-operations/**","/api/order-details/**",
+                                                                "api/refund/**",
+                                                                "api/customer-service/**"
                                                                 
 
 
@@ -129,7 +131,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 "/api/tickets/**",
                                                 "/api/orders/**",
                                                 "/api/batch-operations/**",
-                                                "/ecpay/**").permitAll()
+                                                "/ecpay/**",
+                                                "api/refund/**",
+                                                "/api/order-details/**",
+                                                "api/customer-service/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證

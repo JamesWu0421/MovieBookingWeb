@@ -79,7 +79,7 @@
 
     try {
         const res = await axios.post(
-        "http://localhost:8080/api/tickets",
+        "http://localhost:8080/api/customer-service",
         payload,
         { headers: { "Content-Type": "application/json" } }
         );

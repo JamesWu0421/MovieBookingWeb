@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import tw.com.ispan.domain.TicketBean;
+import tw.com.ispan.dto.TicketDTO;
 import tw.com.ispan.service.TicketService;
 
 @RestController
@@ -31,9 +32,19 @@ public class TicketController {
                 request.getShowId(),
                 request.getSeatId(),
                 request.getOrderId(),
-                request.getPrice()
-        );
+                request.getPrice());
         return ResponseEntity.ok(t);
+    }
+
+    @PostMapping("/order/{orderId}/generate")
+    public ResponseEntity<List<TicketBean>> generateTicketsByOrder(@PathVariable Integer orderId) {
+        List<TicketBean> tickets = ticketService.generateTicketsByOrder(orderId);
+        return ResponseEntity.ok(tickets);
+    }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<TicketDTO>> getTicketsByOrder(@PathVariable Integer orderId) {
+        return ResponseEntity.ok(ticketService.getTicketDTOByOrder(orderId));
     }
 
     public static class TicketRequest {
@@ -42,16 +53,36 @@ public class TicketController {
         private Integer orderId;
         private Integer price;
 
-        public Integer getShowId() { return showId; }
-        public void setShowId(Integer showId) { this.showId = showId; }
+        public Integer getShowId() {
+            return showId;
+        }
 
-        public Integer getSeatId() { return seatId; }
-        public void setSeatId(Integer seatId) { this.seatId = seatId; }
+        public void setShowId(Integer showId) {
+            this.showId = showId;
+        }
 
-        public Integer getOrderId() { return orderId; }
-        public void setOrderId(Integer orderId) { this.orderId = orderId; }
+        public Integer getSeatId() {
+            return seatId;
+        }
 
-        public Integer getPrice() { return price; }
-        public void setPrice(Integer price) { this.price = price; }
+        public void setSeatId(Integer seatId) {
+            this.seatId = seatId;
+        }
+
+        public Integer getOrderId() {
+            return orderId;
+        }
+
+        public void setOrderId(Integer orderId) {
+            this.orderId = orderId;
+        }
+
+        public Integer getPrice() {
+            return price;
+        }
+
+        public void setPrice(Integer price) {
+            this.price = price;
+        }
     }
 }

@@ -13,4 +13,6 @@ public interface TicketRepository extends JpaRepository<TicketBean, Integer> {
 
     // 查某場次 + 多個座位（避免重複買）
     List<TicketBean> findByShowIdAndSeatIdIn(Integer showId, List<Integer> seatIds);
+
+    List<TicketBean> findByOrderId(Integer orderId);
 }

@@ -3,13 +3,14 @@ package tw.com.ispan.controller;
 import tw.com.ispan.domain.Refund;
 import tw.com.ispan.service.RefundService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/refund")
-@CrossOrigin(origins = "*")
+
 public class RefundController {
 
     @Autowired
@@ -33,5 +34,14 @@ public class RefundController {
     @PutMapping("/{id}/status")
     public Refund updateStatus(@PathVariable Integer id, @RequestParam String status) {
         return refundService.updateRefundStatus(id, status);
+    }
+
+    @PostMapping("/single/{detailId}")
+    public ResponseEntity<?> refundSingle(@PathVariable Integer detailId) {
+        boolean ok = refundService.refundOrderDetail(detailId);
+        if (ok) {
+            return ResponseEntity.ok("退款成功");
+        }
+        return ResponseEntity.badRequest().body("退款失敗");
     }
 }

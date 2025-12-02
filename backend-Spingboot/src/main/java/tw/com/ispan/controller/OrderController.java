@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -93,5 +94,13 @@ public class OrderController {
     public Order createFromSeatLock(@RequestParam Integer userId,
             @RequestParam Integer showId) {
         return orderService.createOrderFromSeatLock(userId, showId);
+    }
+
+    @PutMapping("/{orderId}/complete")
+    public ResponseEntity<String> completeOrder(@PathVariable Integer orderId) {
+        boolean success = orderService.completeOrder(orderId);
+        return success
+                ? ResponseEntity.ok("Order Status = COMPLETED")
+                : ResponseEntity.badRequest().body("Update Failed");
     }
 }

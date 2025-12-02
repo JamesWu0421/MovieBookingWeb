@@ -476,7 +476,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { batchSessionTempService } from '../services/batchSessionTempService'
-import { movieApi, screenApi } from '../services/api'
+import { movieApi, screenApi } from '../services/movieApi'
 
 const route = useRoute()
 const router = useRouter()

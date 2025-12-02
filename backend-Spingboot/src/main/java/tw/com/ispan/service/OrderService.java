@@ -142,4 +142,8 @@ public class OrderService {
         order.setOrderStatus(status);
         orderRepository.save(order);
     }
+
+    public boolean completeOrder(Integer orderId) {
+        return orderRepository.updateStatusToCompleted(orderId) > 0;
+    }
 }

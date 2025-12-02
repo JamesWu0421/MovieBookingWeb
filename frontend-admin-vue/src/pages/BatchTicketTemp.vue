@@ -401,7 +401,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { batchTicketTempService } from '../services/batchTicketTempService'
 import { batchSessionTempService } from '../services/batchSessionTempService'
-import { movieApi } from '../services/api'
+import { movieApi } from '../services/movieApi'
 import ticketPackageService from '../services/ticketPackageService'
 
 const route = useRoute()

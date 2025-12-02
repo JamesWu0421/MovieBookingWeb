@@ -1,7 +1,9 @@
 package tw.com.ispan.service;
 
 import tw.com.ispan.domain.Order;
+import tw.com.ispan.domain.OrderDetail;
 import tw.com.ispan.domain.Refund;
+import tw.com.ispan.repository.OrderDetailRepository;
 //import com.example.demo.domain.RefundDetail;
 import tw.com.ispan.repository.OrderRepository;
 import tw.com.ispan.repository.RefundRepository;
@@ -19,6 +21,9 @@ public class RefundService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
 
     // 建立退款單
     public Refund createRefund(Integer orderId, String reason) {
@@ -52,5 +57,25 @@ public class RefundService {
             return refundRepository.save(refund);
         }
         return null;
+    }
+
+    public boolean refundOrderDetail(Integer detailId) {
+        Optional<OrderDetail> optional = orderDetailRepository.findById(detailId);
+
+        if (optional.isEmpty()) {
+            return false;
+        }
+
+        OrderDetail detail = optional.get();
+
+        // 只有 ACTIVE 才能退款
+        if (!"ACTIVE".equals(detail.getStatus())) {
+            return false;
+        }
+
+        detail.setStatus("refunded"); // ⭐改狀態
+
+        orderDetailRepository.save(detail);
+        return true;
     }
 }

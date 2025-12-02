@@ -73,7 +73,7 @@
 
     const tickets = ref([]);
 
-    axios.get("http://localhost:8080/api/tickets").then(res => {
+    axios.get("http://localhost:8080/api/customer-service").then(res => {
     tickets.value = res.data;
     });
 

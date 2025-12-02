@@ -25,6 +25,7 @@ import PaymentSuccess from "../views/PaymentSuccess.vue";
 import RefundView from "../views/RefundView.vue";
 import RefundSuccess from "../views/RefundSuccess.vue";
 import Payment from "../views/Payment.vue";
+import TicketView from "../views/Ticket.vue";
 
 const routes = [
 
@@ -169,7 +170,6 @@ const routes = [
     name: "PaymentView",
     component: PaymentView,
   },
-
   {
     path: "/payment/success/:id",
     name: "PaymentSuccess",
@@ -189,7 +189,12 @@ const routes = [
     path: "/checkout/:orderId",
     name: "ConfirmOrder",
     component: () => import("../views/ConfirmOrderView.vue")
-  }
+  },
+  {
+    path: "/tickets/order/:id",
+    name: "TicketView",
+    component: TicketView
+  },
 ];
 
 const router = createRouter({

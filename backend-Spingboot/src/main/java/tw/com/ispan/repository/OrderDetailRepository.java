@@ -10,6 +10,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 
     List<OrderDetail> findByOrderId(Integer orderId);
 
+    OrderDetail findByOrderIdAndSeatId(Integer orderId, Integer seatId);
+
     /** 計算指定訂單的票價總額 */
     @Query("SELECT SUM(od.ticketPrice) FROM OrderDetail od WHERE od.order.id = :orderId")
     Integer sumPriceByOrder(Integer orderId);
