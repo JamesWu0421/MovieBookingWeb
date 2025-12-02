@@ -1,25 +1,35 @@
 package tw.com.ispan.domain;
 
 import jakarta.persistence.*;
+import tw.com.ispan.entity.EmpEntity;
 import java.time.LocalDateTime;
 
 /**
- * BatchOperations 實體類
+ * BatchOperations 實體類 (方案2：同時保留 operatorId + operator)
  * 對應 batch_operations 資料表
  */
 @Entity
-@Table(name = "batch_operations", schema = "dbo") // schema 依你實際狀況調整
+@Table(name = "batch_operations", schema = "dbo")
 public class BatchOperationsBean {
 
     /** 批次操作ID (主鍵) */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // SQL Server identity
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "batch_id")
     private Integer batchId;
 
-    /** 操作員ID */
-    @Column(name = "operator_id")
+    // ========== 方案2：同時保留兩個屬性 ==========
+    
+    /** 操作員ID - 只讀欄位（用於高效查詢） */
+    @Column(name = "operator_id", insertable = false, updatable = false)
     private Integer operatorId;
+
+    /** 操作員關聯 - 用於讀寫操作 */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "operator_id", referencedColumnName = "id")
+    private EmpEntity operator;
+    
+    // ===========================================
 
     /** 操作類型 */
     @Column(name = "operation_type")
@@ -57,10 +67,12 @@ public class BatchOperationsBean {
     @Column(name = "fail_count")
     private Integer failCount;
 
+    // ========== 建構子 ==========
+    
     public BatchOperationsBean() {
     }
 
-    // ===== Getter / Setter =====
+    // ========== Getter / Setter ==========
 
     public Integer getBatchId() {
         return batchId;
@@ -74,8 +86,15 @@ public class BatchOperationsBean {
         return operatorId;
     }
 
-    public void setOperatorId(Integer operatorId) {
-        this.operatorId = operatorId;
+    // ⚠️ 注意：不要有 setOperatorId()，因為它是 read-only
+    // 要設定操作員請使用 setOperator(EmpEntity)
+
+    public EmpEntity getOperator() {
+        return operator;
+    }
+
+    public void setOperator(EmpEntity operator) {
+        this.operator = operator;
     }
 
     public String getOperationType() {

@@ -130,10 +130,10 @@
     <!-- 建立新批次 Dialog -->
     <div
       v-if="showCreateDialog"
-      class="modal-overlay"
+      class="batch-modal-overlay"
       @click.self="closeCreateDialog"
     >
-      <div class="modal">
+      <div class="batch-modal">
         <div class="modal-header">
           <h2>建立新批次</h2>
           <button @click="closeCreateDialog" class="btn-close">×</button>
@@ -185,6 +185,13 @@ const newBatch = ref({
   description: '',
 })
 
+// 測試模式設定（改成順序測 1–50）
+const testMode = ref({
+  autoRetry: true,  // 自動重試
+  maxRetries: 50,   // 最多嘗試 50 次（對應 ID 1-50）
+  currentRetry: 0,
+})
+
 // 載入批次列表
 const loadBatchList = async () => {
   loading.value = true
@@ -192,7 +199,6 @@ const loadBatchList = async () => {
 
   try {
     const response = await batchOperationService.getAll()
-    // 後端回傳 { success, message, data: [ ... ], total }
     let list = response.data?.data || []
 
     if (filterStatus.value) {
@@ -212,7 +218,86 @@ const loadBatchList = async () => {
 
 onMounted(loadBatchList)
 
-// 建立批次
+// ✅ 嘗試建立批次（依序測試 ID 1-50）
+const createBatchWithRetry = async (operatorId, description, isRetry = false) => {
+  try {
+    const response = await batchOperationService.create({
+      operatorId: operatorId,
+      operationType: 'IMPORT',
+      status: 'PENDING',
+      description: description,
+    })
+
+    const newBatchId = response.data?.data?.batchId
+
+    if (!newBatchId) {
+      throw new Error('回傳未包含 batchId')
+    }
+
+    // ✅ 成功！
+    console.log(`✅ 成功！使用 operatorId: ${operatorId}`)
+    
+    if (isRetry) {
+      await Swal.fire({
+        icon: 'success',
+        title: '找到有效的員工！',
+        html: `
+          <p style="font-size: 18px; margin: 12px 0;">
+            員工 ID: <strong style="color: #10b981;">${operatorId}</strong>
+          </p>
+          <p style="color: #64748b; font-size: 14px;">
+            已在第 ${testMode.value.currentRetry + 1} 次嘗試找到有效 ID
+          </p>
+        `,
+        timer: 2000,
+      })
+    } else {
+      await Swal.fire({
+        icon: 'success',
+        title: '建立成功！',
+        text: `使用的員工 ID: ${operatorId}`,
+        timer: 2000,
+      })
+    }
+
+    closeCreateDialog()
+    testMode.value.currentRetry = 0
+
+    router.push({
+      name: 'BatchSessionTemp',
+      params: { batchId: newBatchId },
+    })
+
+    return true
+
+  } catch (err) {
+    console.log(`❌ operatorId ${operatorId} 無效`)
+    
+    const errorMessage = err.response?.data?.message || err.message
+    
+    // ✅ 如果是找不到操作員且還沒超過重試次數，自動「往下一個 ID」重試
+    if (
+      (errorMessage.includes('找不到操作員') || 
+       errorMessage.includes('operatorId') ||
+       errorMessage.includes('不存在')) &&
+      testMode.value.autoRetry &&
+      testMode.value.currentRetry < testMode.value.maxRetries &&
+      operatorId < 50   // 只測到 50
+    ) {
+      testMode.value.currentRetry++
+      const nextId = operatorId + 1
+      console.log(`🔄 重試 (${testMode.value.currentRetry}/${testMode.value.maxRetries})，嘗試 operatorId: ${nextId}`)
+      
+      // 遞迴重試（順序 1,2,3,...,50）
+      return await createBatchWithRetry(nextId, description, true)
+    }
+
+    // 達到最大重試次數或其他錯誤
+    throw err
+  }
+}
+
+// 建立批次（主要入口）──改成從 1 開始依序測到 50
 const createBatch = async () => {
   if (!newBatch.value.description.trim()) {
     Swal.fire({
@@ -222,35 +307,56 @@ const createBatch = async () => {
     return
   }
 
+  const startOperatorId = 1
+  testMode.value.currentRetry = 0
+  
+  console.log(`🎯 開始依序測試 operatorId 1-50，從 ${startOperatorId} 開始`)
+
   try {
-    const response = await batchOperationService.create({
-      // TODO：之後可改成目前登入管理員的 ID
-      operatorId: 1,
-      operationType: 'IMPORT',
-      status: 'PENDING',
-      description: newBatch.value.description,
-    })
-
-    // 後端回傳 { success, message, data: { batchId, ... } }
-    const newBatchId = response.data?.data?.batchId
-
-    if (!newBatchId) {
-      throw new Error('回傳未包含 batchId')
-    }
-
-    closeCreateDialog()
-
-    router.push({
-      name: 'BatchSessionTemp',
-      params: { batchId: newBatchId },
-    })
+    await createBatchWithRetry(startOperatorId, newBatch.value.description)
   } catch (err) {
-    console.error(err)
-    Swal.fire({
-      icon: 'error',
-      title: '建立失敗',
-      text: err.response?.data?.message || err.message,
-    })
+    console.error('❌ 1-50 全部嘗試都失敗了:', err)
+    
+    const errorMessage = err.response?.data?.message || err.message
+    
+    if (errorMessage.includes('找不到操作員') || 
+        errorMessage.includes('operatorId') ||
+        errorMessage.includes('不存在')) {
+      Swal.fire({
+        icon: 'error',
+        title: '找不到有效的操作員',
+        html: `
+          <p>已依序嘗試 <strong>${Math.min(testMode.value.currentRetry + 1, 50)}</strong> 次（ID 1-50）</p>
+          <p style="color: #ef4444; margin-top: 12px;">
+            資料庫中沒有可用的員工資料（ID 1-50）
+          </p>
+          <hr style="margin: 16px 0;">
+          <p style="color: #64748b; font-size: 14px;">
+            請執行以下 SQL 新增測試資料：
+          </p>
+          <pre style="background: #f1f5f9; padding: 12px; border-radius: 6px; text-align: left; font-size: 12px; max-height: 200px; overflow-y: auto;">
+SET IDENTITY_INSERT employees ON;
+
+INSERT INTO employees (id, emp_name, emp_password_hash, emp_email, created_at, status)
+VALUES 
+  (1, '測試員工01', 'hash', 'test01@example.com', GETDATE(), 1),
+  (2, '測試員工02', 'hash', 'test02@example.com', GETDATE(), 1),
+  (3, '測試員工03', 'hash', 'test03@example.com', GETDATE(), 1);
+
+SET IDENTITY_INSERT employees OFF;
+          </pre>
+        `,
+        width: 600,
+      })
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '建立失敗',
+        text: errorMessage,
+      })
+    }
+    
+    testMode.value.currentRetry = 0
   }
 }
 
@@ -266,7 +372,6 @@ const startBatch = async (batch) => {
   if (!result.isConfirmed) return
 
   try {
-    // 修正：使用實際的總數
     const actualTotal = getTotalCount(batch)
     await batchOperationService.start(batch.batchId, actualTotal)
     await loadBatchList()
@@ -400,12 +505,8 @@ const getStatusText = (status) => {
   return map[status] || status
 }
 
-// 修正：計算實際的總數
 const getTotalCount = (batch) => {
-  // 優先使用 successCount + failCount 的總和
   const actualCount = (batch.successCount || 0) + (batch.failCount || 0)
-  
-  // 如果有實際計數，使用實際計數；否則使用 totalItems
   return actualCount > 0 ? actualCount : (batch.totalItems || 0)
 }
 
@@ -768,22 +869,20 @@ const formatDate = (date) => {
   border-left: 4px solid #dc2626;
 }
 
-.modal-overlay {
+.batch-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 900;            /* 再抬高一點 */
   backdrop-filter: blur(4px);
 }
 
-.modal {
-  background: white;
+.batch-modal {
+  display: block;            /* ★ 強制不是 display:none */
+  background: #fff;
   border-radius: 16px;
   width: 90%;
   max-width: 500px;
@@ -843,7 +942,9 @@ const formatDate = (date) => {
 }
 
 .form-input, .form-textarea {
-  width: 95%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
   padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;

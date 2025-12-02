@@ -108,9 +108,12 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/tickets/**",
                                                                 "/api/orders/**",
                                                                 "/ecpay/**",
-                                                                "/api/batch-operations/**","/api/order-details/**",
-                                                                "api/refund/**",
-                                                                "api/customer-service/**"
+                                                                "/api/batch-operations/**",
+                                                                "/api/order-details/**",
+                                                                "/api/refund/**",
+                                                                "/api/customer-service/**",
+                                                                "/api/batch-sessions-temp/**",
+                                                                "/api/batch-tickets-temp/**"
                                                                 
 
 
@@ -132,9 +135,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                 "/api/orders/**",
                                                 "/api/batch-operations/**",
                                                 "/ecpay/**",
-                                                "api/refund/**",
+                                                "/api/refund/**",
                                                 "/api/order-details/**",
-                                                "api/customer-service/**").permitAll()
+                                                "/api/customer-service/**",
+                                                "/api/batch-sessions-temp/**",
+                                                "/api/batch-tickets-temp/**").permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證

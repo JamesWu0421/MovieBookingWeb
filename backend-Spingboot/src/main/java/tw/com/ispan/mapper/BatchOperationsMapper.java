@@ -3,6 +3,7 @@ package tw.com.ispan.mapper;
 import tw.com.ispan.domain.BatchOperationsBean;
 import tw.com.ispan.dto.BatchOperationsRequestDTO;
 import tw.com.ispan.dto.BatchOperationsResponseDTO;
+import tw.com.ispan.entity.EmpEntity;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +25,10 @@ public class BatchOperationsMapper {
         BatchOperationsResponseDTO dto = new BatchOperationsResponseDTO();
         
         dto.setBatchId(entity.getBatchId());
+        
+        // ✅ 方案2：直接使用 operatorId 欄位（效能最佳，不會觸發關聯查詢）
         dto.setOperatorId(entity.getOperatorId());
+        
         dto.setOperationType(entity.getOperationType());
         dto.setStatus(entity.getStatus());
         dto.setDescription(entity.getDescription());
@@ -51,6 +55,7 @@ public class BatchOperationsMapper {
 
     /**
      * 將 RequestDTO 轉換為 Entity (用於創建)
+     * 🔹 注意：這個方法只設置基本屬性，operator 需要在 Service 層設置
      * @param dto RequestDTO
      * @return Entity
      */
@@ -61,7 +66,9 @@ public class BatchOperationsMapper {
         
         BatchOperationsBean entity = new BatchOperationsBean();
         
-        entity.setOperatorId(dto.getOperatorId());
+        // 🔹 不再直接設置 operatorId，因為它是 insertable=false, updatable=false
+        // entity.setOperatorId(dto.getOperatorId());
+        
         entity.setOperationType(dto.getOperationType());
         entity.setStatus(dto.getStatus());
         entity.setDescription(dto.getDescription());
@@ -75,6 +82,7 @@ public class BatchOperationsMapper {
 
     /**
      * 更新 Entity 的屬性 (用於更新操作)
+     * 🔹 注意：operator 需要在 Service 層單獨處理
      * @param entity 要更新的 Entity
      * @param dto 包含新數據的 DTO
      */
@@ -83,9 +91,11 @@ public class BatchOperationsMapper {
             return;
         }
         
-        if (dto.getOperatorId() != null) {
-            entity.setOperatorId(dto.getOperatorId());
-        }
+        // 🔹 不再直接更新 operatorId
+        // if (dto.getOperatorId() != null) {
+        //     entity.setOperatorId(dto.getOperatorId());
+        // }
+        
         if (dto.getOperationType() != null) {
             entity.setOperationType(dto.getOperationType());
         }

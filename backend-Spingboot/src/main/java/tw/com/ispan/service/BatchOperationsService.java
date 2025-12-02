@@ -9,10 +9,12 @@ import tw.com.ispan.domain.BatchTicketsTempBean;
 import tw.com.ispan.domain.ShowBean;
 import tw.com.ispan.dto.BatchOperationsRequestDTO;
 import tw.com.ispan.dto.BatchOperationsResponseDTO;
+import tw.com.ispan.entity.EmpEntity;
 import tw.com.ispan.mapper.BatchOperationsMapper;
 import tw.com.ispan.repository.BatchOperationsRepository;
 import tw.com.ispan.repository.BatchSessionsTempRepository;
 import tw.com.ispan.repository.BatchTicketsTempRepository;
+import tw.com.ispan.repository.rollpermission.EmpRepository; // 🔹 新增
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,14 +30,16 @@ public class BatchOperationsService {
     @Autowired
     private BatchOperationsRepository batchOperationsRepository;
 
-    // 🔹 新增：temp table 的 repository
+    // 🔹 新增：注入 EmpRepository
+    @Autowired
+    private EmpRepository empRepository;
+
     @Autowired
     private BatchSessionsTempRepository batchSessionsTempRepository;
 
     @Autowired
     private BatchTicketsTempRepository batchTicketsTempRepository;
 
-    // 🔹 新增：重用你原本的單筆服務
     @Autowired
     private ShowService showService;
 
@@ -49,6 +53,14 @@ public class BatchOperationsService {
     public BatchOperationsResponseDTO createBatchOperation(BatchOperationsRequestDTO requestDTO) {
         // DTO -> Entity
         BatchOperationsBean bean = BatchOperationsMapper.toEntity(requestDTO);
+
+        // 🔹 新增：設置 operator 關聯
+        if (requestDTO.getOperatorId() != null) {
+            EmpEntity operator = empRepository.findById(requestDTO.getOperatorId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "找不到操作員：" + requestDTO.getOperatorId()));
+            bean.setOperator(operator);
+        }
 
         // 建立時間（如果 DB 沒有 default GETDATE()，這行很重要）
         if (bean.getCreatedAt() == null) {
@@ -137,7 +149,7 @@ public class BatchOperationsService {
                 .collect(Collectors.toList());
     }
 
-    /**
+        /**
      * 更新批次操作（整筆更新）
      */
     @Transactional
@@ -149,6 +161,14 @@ public class BatchOperationsService {
         }
 
         BatchOperationsBean existingBean = optional.get();
+
+        // 🔹 新增：如果 DTO 有新的 operatorId，更新 operator 關聯
+        if (requestDTO.getOperatorId() != null) {
+            EmpEntity operator = empRepository.findById(requestDTO.getOperatorId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "找不到操作員：" + requestDTO.getOperatorId()));
+            existingBean.setOperator(operator);
+        }
 
         // 用 Mapper 把 DTO 的值塞回 Entity（注意不要改 batchId / createdAt）
         BatchOperationsMapper.updateEntityFromDTO(existingBean, requestDTO);
@@ -181,11 +201,6 @@ public class BatchOperationsService {
      * 2. 從 batch_tickets_temp 生成 ShowTicketPrices（票價）
      * 3. 更新 temp table 的 status / errorMessage
      * 4. 更新 batch_operations 的 successCount / failCount / totalItems / status
-     *
-     * ❗ 會呼叫：
-     *   - showService.createShowFromBatchSessionTemp(temp)
-     *   - showTicketPricesService.createPriceFromBatchTicketTemp(temp, showId)
-     * 這兩支我們等一下會加到對應的 Service 裡。
      */
     @Transactional
     public BatchOperationsResponseDTO executeImportBatch(Integer batchId) {
@@ -214,7 +229,6 @@ public class BatchOperationsService {
         // 3. 先處理場次 temp
         for (BatchSessionsTempBean temp : sessionTemps) {
             try {
-                // ⭐ 這支等一下會在 ShowService 裡實作
                 ShowBean createdShow = showService.createShowFromBatchSessionTemp(temp);
 
                 temp.setStatus("SUCCESS");
@@ -242,7 +256,6 @@ public class BatchOperationsService {
                             "找不到對應的 showId，batchSessionId=" + temp.getBatchSessionId());
                 }
 
-                // ⭐ 這支等一下會在 ShowTicketPricesService 裡實作
                 showTicketPricesService.createPriceFromBatchTicketTemp(temp, showId);
 
                 temp.setStatus("SUCCESS");
@@ -257,8 +270,7 @@ public class BatchOperationsService {
                 failCount++;
             }
         }
-
-        // 5. 更新主批次結果
+            // 5. 更新主批次結果
         batch.setTotalItems(totalItems);
         batch.setSuccessCount(successCount);
         batch.setFailCount(failCount);
