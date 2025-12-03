@@ -36,7 +36,7 @@ public class UserController {
     @Autowired
     private JsonWebTokenUtility jwtUtility;
 
-     @Value("${frontend.url}")
+    @Value("${frontend.url}")
     private String frontendUrl;
 
     @Value("${admin.url}")
@@ -45,97 +45,90 @@ public class UserController {
     @Value("${backend.url}")
     private String backendUrl;
 
-
-    //註冊
+    // 註冊
     @PostMapping("/auth/register")
-public ResponseEntity<String> register(@RequestBody UserRegisterRequest req) {
-    try {
-        userService.registerUser(req.getUsername(), req.getPassword(), req.getEmail(), req.getPhoneNumber(), req.getNickname() ,req.getGender(),req.getBirthday() , req.getAvatarUrl());
-        return ResponseEntity.ok("註冊成功，請至信箱點擊驗證連結啟用帳號");
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<String> register(@RequestBody UserRegisterRequest req) {
+        try {
+            userService.registerUser(req.getUsername(), req.getPassword(), req.getEmail(), req.getPhoneNumber(),
+                    req.getNickname(), req.getGender(), req.getBirthday(), req.getAvatarUrl());
+            return ResponseEntity.ok("註冊成功，請至信箱點擊驗證連結啟用帳號");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-}
 
-    
-@PostMapping("/auth/login")
-public ResponseEntity<Map<String, Object>> login(@RequestBody UserLoginRequest req) {
-    try {
-        UserEntity user = userService.loginUser(req.getUsername(), req.getPassword());
-        String token = jwtUtility.createToken(user.getUsername());
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("message", "登入成功");
-        return ResponseEntity.ok(response);
-    } catch (RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+    @PostMapping("/auth/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody UserLoginRequest req) {
+        try {
+            UserEntity user = userService.loginUser(req.getUsername(), req.getPassword());
+            String token = jwtUtility.createToken(user.getUsername());
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("message", "登入成功");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
     }
-}
-    
 
+    // @PostMapping("/ajax/secure/login")
+    // public String login(HttpSession session, @RequestBody String json) {
+    // JSONObject responseJson = new JSONObject();
+    // //接收資料
+    // JSONObject obj = new JSONObject(json);
+    // String username = obj.isNull("username") ? null : obj.getString("username");
+    // String password = obj.isNull("password") ? null : obj.getString("password");
 
-//  @PostMapping("/ajax/secure/login")
-// 	public String login(HttpSession session, @RequestBody String json) {
-// 		JSONObject responseJson = new JSONObject();
-// //接收資料
-// 		JSONObject obj = new JSONObject(json);
-// 		String username = obj.isNull("username") ? null : obj.getString("username");
-// 		String password = obj.isNull("password") ? null : obj.getString("password");
+    // //驗證資料
+    // if(username==null || username.length()==0 || password==null ||
+    // password.length()==0) {
+    // responseJson.put("success", false);
+    // responseJson.put("message", "請輸入帳號與密碼");
+    // return responseJson.toString();
+    // }
 
-// //驗證資料
-// 		if(username==null || username.length()==0 || password==null || password.length()==0) {
-// 			responseJson.put("success", false);
-// 			responseJson.put("message", "請輸入帳號與密碼");
-// 			return responseJson.toString();
-// 		}
+    // //呼叫model
+    // UserEntity bean = UserService.loginUser(username, password);
 
-// //呼叫model
-// 		UserEntity bean = UserService.loginUser(username, password);
+    // //回傳執行結果
+    // if(bean==null) {
+    // responseJson.put("success", false);
+    // responseJson.put("message", "登入失敗");
+    // } else {
+    // responseJson.put("success", true);
+    // responseJson.put("message", "登入成功");
+    // session.setAttribute("user", bean);
+    // // jwt begin
+    // String birth = DatetimeConverter.toString(bean.getBirth(), "yyyy-MM-dd");
+    // JSONObject user = new JSONObject()
+    // .put("custid", bean.getCustid())
+    // .put("email", bean.getEmail())
+    // .put("birth", birth);
+    // String token = jwtUtility.createToken(user.toString());
 
-// //回傳執行結果
-// 		if(bean==null) {
-// 			responseJson.put("success", false);
-// 			responseJson.put("message", "登入失敗");
-// 		} else {
-// 			responseJson.put("success", true);
-// 			responseJson.put("message", "登入成功");
-// 			session.setAttribute("user", bean);
-// 			// jwt begin
-// 			String birth = DatetimeConverter.toString(bean.getBirth(), "yyyy-MM-dd");
-// 			JSONObject user = new JSONObject()
-// 					.put("custid", bean.getCustid())
-// 					.put("email", bean.getEmail())
-// 					.put("birth", birth);
-// 			String token = jwtUtility.createToken(user.toString());
-			
-// 			responseJson.put("token", token);
-// 			responseJson.put("email", bean.getEmail());
-// 			// jwt finish
-// 		}
-// 		return responseJson.toString();
-// 	}
-// }
+    // responseJson.put("token", token);
+    // responseJson.put("email", bean.getEmail());
+    // // jwt finish
+    // }
+    // return responseJson.toString();
+    // }
+    // }
 
-
-
-@GetMapping("/auth/verify")
-public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServletResponse response) throws IOException {
-    Optional<UserEntity> optUser = userService.findByVerificationCode(code);
-    if(optUser.isEmpty()) {
-        response.sendRedirect(frontendUrl+"/verify-failed");
-        return ResponseEntity.badRequest().build();
+    @GetMapping("/auth/verify")
+    public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServletResponse response)
+            throws IOException {
+        Optional<UserEntity> optUser = userService.findByVerificationCode(code);
+        if (optUser.isEmpty()) {
+            response.sendRedirect(frontendUrl + "/verify-failed");
+            return ResponseEntity.badRequest().build();
+        }
+        UserEntity user = optUser.get();
+        user.setStatus((byte) 1);
+        user.setVerificationCode(null);
+        userService.save(user);
+        response.sendRedirect(frontendUrl + "/verify-success");
+        return ResponseEntity.ok().build();
     }
-    UserEntity user = optUser.get();
-    user.setStatus((byte)1);
-    user.setVerificationCode(null);
-    userService.save(user);
-    response.sendRedirect(frontendUrl+"/verify-success");
-    return ResponseEntity.ok().build();
-}
-
-
-
-
 
     // 用戶請求發送重置密碼信
     @PostMapping("/auth/forgotpassword")
@@ -159,8 +152,6 @@ public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServle
         }
     }
 
-
-
     // 用戶登出
     @PostMapping("/user/logout")
     public ResponseEntity<String> logout(HttpSession session) {
@@ -168,63 +159,62 @@ public ResponseEntity<Void> verify(@RequestParam("code") String code, HttpServle
         return ResponseEntity.ok("登出成功");
     }
 
-
-  // 用戶取得個人資料
-@GetMapping("/user/profile")
-public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String authorizationHeader) {
-    String token = authorizationHeader.substring(7);
-    String username = jwtUtility.validateToken(token);
-    if (username == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
-    }
-    UserEntity user = userService.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("用戶不存在"));
-    return ResponseEntity.ok(user);
-}
-
-  //   用戶更新個人資料
-  @PutMapping("/user/profile")
-public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
-                                       @RequestHeader("Authorization") String authorizationHeader) {
-    try {
+    // 用戶取得個人資料
+    @GetMapping("/user/profile")
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String username = jwtUtility.validateToken(token);
-        
         if (username == null) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("message", "Token 無效");
-            error.put("status", 401);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
         }
-
-        UserEntity updatedUser = userService.updateUserProfile(username, req);
-        return ResponseEntity.ok(updatedUser);
-        
-    } catch (Exception e) {
-        // ✅ 返回 JSON 格式的錯誤
-        Map<String, Object> error = new HashMap<>();
-        error.put("message", e.getMessage());
-        error.put("status", 400);
-        return ResponseEntity.badRequest().body(error);
+        UserEntity user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用戶不存在"));
+        return ResponseEntity.ok(user);
     }
-}
 
-     //用戶更新個人密碼
+    // 用戶更新個人資料
+    @PutMapping("/user/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UserUpdateRequest req,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            String token = authorizationHeader.substring(7);
+            String username = jwtUtility.validateToken(token);
+
+            if (username == null) {
+                Map<String, Object> error = new HashMap<>();
+                error.put("message", "Token 無效");
+                error.put("status", 401);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+
+            UserEntity updatedUser = userService.updateUserProfile(username, req);
+            return ResponseEntity.ok(updatedUser);
+
+        } catch (Exception e) {
+            // ✅ 返回 JSON 格式的錯誤
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            error.put("status", 400);
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    // 用戶更新個人密碼
     @PutMapping("/user/change_password")
-public ResponseEntity<String> changePassword(@RequestBody UserChangePwdRequest req, @RequestHeader("Authorization") String auth) {
-    // 取得 token 並驗證取得 username
-    String token = auth.substring(7);
-    String username = jwtUtility.validateToken(token);
-    if (username == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
+    public ResponseEntity<String> changePassword(@RequestBody UserChangePwdRequest req,
+            @RequestHeader("Authorization") String auth) {
+        // 取得 token 並驗證取得 username
+        String token = auth.substring(7);
+        String username = jwtUtility.validateToken(token);
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token 無效");
+        }
+        try {
+            userService.changePassword(username, req.getOldPassword(), req.getNewPassword());
+            return ResponseEntity.ok("密碼修改成功");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
-    try {
-        userService.changePassword(username, req.getOldPassword(), req.getNewPassword());
-        return ResponseEntity.ok("密碼修改成功");
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-}
-
 
 }

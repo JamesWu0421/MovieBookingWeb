@@ -1,18 +1,21 @@
 package tw.com.ispan.controller;
 
-import tw.com.ispan.service.OrderService;
-import tw.com.ispan.utils.EcpayUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.beans.factory.annotation.Value;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.val;
+import tw.com.ispan.service.OrderService;
+import tw.com.ispan.utils.EcpayUtil;
 
 @Controller
 public class EcpayController {
@@ -23,6 +26,10 @@ public class EcpayController {
     private final String MERCHANT_ID = "3002607";
     private final String HASH_KEY = "pwFHCqoQZGmho4w6";
     private final String HASH_IV = "EkRm7iFT261dpevs";
+    @Value("${backend.url}")
+    private String backendUrl;
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     // ⭐ 產生綠界付款
     @GetMapping("/ecpay/pay")
@@ -44,8 +51,8 @@ public class EcpayController {
         params.put("TotalAmount", String.valueOf(amount));
         params.put("TradeDesc", "Movie Ticket");
         params.put("ItemName", "電影票");
-        params.put("ReturnURL", "http://localhost:8080/ecpay/return");
-        params.put("ClientBackURL", "http://localhost:5173/payment/success/" + orderId);
+        params.put("ReturnURL", backendUrl + "/ecpay/return");
+        params.put("ClientBackURL", frontendUrl + "/payment/success/" + orderId);
         params.put("ChoosePayment", "Credit");
         params.put("EncryptType", "1");
 

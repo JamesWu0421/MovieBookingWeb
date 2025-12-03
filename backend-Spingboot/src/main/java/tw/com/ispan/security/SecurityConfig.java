@@ -112,32 +112,31 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/customer-service/**",
                                                                 "/api/batch-sessions-temp/**",
                                                                 "/api/batch-tickets-temp/**"
-                                                                
-
 
                                                 ).permitAll()
 
                                                 // 3) 讓 /api/user/** 由你的 Interceptor 驗證，不由 Spring Security 攔截
                                                 .requestMatchers("/api/user/**",
-                                                "/api/notifications/**",
-                                                "/api/movies/**",
-                                                "/api/screens/**",
-                                                "/api/seats/**",
-                                                "/api/seat-locks/**",
-                                                "/api/shows/**",
-                                                "/api/ticket-packages/**",
-                                                "/api/show-ticket-prices/**",
-                                                "/api/batch-operations/**",
-                                                "/api/package-items/**",
-                                                "/api/tickets/**",
-                                                "/api/orders/**",
-                                                "/api/batch-operations/**",
-                                                "/ecpay/**",
-                                                "/api/refund/**",
-                                                "/api/order-details/**",
-                                                "/api/customer-service/**",
-                                                "/api/batch-sessions-temp/**",
-                                                "/api/batch-tickets-temp/**").permitAll()
+                                                                "/api/notifications/**",
+                                                                "/api/movies/**",
+                                                                "/api/screens/**",
+                                                                "/api/seats/**",
+                                                                "/api/seat-locks/**",
+                                                                "/api/shows/**",
+                                                                "/api/ticket-packages/**",
+                                                                "/api/show-ticket-prices/**",
+                                                                "/api/batch-operations/**",
+                                                                "/api/package-items/**",
+                                                                "/api/tickets/**",
+                                                                "/api/orders/**",
+                                                                "/api/batch-operations/**",
+                                                                "/ecpay/**",
+                                                                "/api/refund/**",
+                                                                "/api/order-details/**",
+                                                                "/api/customer-service/**",
+                                                                "/api/batch-sessions-temp/**",
+                                                                "/api/batch-tickets-temp/**")
+                                                .permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 
                                                 // 4) 其他才需要 Spring Security 認證
@@ -202,8 +201,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 .addResourceLocations("file:" + absolutePath);
         }
 
-                       @Bean
-                public CorsConfigurationSource corsConfigurationSource() {
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
                 // ⭐ 專題用：允許所有前端來源
@@ -217,7 +216,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
                 // ⭐ 如果你真的要 allowCredentials(true)
                 // 搭配 addAllowedOriginPattern("*") 是安全可行的
-                configuration.setAllowCredentials(true);
+                configuration.setAllowCredentials(false);
 
                 configuration.setMaxAge(3600L);
 
@@ -225,7 +224,6 @@ public class SecurityConfig implements WebMvcConfigurer {
                 source.registerCorsConfiguration("/**", configuration);
 
                 return source;
-                }
-
+        }
 
 }

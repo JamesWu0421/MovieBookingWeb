@@ -21,11 +21,7 @@ import tw.com.ispan.service.OrderService;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175"
-})
+
 public class OrderController {
 
     @Autowired
