@@ -99,7 +99,7 @@ export const uploadAvatar = async (file) => {
 // 重設密碼
 export const resetPassword = (token, newPassword) => {
   return request({
-    url: "/user/reset-password",
+    url: "/auth/reset-password", // ✅ 改成 /auth/
     method: "post",
     data: {
       token,
