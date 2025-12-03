@@ -26,7 +26,7 @@ onMounted(async()=>{
 });
 
 function goPay(){
-  window.location.href = import.meta.env.VITE_API_BASE_URL+`ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`||`http://localhost:8080/ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`
+  window.location.href = import.meta.env.VITE_API_BASE+`ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`||`http://localhost:8080/ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`
 }
 </script>
 

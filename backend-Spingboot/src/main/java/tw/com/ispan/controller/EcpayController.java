@@ -39,7 +39,7 @@ public class EcpayController {
 
         System.out.println("🔵 產生綠界付款, OrderID = " + orderId);
 
-        String tradeNo = "ORDER" + orderId + System.currentTimeMillis();
+        String tradeNo = "OD" + System.currentTimeMillis();
         orderService.updateTradeNo(Integer.valueOf(orderId), tradeNo);
 
         Map<String, String> params = new LinkedHashMap<>();
