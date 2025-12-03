@@ -163,7 +163,7 @@ const confirmSeats = async () => {
       ).then(async () => {
 
         // ⭐ 立即建立訂單 (呼叫 from-seatlock)
-        const res = await axios.post("http://localhost:8080/api/orders/from-seatlock", null, {
+        const res = await axios.post(import.meta.env.VITE_API_BASE_URL+`orders/from-seatlock`||`http://localhost:8080/api/orders/from-seatlock`, null, {
           params: { userId: 1, showId: Number(showtimeId) }
         });
 

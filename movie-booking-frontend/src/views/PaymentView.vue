@@ -21,12 +21,12 @@ const id = route.params.id;
 const order = ref(null);
 
 onMounted(async()=>{
-  const res = await axios.get(`http://localhost:8080/api/orders/by-id/${id}`); // ←已修正
+  const res = await axios.get(import.meta.env.VITE_API_BASE_URL+`orders/by-id/${id}`||`http://localhost:8080/api/orders/by-id/${id}`); // ←已修正
   order.value = res.data;
 });
 
 function goPay(){
-  window.location.href = `http://localhost:8080/ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`
+  window.location.href = import.meta.env.VITE_API_BASE_URL+`ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`||`http://localhost:8080/ecpay/pay?amount=${order.value.totalAmount}&orderId=${order.value.id}`
 }
 </script>
 

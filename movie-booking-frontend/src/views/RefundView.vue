@@ -71,9 +71,8 @@
     const details = ref([]);
 
     onMounted(async () => {
-    const res = await axios.get(
-        `http://localhost:8080/api/order-details/order/${orderId}`
-    );
+    const res = await axios.get(import.meta.env.VITE_API_BASE_URL+`order-details/order/${orderId}`||`http://localhost:8080/api/order-details/order/${orderId}`);
+
     details.value = res.data;
     });
 
@@ -81,14 +80,13 @@
     if (!confirm("確定要退款這張票嗎？")) return;
 
     try {
-        await axios.post(
-        `http://localhost:8080/api/refund/single/${orderDetailId}`
+        await axios.post(import.meta.env.VITE_API_BASE_URL+`refund/single/${orderDetailId}`||`http://localhost:8080/api/refund/single/${orderDetailId}`
         );
 
         alert("退款成功！");
 
         const res = await axios.get(
-        `http://localhost:8080/api/order-details/order/${orderId}`
+        import.meta.env.VITE_API_BASE_URL+`order-details/order/${orderId}`||`http://localhost:8080/api/order-details/order/${orderId}`
         );
         details.value = res.data;
 

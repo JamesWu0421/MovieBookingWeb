@@ -72,10 +72,10 @@
 
     onMounted(async () => {
     try {
-        const resOrder = await axios.get(`http://localhost:8080/api/orders/by-id/${orderId}`);
+        const resOrder = await axios.get(import.meta.env.VITE_API_BASE_URL+`orders/by-id/${orderId}`||`http://localhost:8080/api/orders/by-id/${orderId}`);
         order.value = resOrder.data;
 
-        const resDetails = await axios.get(`http://localhost:8080/api/order-details/order/${orderId}`);
+        const resDetails = await axios.get(import.meta.env.VITE_API_BASE_URL+`order-details/order/${orderId}`||`http://localhost:8080/api/order-details/order/${orderId}`);
         details.value = resDetails.data;
 
     } finally {
@@ -91,10 +91,10 @@
     async function completeOrder() {
     try {
         // 1. 完成訂單
-        await axios.put(`http://localhost:8080/api/orders/${orderId}/complete`);
+        await axios.put(import.meta.env.VITE_API_BASE_URL+`orders/${orderId}/complete`||`http://localhost:8080/api/orders/${orderId}/complete`);
 
         // 2. 產生票券
-        await axios.post(`http://localhost:8080/api/tickets/order/${orderId}/generate`);
+        await axios.post(import.meta.env.VITE_API_BASE_URL+`tickets/order/${orderId}/generate`||`http://localhost:8080/api/tickets/order/${orderId}/generate`);
 
         // 3. 跳轉
         router.push(`/tickets/order/${orderId}`);       // ⭐ 現在 router 可用了

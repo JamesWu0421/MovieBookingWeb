@@ -78,8 +78,7 @@
     };
 
     try {
-        const res = await axios.post(
-        "http://localhost:8080/api/customer-service",
+        const res = await axios.post(import.meta.env.VITE_API_BASE_URL + "customer-service" || "http://localhost:8080/api/customer-service",
         payload,
         { headers: { "Content-Type": "application/json" } }
         );

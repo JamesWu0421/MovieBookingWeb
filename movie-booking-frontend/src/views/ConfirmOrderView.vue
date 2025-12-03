@@ -74,10 +74,10 @@ const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const resOrder = await axios.get(`http://localhost:8080/api/orders/by-id/${orderId}`);
+    const resOrder = await axios.get( import.meta.env.VITE_API_BASE_URL+`orders/by-id/${orderId}`||`http://localhost:8080/api/orders/by-id/${orderId}`);
     order.value = resOrder.data;
 
-    const resDetails = await axios.get(`http://localhost:8080/api/order-details/order/${orderId}`);
+    const resDetails = await axios.get( import.meta.env.VITE_API_BASE_URL+`order-details/order/${orderId}`||`http://localhost:8080/api/order-details/order/${orderId}`);
     details.value = resDetails.data;
 
   } finally {

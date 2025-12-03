@@ -37,14 +37,14 @@ export default {
 
       // 3. 建立 items 映射表
       const itemsMap = this._buildItemsMap(allItems)
-      
+
       console.log('items 映射表:', itemsMap)
 
       // 4. 整合資料
       const tickets = ticketPrices.map(priceData => {
         const packageId = priceData.ticketPackageId || priceData.ticket_package_id
         const pkg = packageMap[packageId]
-        
+
         if (!pkg) {
           console.warn(`找不到 package_id: ${packageId}`)
           return null
@@ -52,12 +52,12 @@ export default {
 
         const items = itemsMap[packageId] || []
         const packageCode = pkg.packageCode || pkg.package_code
-        
+
         // 關鍵修正：支援多種可能的欄位名稱
         // 後端如果是 getImageUrl()，JSON 會是 imageUrl
         // 後端如果是 getPackageImage()，JSON 會是 packageImage
         const packageImage = pkg.imageUrl || pkg.image_url || pkg.packageImage || pkg.package_image
-        
+
         console.log(`票種 ${packageId}: code="${packageCode}", image="${packageImage}"`)
 
         // 組合完整的票種資料
@@ -67,20 +67,20 @@ export default {
           name: pkg.packageName || pkg.package_name,
           code: packageCode,
           type: (pkg.packageType || pkg.package_type || '').replace(/ /g, '_'),
-          
+
           price: priceData.finalPrice || priceData.final_price,
           basePrice: priceData.screenBasePrice || priceData.screen_base_price,
           adjustment: priceData.ticketAdjustment || priceData.ticket_adjustment,
           isEarlyBird: (priceData.isEarlyBird || priceData.is_early_bird) === 1,
           earlyBirdAdjustment: priceData.earlyBirdAdjustment || priceData.early_bird_adjustment,
           durationSurcharge: priceData.durationSurcharge || priceData.duration_surcharge,
-          
+
           items: items,
           description: this.generateDescription(pkg, items),
-          
+
           // 關鍵修復：取得圖片 URL
           image: this.getPackageImage(packageImage),
-          
+
           isAvailable: true,
           category: this.determineCategory(pkg.packageType || pkg.package_type, (priceData.isEarlyBird || priceData.is_early_bird) === 1, items)
         }
@@ -100,12 +100,12 @@ export default {
    */
   getPackageImage(imageUrl) {
     // 安全檢查
-    if (!imageUrl || 
-        imageUrl === 'null' || 
-        imageUrl === 'undefined' ||
-        typeof imageUrl !== 'string' ||
-        imageUrl.trim() === '' ||
-        imageUrl === 'http://') {
+    if (!imageUrl ||
+      imageUrl === 'null' ||
+      imageUrl === 'undefined' ||
+      typeof imageUrl !== 'string' ||
+      imageUrl.trim() === '' ||
+      imageUrl === 'http://') {
       console.log('無效的圖片 URL:', imageUrl)
       return null
     }
@@ -119,10 +119,10 @@ export default {
     }
 
     // 如果是相對路徑，組合完整 URL
-    const API_BASE_URL = 'http://localhost:8080'
+    const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
     const imagePath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
     const fullUrl = `${API_BASE_URL}${imagePath}`
-    
+
     console.log('組合完整 URL:', fullUrl)
     return fullUrl
   },
@@ -130,7 +130,7 @@ export default {
   /**
    * 建立 items 映射表
    */
-    _buildItemsMap(allItemsRaw) {
+  _buildItemsMap(allItemsRaw) {
     console.log("進入 _buildItemsMap，原始輸入:", allItemsRaw);
 
     let allItems = [];
@@ -186,7 +186,7 @@ export default {
     });
 
     return itemsMap;
-    }, 
+  },
 
 
   /**
@@ -203,7 +203,7 @@ export default {
   generateDescription(pkg, items) {
     const packageType = (pkg.packageType || pkg.package_type || '').replace(/ /g, '_')
     const packageName = pkg.packageName || pkg.package_name
-    
+
     if (packageType === 'single_ticket') {
       const ticketItem = items.find(item => item.type === 'ticket')
       if (ticketItem) {
@@ -230,7 +230,7 @@ export default {
     const movieTickets = items.filter(item => item.type === 'ticket')
     const totalTicketCount = movieTickets.reduce((sum, item) => sum + item.quantity, 0)
     const hasNonTicketItems = items.some(item => item.type !== 'ticket')
-    
+
     if (totalTicketCount === 1 && !hasNonTicketItems) {
       return 'single'
     } else {
@@ -242,33 +242,33 @@ export default {
    * 計算票種包含的電影票數量
    */
   getMovieTicketCount(ticket) {
-  // 如果沒有 items，當成一張電影票
-  if (!ticket.items || ticket.items.length === 0) {
-    return 1
-  }
+    // 如果沒有 items，當成一張電影票
+    if (!ticket.items || ticket.items.length === 0) {
+      return 1
+    }
 
-  // 比較保險：type 用小寫判斷，抓到「看起來像電影票」的項目
-  const movieTickets = ticket.items.filter(item => {
-    const t = (item.type || '').toLowerCase()
-    return (
-      t === 'ticket' ||
-      t === 'movie_ticket' ||
-      t === 'movie' ||
-      t.includes('ticket')   // 例如 MOVIE_TICKET、TICKET_xxx 都會被抓到
-    )
-  })
+    // 比較保險：type 用小寫判斷，抓到「看起來像電影票」的項目
+    const movieTickets = ticket.items.filter(item => {
+      const t = (item.type || '').toLowerCase()
+      return (
+        t === 'ticket' ||
+        t === 'movie_ticket' ||
+        t === 'movie' ||
+        t.includes('ticket')   // 例如 MOVIE_TICKET、TICKET_xxx 都會被抓到
+      )
+    })
 
-  // 如果找不到任何「電影票」類型，就預設整個 package 當 1 張
-  if (movieTickets.length === 0) {
-    return 1
-  }
+    // 如果找不到任何「電影票」類型，就預設整個 package 當 1 張
+    if (movieTickets.length === 0) {
+      return 1
+    }
 
-  // 把 movie 類的數量加總
-  return movieTickets.reduce((sum, item) => {
-    const qty = item.quantity != null ? item.quantity : 1
-    return sum + qty
-  }, 0)
-},
+    // 把 movie 類的數量加總
+    return movieTickets.reduce((sum, item) => {
+      const qty = item.quantity != null ? item.quantity : 1
+      return sum + qty
+    }, 0)
+  },
 
 
   /**
@@ -276,7 +276,7 @@ export default {
    */
   formatItemsText(items) {
     if (!items || items.length === 0) return ''
-    
+
     return items
       .sort((a, b) => a.displayOrder - b.displayOrder)
       .map(item => {

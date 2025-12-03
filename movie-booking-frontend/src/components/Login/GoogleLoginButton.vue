@@ -46,7 +46,7 @@ const loading = ref(false);
 const loginWithGoogle = () => {
   loading.value = true;
   // 導向後端 Spring Boot OAuth2 授權起始點
-  window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  window.location.href =import.meta.env.VITE_API_BASE+ "oauth2/authorization/google" ||"http://localhost:8080/oauth2/authorization/google";
 };
 </script>
 

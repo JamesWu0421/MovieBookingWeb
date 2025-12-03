@@ -42,7 +42,7 @@
 
     onMounted(async () => {
     const res = await axios.get(
-        `http://localhost:8080/api/tickets/order/${orderId}`
+        import.meta.env.VITE_API_BASE_URL+`tickets/order/${orderId}`||`http://localhost:8080/api/tickets/order/${orderId}`
     );
     tickets.value = res.data;
     });
