@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/login";
 
 import HomeView from "../views/HomeView.vue";
 import MoviesView from "../views/MoviesView.vue";
-import UpcomingMoviesView from '../views/UpcomingMoviesView.vue';
+import UpcomingMoviesView from "../views/UpcomingMoviesView.vue";
 import MovieDetailView from "../views/MovieDetailView.vue";
 import SeatSelectionView from "../views/SeatSelectionView.vue";
 import CheckoutView from "../views/CheckoutView.vue";
@@ -26,9 +26,9 @@ import RefundView from "../views/RefundView.vue";
 import RefundSuccess from "../views/RefundSuccess.vue";
 import Payment from "../views/Payment.vue";
 import TicketView from "../views/Ticket.vue";
+import ResetPasswordView from "../views/Login/ResetPassword.vue";
 
 const routes = [
-
   // ===== 活動和通知 ======
   {
     path: "/events",
@@ -47,7 +47,6 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
-
   // ===== 公開頁面 =====
   {
     path: "/",
@@ -60,8 +59,8 @@ const routes = [
     component: MoviesView,
   },
   {
-    path: '/upcomingmovies',
-    name: 'UpcomingMovies',
+    path: "/upcomingmovies",
+    name: "UpcomingMovies",
     component: UpcomingMoviesView,
   },
   {
@@ -70,7 +69,6 @@ const routes = [
     component: MovieDetailView,
     props: true,
   },
-  
 
   // ===== 登入/註冊相關 (已登入不能訪問) =====
   {
@@ -91,6 +89,12 @@ const routes = [
     component: ForgotPasswordView,
     meta: { requiresGuest: true },
   },
+  {
+    path: "/reset_password",
+    name: "ResetPasswordView",
+    component: ResetPasswordView,
+  },
+
   {
     path: "/verify-success",
     name: "VerifySuccess",
@@ -178,22 +182,22 @@ const routes = [
   {
     path: "/refund/:orderId",
     name: "Refund",
-    component: RefundView
+    component: RefundView,
   },
   {
     path: "/refund-success",
     name: "RefundSuccess",
-    component: RefundSuccess
+    component: RefundSuccess,
   },
   {
     path: "/checkout/:orderId",
     name: "ConfirmOrder",
-    component: () => import("../views/ConfirmOrderView.vue")
+    component: () => import("../views/ConfirmOrderView.vue"),
   },
   {
     path: "/tickets/order/:id",
     name: "TicketView",
-    component: TicketView
+    component: TicketView,
   },
 ];
 

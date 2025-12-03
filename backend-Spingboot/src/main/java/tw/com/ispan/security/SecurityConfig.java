@@ -103,6 +103,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/ticket-packages/**",
                                                                 "/api/show-ticket-prices/**",
                                                                 "/api/batch-operations/**",
+                                                                "/api/user/reset-password",
                                                                 "/api/tickets/**",
                                                                 "/api/orders/**",
                                                                 "/ecpay/**",
@@ -111,7 +112,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/refund/**",
                                                                 "/api/customer-service/**",
                                                                 "/api/batch-sessions-temp/**",
-                                                                "/api/batch-tickets-temp/**"
+                                                                "/api/batch-tickets-temp/**",
+                                                                "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5"
 
                                                 ).permitAll()
 
@@ -126,6 +128,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/ticket-packages/**",
                                                                 "/api/show-ticket-prices/**",
                                                                 "/api/batch-operations/**",
+                                                                "/api/user/reset-password",
                                                                 "/api/package-items/**",
                                                                 "/api/tickets/**",
                                                                 "/api/orders/**",
@@ -135,7 +138,9 @@ public class SecurityConfig implements WebMvcConfigurer {
                                                                 "/api/order-details/**",
                                                                 "/api/customer-service/**",
                                                                 "/api/batch-sessions-temp/**",
-                                                                "/api/batch-tickets-temp/**")
+                                                                "/api/batch-tickets-temp/**",
+                                                                "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5")
+
                                                 .permitAll()
                                                 .requestMatchers("/api/admin/**").authenticated()
 

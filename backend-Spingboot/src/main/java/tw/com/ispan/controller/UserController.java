@@ -142,16 +142,22 @@ public class UserController {
     }
 
     // 用戶依帶的 token 重置密碼
-    @PostMapping("/auth/reset_password")
-    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestBody String newPassword) {
-        try {
-            userService.resetPassword(token, newPassword);
-            return ResponseEntity.ok("密碼重置成功，請重新登入");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+   @PostMapping("/auth/reset-password")
+public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+    try {
+        String token = request.get("token");           // ✅ 從 JSON 讀取
+        String newPassword = request.get("newPassword"); // ✅ 從 JSON 讀取
+        
+        if (token == null || newPassword == null) {
+            return ResponseEntity.badRequest().body("缺少必要參數");
         }
+        
+        userService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("密碼重置成功，請重新登入");
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
-
+}
     // 用戶登出
     @PostMapping("/user/logout")
     public ResponseEntity<String> logout(HttpSession session) {
