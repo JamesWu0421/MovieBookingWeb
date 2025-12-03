@@ -382,11 +382,13 @@ const filters = reactive({
 const reportData = reactive({
   overview: null,
   trendData: [],
+  monthlyTrendData: [], // 🆕 加這個
   screenTypeDistribution: [],
   ticketTypeDistribution: [],
   movieDistribution: [],
   topMovies: [],
 });
+
 
 const movieOptions = ref([]);
 const screenOptions = ref([]);
@@ -408,6 +410,23 @@ const getTodayDateRange = () => {
   const formattedDate = formatDate(today);
   return [formattedDate, formattedDate];
 };
+
+// 產生月度資料
+function buildMonthlyTrend(dailyData) {
+  const map = {};
+
+  dailyData.forEach(d => {
+    const month = d.date.substring(0, 7); // yyyy-MM
+    if (!map[month]) {
+      map[month] = { month, revenue: 0, tickets: 0 };
+    }
+    map[month].revenue += d.revenue;
+    map[month].tickets += d.tickets;
+  });
+
+  return Object.values(map);
+}
+
 
 // 初始化
 onMounted(async () => {
@@ -536,15 +555,31 @@ const resetFilters = () => {
   setQuickDate("today"); // 🆕 重置為今天
 };
 
+// 🆕 判斷使用每日還是月度資料
+const trendMode = ref("daily"); 
+// 可選：daily, monthly
+
+const detectTrendMode = () => {
+  const start = new Date(dateRange.value[0]);
+  const end = new Date(dateRange.value[1]);
+  const diffDays = Math.floor((end - start) / (1000 * 3600 * 24)) + 1;
+
+  return diffDays > 31 ? "monthly" : "daily";
+};
+
+
 // 繪製所有圖表
 const renderCharts = () => {
   renderTrendChart();
   renderScreenTypeChart();
   renderTicketTypeChart();
   renderMovieDistChart();
+  
 };
 
 // 繪製趨勢折線圖
+// 🟦 折線圖：每日 vs 月度自動切換
+// 🟦 折線圖：每日 vs 月度自動切換，含 fallback & title 修正
 const renderTrendChart = () => {
   if (!trendChart.value) return;
 
@@ -552,43 +587,55 @@ const renderTrendChart = () => {
     trendChartInstance = echarts.init(trendChart.value);
   }
 
-  const dates = reportData.trendData.map((item) => item.date);
-  const revenues = reportData.trendData.map((item) => item.revenue);
-  const tickets = reportData.trendData.map((item) => item.tickets);
+  const daily = reportData.trendData || [];
+  const monthly = buildMonthlyTrend(daily);
 
-  const option = {
-    tooltip: {
-      trigger: "axis",
-      axisPointer: {
-        type: "cross",
+  trendMode.value = detectTrendMode();
+
+  let source = trendMode.value === "monthly" ? monthly : daily;
+
+  // 🟥 若無資料 → 顯示提示
+  if (source.length === 0) {
+    trendChartInstance.setOption({
+      title: {
+        text: "此區間沒有資料",
+        left: "center",
+        top: "middle",
+        textStyle: { color: "#999", fontSize: 16 },
       },
-    },
-    legend: {
-      data: ["營收", "售票數"],
-    },
-    grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "3%",
-      containLabel: true,
-    },
+      xAxis: { show: false },
+      yAxis: { show: false },
+      series: [],
+    });
+    return;
+  }
+
+  const xAxisData = trendMode.value === "daily"
+    ? source.map(d => d.date)
+    : source.map(d => d.month);
+
+  const revenues = source.map(d => d.revenue);
+  const tickets = source.map(d => d.tickets);
+
+  trendChartInstance.setOption({
+    title: { text: "" },
+    tooltip: { trigger: "axis" },
+    legend: { data: ["營收", "售票數"] },
+    grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
+
     xAxis: {
       type: "category",
-      boundaryGap: false,
-      data: dates,
+      data: xAxisData,
+      axisLabel: {
+        rotate: trendMode.value === "daily" ? 45 : 0,
+      },
     },
+
     yAxis: [
-      {
-        type: "value",
-        name: "營收 ($)",
-        position: "left",
-      },
-      {
-        type: "value",
-        name: "售票數",
-        position: "right",
-      },
+      { type: "value", name: "營收 ($)" },
+      { type: "value", name: "售票數" },
     ],
+
     series: [
       {
         name: "營收",
@@ -596,13 +643,11 @@ const renderTrendChart = () => {
         smooth: true,
         data: revenues,
         yAxisIndex: 0,
-        itemStyle: {
-          color: "#667eea",
-        },
+        itemStyle: { color: "#667eea" },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "rgba(102, 126, 234, 0.3)" },
-            { offset: 1, color: "rgba(102, 126, 234, 0)" },
+            { offset: 0, color: "rgba(102,126,234,0.3)" },
+            { offset: 1, color: "rgba(102,126,234,0)" },
           ]),
         },
       },
@@ -612,15 +657,13 @@ const renderTrendChart = () => {
         smooth: true,
         data: tickets,
         yAxisIndex: 1,
-        itemStyle: {
-          color: "#f5576c",
-        },
+        itemStyle: { color: "#f5576c" },
       },
     ],
-  };
-
-  trendChartInstance.setOption(option);
+  });
 };
+
+
 
 // 繪製影廳類型圓餅圖
 const renderScreenTypeChart = () => {
