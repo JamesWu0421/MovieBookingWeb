@@ -4,7 +4,7 @@ import { ElMessage } from "element-plus";
 import router from "../router/index";
 
 const request = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:8080",
   timeout: 10000,
 });
 

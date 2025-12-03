@@ -73,7 +73,7 @@
 
     onMounted(async () => {
     const id = route.params.id;
-    const res = await axios.get(`http://localhost:8080/api/customer-service/${id}`);
+    const res = await axios.get(import.meta.env.VITE_BASE_URL+`/api/customer-service/${id}`||`http://localhost:8080/api/customer-service/${id}`);
     ticket.value = res.data;
     });
 

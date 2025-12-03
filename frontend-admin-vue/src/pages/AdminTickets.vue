@@ -73,7 +73,7 @@
 
     const tickets = ref([]);
 
-    axios.get("http://localhost:8080/api/customer-service").then(res => {
+    axios.get(import.meta.env.VITE_BASE_URL+"/api/customer-service"||"http://localhost:8080/api/customer-service").then(res => {
     tickets.value = res.data;
     });
 

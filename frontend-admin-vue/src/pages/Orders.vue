@@ -73,7 +73,7 @@
 
     // 取得訂單
     async function loadOrders() {
-    const res = await axios.get(`http://localhost:8080/api/orders`)
+    const res = await axios.get(import.meta.env.VITE_BASE_URL+`/api/orders`||`http://localhost:8080/api/orders`)
     orders.value = res.data
     }
 

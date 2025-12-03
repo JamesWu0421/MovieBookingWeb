@@ -63,8 +63,8 @@
 
         onMounted(async () => {
         const id = route.params.id
-        order.value = (await axios.get(`http://localhost:8080/api/orders/by-id/${id}`)).data
-        orderDetails.value = (await axios.get(`http://localhost:8080/api/order-details/order/${id}`)).data
+        order.value = (await axios.get(import.meta.env.VITE_BASE_URL+`/api/orders/by-id/${id}`||`http://localhost:8080/api/orders/by-id/${id}`)).data
+        orderDetails.value = (await axios.get(import.meta.env.VITE_BASE_URL+`/api/order-details/order/${id}`||`http://localhost:8080/api/order-details/order/${id}`)).data
         })
 
         function formatDate(t){
