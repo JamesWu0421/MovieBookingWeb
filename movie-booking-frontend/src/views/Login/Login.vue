@@ -84,7 +84,7 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(form.value);
-    router.push("/Home");
+    router.push("/");
   } catch (error) {
     errorMessage.value = error.message || "登入失敗，請檢查帳號密碼";
   } finally {
